@@ -7,8 +7,7 @@ import (
 	"go_inventory/SupplyInventory/Domain"
 )
 
-func RegisterRoutes(router *gin.Engine) {
-	group := router.Group("/positions")
+func Register(group *gin.RouterGroup) {
 
 	group.GET("/", func(c *gin.Context) {
 		positions := services.ListPositions()
