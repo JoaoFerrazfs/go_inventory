@@ -1,13 +1,11 @@
-
 package services
 
 import (
-	"go_inventory/SupplyInventory/Domain"
-	"go_inventory/SupplyInventory/Infrastructure"
+	domain "go_inventory/SupplyInventory/Domain"
+	infrastructure "go_inventory/SupplyInventory/Infrastructure"
 )
 
 func ListPositions() []domain.Position {
-
 	positions, err := infrastructure.GetAllPositions()
 	if err != nil {
 		return nil
@@ -17,12 +15,10 @@ func ListPositions() []domain.Position {
 }
 
 func FindPositionById(id string) *domain.Position {
-
 	position, err := infrastructure.GetSupplyById(id)
 	if err != nil {
 		return nil
 	}
-
 
 	return position
 }

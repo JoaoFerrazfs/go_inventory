@@ -3,7 +3,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 
-	"go_inventory/SupplyInventory/Application/Controllers"
+	controllers "go_inventory/SupplyInventory/Application/Controllers"
 )
 
 func RegisterRoutes(router *gin.Engine) {
