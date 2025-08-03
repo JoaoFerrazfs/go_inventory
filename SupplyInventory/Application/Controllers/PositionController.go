@@ -27,12 +27,16 @@ func Register(group *gin.RouterGroup) {
 	group.POST("/", func(c *gin.Context) {
 		var position domain.Position
 
-		if err := c.BindJSON(&position); err != nil {
+		if err := c.ShouldBindJSON(&position); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		services.CreatePosition(position)
-		c.JSON(http.StatusCreated, position)
+		newPosition := services.CreatePosition(position)
+		if newPosition == nil {
+			c.JSON(http.StatusNotFound, gin.H{"message": "Position could not be created"})
+			return;
+		}
+		c.JSON(http.StatusCreated, newPosition)
 	})
 }

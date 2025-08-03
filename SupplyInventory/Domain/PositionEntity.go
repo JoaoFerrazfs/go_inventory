@@ -1,7 +1,8 @@
 package domain
 
 type Position struct {
-	ID		  string  `json:"id"`
-	Name        string  `json:"name"`
-	Stock       int     `json:"stock"`
+    ID    int    `json:"id"`
+    Name  string `json:"name" binding:"required"`
+    Stock int    `json:"stock" binding:"required"`
+    EAN   int    `json:"ean" binding:"required"`
 }

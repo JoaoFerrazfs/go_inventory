@@ -1,18 +1,30 @@
 version: '3.8'
 
+# services:
+#   app:
+#     build: .
+#     ports:
+#       - "3000:3000"
+#     depends_on:
+#       - db
+#     environment:
+#       - DB_HOST=db
+#       - DB_PORT=3306
+#       - DB_USER=root
+#       - DB_PASS=root
+#       - DB_NAME=inventory
+
 services:
   app:
-    build: .
+    container_name: go_inventory_dev
+    build:
+      context: .
+    volumes:
+      - .:/app
     ports:
       - "3000:3000"
-    depends_on:
-      - db
-    environment:
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_USER=root
-      - DB_PASS=root
-      - DB_NAME=inventory
+    working_dir: /app
+    command: bash -c "while true; do sleep 1000; done"
 
 
   db:

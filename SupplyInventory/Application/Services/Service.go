@@ -7,13 +7,31 @@ import (
 )
 
 func ListPositions() []domain.Position {
-	return infrastructure.GetAllPositions()
+
+	positions, err := infrastructure.GetAllPositions()
+	if err != nil {
+		return nil
+	}
+
+	return positions
 }
 
 func FindPositionById(id string) *domain.Position {
-	return infrastructure.GetSupplyById(id)
+
+	position, err := infrastructure.GetSupplyById(id)
+	if err != nil {
+		return nil
+	}
+
+
+	return position
 }
 
-func CreatePosition(position domain.Position) {
-	infrastructure.AddSupply(position)
+func CreatePosition(position domain.Position) *domain.Position {
+	newPosition, err := infrastructure.AddSupply(position)
+	if err != nil {
+		return nil
+	}
+
+	return newPosition
 }
