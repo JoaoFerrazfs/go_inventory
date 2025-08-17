@@ -10,6 +10,7 @@ import (
 func main() {
 	r := gin.Default()
 	db.Connect()
+	db.Migrate()
 
 	r.GET("/", func(c *gin.Context) {
 		c.String(200, "Hello, world! 12")

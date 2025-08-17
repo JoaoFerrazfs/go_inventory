@@ -8,5 +8,7 @@ import (
 
 func RegisterRoutes(router *gin.Engine) {
 	apiV1 := router.Group("/api/v1/positions")
+
 	controllers.Register(apiV1)
+	controllers.RegisterProductPosition(apiV1)
 }

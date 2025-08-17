@@ -14,7 +14,7 @@ func ListPositions() []domain.Position {
 	return positions
 }
 
-func FindPositionById(id string) *domain.Position {
+func FindPositionById(id uint) *domain.Position {
 	position, err := infrastructure.GetSupplyById(id)
 	if err != nil {
 		return nil
@@ -30,4 +30,13 @@ func CreatePosition(position domain.Position) *domain.Position {
 	}
 
 	return newPosition
+}
+
+func AddProductsToPositition(product domain.PositionProduct) *domain.Position {
+	newPositionProduct, err := infrastructure.AddProductsToPosition(product)
+	if err != nil {
+		return nil
+	}
+
+	return newPositionProduct
 }
