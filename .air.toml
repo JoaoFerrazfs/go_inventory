@@ -1,0 +1,10 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+# força build sem VCS e garante download das dependências
+cmd = "go mod download && go build -buildvcs=false -o main ."
+bin = "main"
+
+[log]
+time = true

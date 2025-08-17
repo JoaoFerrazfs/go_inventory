@@ -1,9 +1,10 @@
 package main
 
 import (
+	routes "go_inventory/SupplyInventory/Application/Routes"
+	db "go_inventory/SupplyInventory/Infrastructure/Db"
+
 	"github.com/gin-gonic/gin"
-	"go_inventory/SupplyInventory/Application/Routes"
-	"go_inventory/SupplyInventory/Infrastructure/Db"
 )
 
 func main() {
