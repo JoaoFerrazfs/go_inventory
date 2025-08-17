@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 
 	services "go_inventory/SupplyInventory/Application/Services"
@@ -18,8 +17,7 @@ func RegisterProductPosition(group *gin.RouterGroup) {
 	group.PATCH("/:position/products", func(c *gin.Context) {
 		var req ProductsRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			log.Default().Println("Error binding JSON:", req)
-			c.JSON(422, gin.H{"message": "O body deve conter um produto com o palete, ean e quantidade de produtos "})
+			c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "O body deve conter um produto com o palete, ean e quantidade de produtos "})
 			return
 		}
 

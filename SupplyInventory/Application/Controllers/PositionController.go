@@ -17,6 +17,7 @@ type PositionRequest struct {
 func Register(group *gin.RouterGroup) {
 	group.GET("/", func(c *gin.Context) {
 		positions := services.ListPositions()
+
 		c.JSON(http.StatusOK, positions)
 	})
 
@@ -27,9 +28,9 @@ func Register(group *gin.RouterGroup) {
 			return
 		}
 
-		position := services.FindPositionById(id)
+		position, err := services.FindPositionById(id)
 		if position == nil {
-			c.JSON(http.StatusNotFound, gin.H{"message": "Palete não encontrado"})
+			c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			return
 		}
 		c.JSON(http.StatusOK, position)
@@ -43,9 +44,9 @@ func Register(group *gin.RouterGroup) {
 			return
 		}
 
-		newPosition := services.CreatePosition(req.Position)
+		newPosition, err := services.CreatePosition(req.Position)
 		if newPosition == nil {
-			c.JSON(http.StatusBadGateway, gin.H{"message": "Palete não pode ser criado"})
+			c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
 			return
 		}
 

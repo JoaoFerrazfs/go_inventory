@@ -14,22 +14,22 @@ func ListPositions() []domain.Position {
 	return positions
 }
 
-func FindPositionById(id uint) *domain.Position {
+func FindPositionById(id uint) (*domain.Position, error) {
 	position, err := infrastructure.GetSupplyById(id)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	return position
+	return position, nil
 }
 
-func CreatePosition(position domain.Position) *domain.Position {
+func CreatePosition(position domain.Position) (*domain.Position, error) {
 	newPosition, err := infrastructure.AddSupply(position)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	return newPosition
+	return newPosition, nil
 }
 
 func AddProductsToPositition(product domain.PositionProduct) *domain.Position {
