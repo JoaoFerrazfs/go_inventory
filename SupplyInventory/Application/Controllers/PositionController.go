@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"net/http"
-	"strconv"
 
+	requestsHelper "go_inventory/Helpers/RequestsHelper"
 	services "go_inventory/SupplyInventory/Application/Services"
 	domain "go_inventory/SupplyInventory/Domain"
 
@@ -21,18 +21,15 @@ func Register(group *gin.RouterGroup) {
 	})
 
 	group.GET("/:id", func(c *gin.Context) {
-		idStr := c.Param("id")
-		idUint64, err := strconv.ParseUint(idStr, 10, 64)
+		id, err := requestsHelper.GetIDParam(c, "id")
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": "ID inválido"})
+			c.JSON(400, gin.H{"message": "ID inválido"})
 			return
 		}
 
-		id := uint(idUint64)
-
 		position := services.FindPositionById(id)
 		if position == nil {
-			c.JSON(http.StatusNotFound, gin.H{"message": "Position not found"})
+			c.JSON(http.StatusNotFound, gin.H{"message": "Palete não encontrado"})
 			return
 		}
 		c.JSON(http.StatusOK, position)
@@ -48,7 +45,7 @@ func Register(group *gin.RouterGroup) {
 
 		newPosition := services.CreatePosition(req.Position)
 		if newPosition == nil {
-			c.JSON(http.StatusBadGateway, gin.H{"message": "Position could not be created"})
+			c.JSON(http.StatusBadGateway, gin.H{"message": "Palete não pode ser criado"})
 			return
 		}
 

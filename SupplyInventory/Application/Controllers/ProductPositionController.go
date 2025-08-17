@@ -19,7 +19,7 @@ func RegisterProductPosition(group *gin.RouterGroup) {
 		var req ProductsRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			log.Default().Println("Error binding JSON:", req)
-			c.JSON(400, gin.H{"message": "O body deve conter products como array de números"})
+			c.JSON(422, gin.H{"message": "O body deve conter um produto com o palete, ean e quantidade de produtos "})
 			return
 		}
 
