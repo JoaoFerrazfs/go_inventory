@@ -9,28 +9,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Struct do controller
 type PalletizedProductController struct {
 	service services.PalletService
 }
 
-// Construtor
-func NewPalletizedProductController(service services.PalletService) *PalletController {
-	return &PalletController{service: service}
+func NewPalletizedProductController(service services.PalletService) *PalletizedProductController {
+	return &PalletizedProductController{service: service}
 }
 
-// Request
 type PalletizedProductRequest struct {
 	PalletizedProduct domain.PalletizedProductEntity `json:"PalletizedProduct" binding:"required"`
 }
 
-// Método para registrar rotas
-func (pc *PalletController) RegisterProductPallet(group *gin.RouterGroup) {
-	group.PATCH("/:pallet/products", pc.addProductsToPallet)
+func (pc *PalletizedProductController) RegisterProductPallet(group *gin.RouterGroup) {
+	group.PATCH("/:pallet", pc.addProductsToPallet)
 }
 
-// Handler
-func (pc *PalletController) addProductsToPallet(c *gin.Context) {
+func (pc *PalletizedProductController) addProductsToPallet(c *gin.Context) {
 	var req PalletizedProductRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{

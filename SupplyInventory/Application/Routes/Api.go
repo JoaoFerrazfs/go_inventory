@@ -14,6 +14,15 @@ func RegisterRoutes(router *gin.Engine, dbInstance *gorm.DB) {
 	c.Invoke(func(palletController *controllers.PalletController) {
 		apiV1 := router.Group("/api/v1/pallets")
 		palletController.Register(apiV1)
-		palletController.RegisterProductPallet(apiV1)
+	})
+
+	c.Invoke(func(palletizedProductsControllers *controllers.PalletizedProductController) {
+		apiV1 := router.Group("/api/v1/pallet/products")
+		palletizedProductsControllers.RegisterProductPallet(apiV1)
+	})
+
+	c.Invoke(func(palletRackController *controllers.PalletRackController) {
+		apiV1 := router.Group("/api/v1/racks")
+		palletRackController.RegisterPalletRack(apiV1)
 	})
 }

@@ -14,10 +14,20 @@ func BuildContainer(db *gorm.DB) *dig.Container {
 
 	// Registrar dependências
 	c.Provide(func() *gorm.DB { return db })
+
+	// Repositories
 	c.Provide(infrastructure.NewPalletRepository)
+	c.Provide(infrastructure.NewPalletRackRepository)
+
+	// Services
 	c.Provide(services.NewQRCodeService)
 	c.Provide(services.NewPalletService)
+	c.Provide(services.NewPalletRackService)
+
+	// Controllers
 	c.Provide(controllers.NewPalletController)
+	c.Provide(controllers.NewPalletizedProductController)
+	c.Provide(controllers.NewPalletRackController)
 
 	return c
 }

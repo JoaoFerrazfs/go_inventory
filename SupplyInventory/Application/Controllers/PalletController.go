@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
@@ -62,7 +61,7 @@ func (pc *PalletController) createPallet(c *gin.Context) {
 		return
 	}
 	newPallet, err := pc.service.CreatePallet(req.Pallet)
-	log.Print(err)
+
 	if newPallet == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
 		return
