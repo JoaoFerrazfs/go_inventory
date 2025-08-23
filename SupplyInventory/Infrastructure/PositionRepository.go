@@ -10,11 +10,11 @@ import (
 
 // Interface para facilitar testes e desacoplamento
 type PalletRepository interface {
-	GetAllPallets() ([]domain.Pallet, error)
-	GetSupplyById(id uint) (*domain.Pallet, error)
-	AddSupply(pallet domain.Pallet) (*domain.Pallet, error)
-	UpdateSupply(pallet *domain.Pallet) (*domain.Pallet, error)
-	AddProductsToPallet(product domain.PalletizedProductEntity) (*domain.Pallet, error)
+	GetAllPallets() ([]domain.PalletEntity, error)
+	GetSupplyById(id uint) (*domain.PalletEntity, error)
+	AddSupply(pallet domain.PalletEntity) (*domain.PalletEntity, error)
+	UpdateSupply(pallet *domain.PalletEntity) (*domain.PalletEntity, error)
+	AddProductsToPallet(product domain.PalletizedProductEntity) (*domain.PalletEntity, error)
 }
 
 // Implementação concreta
@@ -27,16 +27,16 @@ func NewPalletRepository(db *gorm.DB) PalletRepository {
 	return &palletRepository{db: db}
 }
 
-func (r *palletRepository) GetAllPallets() ([]domain.Pallet, error) {
-	var pallets []domain.Pallet
+func (r *palletRepository) GetAllPallets() ([]domain.PalletEntity, error) {
+	var pallets []domain.PalletEntity
 	if err := r.db.Preload("PalletizedProduct").Find(&pallets).Error; err != nil {
 		return nil, err
 	}
 	return pallets, nil
 }
 
-func (r *palletRepository) GetSupplyById(id uint) (*domain.Pallet, error) {
-	var pallet domain.Pallet
+func (r *palletRepository) GetSupplyById(id uint) (*domain.PalletEntity, error) {
+	var pallet domain.PalletEntity
 	if err := r.db.Preload("PalletizedProduct").First(&pallet, id).Error; err != nil {
 		return nil, err
 	}
@@ -44,24 +44,23 @@ func (r *palletRepository) GetSupplyById(id uint) (*domain.Pallet, error) {
 	return &pallet, nil
 }
 
-func (r *palletRepository) AddSupply(pallet domain.Pallet) (*domain.Pallet, error) {
+func (r *palletRepository) AddSupply(pallet domain.PalletEntity) (*domain.PalletEntity, error) {
 	if err := r.db.Create(&pallet).Error; err != nil {
 		return nil, err
 	}
 	return &pallet, nil
 }
 
-func (r *palletRepository) UpdateSupply(pallet *domain.Pallet) (*domain.Pallet, error) {
+func (r *palletRepository) UpdateSupply(pallet *domain.PalletEntity) (*domain.PalletEntity, error) {
 	if err := r.db.Save(pallet).Error; err != nil {
 		return nil, err
 	}
 	return pallet, nil
 }
 
-func (r *palletRepository) AddProductsToPallet(product domain.PalletizedProductEntity) (*domain.Pallet, error) {
+func (r *palletRepository) AddProductsToPallet(product domain.PalletizedProductEntity) (*domain.PalletEntity, error) {
 	pallet, err := r.GetSupplyById(product.PalletID)
 	if err != nil || pallet == nil {
-		log.Print(product.PalletID, 5)
 		return nil, err
 	}
 

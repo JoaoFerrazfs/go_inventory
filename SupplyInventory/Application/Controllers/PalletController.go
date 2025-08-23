@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
@@ -21,7 +22,7 @@ func NewPalletController(service services.PalletService) *PalletController {
 }
 
 type PalletRequest struct {
-	Pallet domain.Pallet `json:"pallet" binding:"required"`
+	Pallet domain.PalletEntity `json:"pallet" binding:"required"`
 }
 
 // Método para registrar rotas
@@ -60,8 +61,8 @@ func (pc *PalletController) createPallet(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
-
 	newPallet, err := pc.service.CreatePallet(req.Pallet)
+	log.Print(err)
 	if newPallet == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
 		return

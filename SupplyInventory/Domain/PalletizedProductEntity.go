@@ -6,3 +6,7 @@ type PalletizedProductEntity struct {
 	EAN      int `json:"ean" binding:"required"`
 	Quantity int `json:"quantity" binding:"required"`
 }
+
+func (PalletizedProductEntity) TableName() string {
+	return "palletized_products"
+}

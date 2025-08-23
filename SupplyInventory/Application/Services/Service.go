@@ -9,10 +9,10 @@ import (
 )
 
 type PalletService interface {
-	ListPallets() []domain.Pallet
-	FindPalletById(id uint) (*domain.Pallet, error)
-	CreatePallet(pallet domain.Pallet) (*domain.Pallet, error)
-	AddProductsToPallet(product domain.PalletizedProductEntity) *domain.Pallet
+	ListPallets() []domain.PalletEntity
+	FindPalletById(id uint) (*domain.PalletEntity, error)
+	CreatePallet(pallet domain.PalletEntity) (*domain.PalletEntity, error)
+	AddProductsToPallet(product domain.PalletizedProductEntity) *domain.PalletEntity
 }
 
 type palletService struct {
@@ -25,7 +25,7 @@ func NewPalletService(repo infrastructure.PalletRepository, qrService QRCodeServ
 	return &palletService{repo: repo, qrService: qrService}
 }
 
-func (s *palletService) ListPallets() []domain.Pallet {
+func (s *palletService) ListPallets() []domain.PalletEntity {
 	pallets, err := s.repo.GetAllPallets()
 	if err != nil {
 		return nil
@@ -33,11 +33,11 @@ func (s *palletService) ListPallets() []domain.Pallet {
 	return pallets
 }
 
-func (s *palletService) FindPalletById(id uint) (*domain.Pallet, error) {
+func (s *palletService) FindPalletById(id uint) (*domain.PalletEntity, error) {
 	return s.repo.GetSupplyById(id)
 }
 
-func (s *palletService) CreatePallet(pallet domain.Pallet) (*domain.Pallet, error) {
+func (s *palletService) CreatePallet(pallet domain.PalletEntity) (*domain.PalletEntity, error) {
 	newPallet, err := s.repo.AddSupply(pallet)
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func (s *palletService) CreatePallet(pallet domain.Pallet) (*domain.Pallet, erro
 	return palletWithQrCode, nil
 }
 
-func (s *palletService) AddProductsToPallet(product domain.PalletizedProductEntity) *domain.Pallet {
+func (s *palletService) AddProductsToPallet(product domain.PalletizedProductEntity) *domain.PalletEntity {
 	newPalletProduct, err := s.repo.AddProductsToPallet(product)
 	if err != nil {
 		return nil

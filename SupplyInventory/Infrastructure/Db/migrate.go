@@ -11,7 +11,8 @@ import (
 // Recebe a instância do DB
 func Migrate(db *gorm.DB) {
 	err := db.AutoMigrate(
-		&domain.Pallet{},
+		&domain.PalletRackEntity{},
+		&domain.PalletEntity{},
 		&domain.PalletizedProductEntity{},
 	)
 	if err != nil {
