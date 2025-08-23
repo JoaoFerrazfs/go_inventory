@@ -8,8 +8,8 @@ import (
 
 func Migrate() {
 	err := DB.AutoMigrate(
-		&domain.Position{},
-		&domain.PositionProduct{},
+		&domain.Pallet{},
+		&domain.PalletizedProductEntity{},
 	)
 	if err != nil {
 		log.Fatal("Erro na migration:", err)

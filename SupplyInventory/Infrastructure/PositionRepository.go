@@ -7,51 +7,52 @@ import (
 	db "go_inventory/SupplyInventory/Infrastructure/Db"
 )
 
-func GetAllPositions() ([]domain.Position, error) {
-	var positions []domain.Position
-	if err := db.DB.Preload("Products").Find(&positions).Error; err != nil {
+func GetAllPallets() ([]domain.Pallet, error) {
+	var pallets []domain.Pallet
+	if err := db.DB.Preload("PalletizedProduct").Find(&pallets).Error; err != nil {
 		return nil, err
 	}
-	return positions, nil
+	return pallets, nil
 }
 
-func GetSupplyById(id uint) (*domain.Position, error) {
-	var position domain.Position
-	if err := db.DB.Preload("Products").First(&position, id).Error; err != nil {
+func GetSupplyById(id uint) (*domain.Pallet, error) {
+	var pallet domain.Pallet
+	if err := db.DB.Preload("PalletizedProduct").First(&pallet, id).Error; err != nil {
 		return nil, err
 	}
-	log.Printf("Position found: %+v", position)
-	return &position, nil
+	log.Printf("Pallet found: %+v", pallet)
+	return &pallet, nil
 }
 
-func AddSupply(position domain.Position) (*domain.Position, error) {
-	if err := db.DB.Create(&position).Error; err != nil {
+func AddSupply(pallet domain.Pallet) (*domain.Pallet, error) {
+	if err := db.DB.Create(&pallet).Error; err != nil {
 		return nil, err
 	}
-	return &position, nil
+	return &pallet, nil
 }
 
-func UpdateSupply(position *domain.Position) (*domain.Position, error) {
-	if err := db.DB.Save(&position).Error; err != nil {
+func UpdateSupply(pallet *domain.Pallet) (*domain.Pallet, error) {
+	if err := db.DB.Save(&pallet).Error; err != nil {
 		return nil, err
 	}
-	return position, nil
+	return pallet, nil
 }
 
-func AddProductsToPosition(product domain.PositionProduct) (*domain.Position, error) {
-	position, err := GetSupplyById(product.PositionID)
-	if err != nil || position == nil {
+func AddProductsToPallet(product domain.PalletizedProductEntity) (*domain.Pallet, error) {
+	pallet, err := GetSupplyById(product.PalletID)
+	if err != nil || pallet == nil {
+		log.Print(product.PalletID, 5)
+		return nil, err
+	}
+	log.Print(pallet, 5)
+	product.PalletID = pallet.ID
+	if err := db.DB.Model(pallet).Association("PalletizedProduct").Append(&product); err != nil {
 		return nil, err
 	}
 
-	product.PositionID = position.ID
-	if err := db.DB.Model(position).Association("Products").Append(&product); err != nil {
+	if err := db.DB.Preload("PalletizedProduct").First(pallet, pallet.ID).Error; err != nil {
 		return nil, err
 	}
 
-	if err := db.DB.Preload("Products").First(position, position.ID).Error; err != nil {
-		return nil, err
-	}
-
-	return position, nil
+	return pallet, nil
 }

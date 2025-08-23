@@ -8,51 +8,51 @@ import (
 	infrastructure "go_inventory/SupplyInventory/Infrastructure"
 )
 
-func ListPositions() []domain.Position {
-	positions, err := infrastructure.GetAllPositions()
+func ListPallets() []domain.Pallet {
+	pallets, err := infrastructure.GetAllPallets()
 	if err != nil {
 		return nil
 	}
 
-	return positions
+	return pallets
 }
 
-func FindPositionById(id uint) (*domain.Position, error) {
-	position, err := infrastructure.GetSupplyById(id)
+func FindPalletById(id uint) (*domain.Pallet, error) {
+	pallet, err := infrastructure.GetSupplyById(id)
 	if err != nil {
 		return nil, err
 	}
 
-	return position, nil
+	return pallet, nil
 }
 
-func CreatePosition(position domain.Position) (*domain.Position, error) {
-	newPosition, err := infrastructure.AddSupply(position)
+func CreatePallet(pallet domain.Pallet) (*domain.Pallet, error) {
+	newPallet, err := infrastructure.AddSupply(pallet)
 	if err != nil {
 		return nil, err
 	}
 
-	qrcodeLink, err := CreateQRCode(newPosition.ID)
+	qrcodeLink, err := CreateQRCode(newPallet.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	newPosition.QrCode = qrcodeLink
-	newPosition.QrCodeUrl = "http://localhost:3000/" + strings.TrimPrefix(qrcodeLink, "storage/")
+	newPallet.QrCode = qrcodeLink
+	newPallet.QrCodeUrl = "http://localhost:3000/" + strings.TrimPrefix(qrcodeLink, "storage/")
 
-	positionWithQrCode, err := infrastructure.UpdateSupply(newPosition)
+	palletWithQrCode, err := infrastructure.UpdateSupply(newPallet)
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("New position created with QR code: %+v", positionWithQrCode)
-	return positionWithQrCode, nil
+	log.Printf("New pallet created with QR code: %+v", palletWithQrCode)
+	return palletWithQrCode, nil
 }
 
-func AddProductsToPositition(product domain.PositionProduct) *domain.Position {
-	newPositionProduct, err := infrastructure.AddProductsToPosition(product)
+func AddProductsToPallet(product domain.PalletizedProductEntity) *domain.Pallet {
+	newPalletProduct, err := infrastructure.AddProductsToPallet(product)
 	if err != nil {
 		return nil
 	}
 
-	return newPositionProduct
+	return newPalletProduct
 }

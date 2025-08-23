@@ -7,8 +7,8 @@ import (
 )
 
 func RegisterRoutes(router *gin.Engine) {
-	apiV1 := router.Group("/api/v1/positions")
+	apiV1 := router.Group("/api/v1/pallets")
 
 	controllers.Register(apiV1)
-	controllers.RegisterProductPosition(apiV1)
+	controllers.RegisterProductPallet(apiV1)
 }

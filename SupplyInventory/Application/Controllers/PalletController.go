@@ -10,15 +10,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type PositionRequest struct {
-	Position domain.Position `json:"position" binding:"required"`
+type PalletRequest struct {
+	Pallet domain.Pallet `json:"pallet" binding:"required"`
 }
 
 func Register(group *gin.RouterGroup) {
 	group.GET("/", func(c *gin.Context) {
-		positions := services.ListPositions()
+		palletPallets := services.ListPallets()
 
-		c.JSON(http.StatusOK, positions)
+		c.JSON(http.StatusOK, palletPallets)
 	})
 
 	group.GET("/:id", func(c *gin.Context) {
@@ -28,28 +28,27 @@ func Register(group *gin.RouterGroup) {
 			return
 		}
 
-		position, err := services.FindPositionById(id)
-		if position == nil {
+		pallet, err := services.FindPalletById(id)
+		if pallet == nil {
 			c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, position)
+		c.JSON(http.StatusOK, pallet)
 	})
 
 	group.POST("/", func(c *gin.Context) {
-		var req PositionRequest
-
+		var req PalletRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 			return
 		}
 
-		newPosition, err := services.CreatePosition(req.Position)
-		if newPosition == nil {
+		newPallet, err := services.CreatePallet(req.Pallet)
+		if newPallet == nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
 			return
 		}
 
-		c.JSON(http.StatusCreated, newPosition)
+		c.JSON(http.StatusCreated, newPallet)
 	})
 }
