@@ -1,8 +1,6 @@
 package infrastructure
 
 import (
-	"log"
-
 	domain "go_inventory/SupplyInventory/Domain"
 
 	"gorm.io/gorm"
@@ -40,7 +38,7 @@ func (r *palletRepository) GetSupplyById(id uint) (*domain.PalletEntity, error) 
 	if err := r.db.Preload("PalletizedProduct").First(&pallet, id).Error; err != nil {
 		return nil, err
 	}
-	log.Printf("Pallet found: %+v", pallet)
+
 	return &pallet, nil
 }
 
