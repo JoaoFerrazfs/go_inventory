@@ -4,10 +4,13 @@ import (
 	"log"
 
 	domain "go_inventory/SupplyInventory/Domain"
+
+	"gorm.io/gorm"
 )
 
-func Migrate() {
-	err := DB.AutoMigrate(
+// Recebe a instância do DB
+func Migrate(db *gorm.DB) {
+	err := db.AutoMigrate(
 		&domain.Pallet{},
 		&domain.PalletizedProductEntity{},
 	)

@@ -10,45 +10,62 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Struct do controller
+type PalletController struct {
+	service services.PalletService
+}
+
+// Construtor
+func NewPalletController(service services.PalletService) *PalletController {
+	return &PalletController{service: service}
+}
+
 type PalletRequest struct {
 	Pallet domain.Pallet `json:"pallet" binding:"required"`
 }
 
-func Register(group *gin.RouterGroup) {
-	group.GET("/", func(c *gin.Context) {
-		palletPallets := services.ListPallets()
+// Método para registrar rotas
+func (pc *PalletController) Register(group *gin.RouterGroup) {
+	group.GET("/", pc.listPallets)
+	group.GET("/:id", pc.findPalletById)
+	group.POST("/", pc.createPallet)
+}
 
-		c.JSON(http.StatusOK, palletPallets)
-	})
+// Handlers internos
 
-	group.GET("/:id", func(c *gin.Context) {
-		id, err := requestsHelper.GetIDParam(c, "id")
-		if err != nil {
-			c.JSON(400, gin.H{"message": "ID inválido"})
-			return
-		}
+func (pc *PalletController) listPallets(c *gin.Context) {
+	pallets := pc.service.ListPallets()
+	c.JSON(http.StatusOK, pallets)
+}
 
-		pallet, err := services.FindPalletById(id)
-		if pallet == nil {
-			c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, pallet)
-	})
+func (pc *PalletController) findPalletById(c *gin.Context) {
+	id, err := requestsHelper.GetIDParam(c, "id")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "ID inválido"})
+		return
+	}
 
-	group.POST("/", func(c *gin.Context) {
-		var req PalletRequest
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
-			return
-		}
+	pallet, err := pc.service.FindPalletById(id)
+	if pallet == nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		return
+	}
 
-		newPallet, err := services.CreatePallet(req.Pallet)
-		if newPallet == nil {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
-			return
-		}
+	c.JSON(http.StatusOK, pallet)
+}
 
-		c.JSON(http.StatusCreated, newPallet)
-	})
+func (pc *PalletController) createPallet(c *gin.Context) {
+	var req PalletRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		return
+	}
+
+	newPallet, err := pc.service.CreatePallet(req.Pallet)
+	if newPallet == nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, newPallet)
 }

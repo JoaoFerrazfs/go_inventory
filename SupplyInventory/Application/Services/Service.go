@@ -8,31 +8,42 @@ import (
 	infrastructure "go_inventory/SupplyInventory/Infrastructure"
 )
 
-func ListPallets() []domain.Pallet {
-	pallets, err := infrastructure.GetAllPallets()
+type PalletService interface {
+	ListPallets() []domain.Pallet
+	FindPalletById(id uint) (*domain.Pallet, error)
+	CreatePallet(pallet domain.Pallet) (*domain.Pallet, error)
+	AddProductsToPallet(product domain.PalletizedProductEntity) *domain.Pallet
+}
+
+type palletService struct {
+	repo      infrastructure.PalletRepository
+	qrService QRCodeService
+}
+
+// Construtor
+func NewPalletService(repo infrastructure.PalletRepository, qrService QRCodeService) PalletService {
+	return &palletService{repo: repo, qrService: qrService}
+}
+
+func (s *palletService) ListPallets() []domain.Pallet {
+	pallets, err := s.repo.GetAllPallets()
 	if err != nil {
 		return nil
 	}
-
 	return pallets
 }
 
-func FindPalletById(id uint) (*domain.Pallet, error) {
-	pallet, err := infrastructure.GetSupplyById(id)
-	if err != nil {
-		return nil, err
-	}
-
-	return pallet, nil
+func (s *palletService) FindPalletById(id uint) (*domain.Pallet, error) {
+	return s.repo.GetSupplyById(id)
 }
 
-func CreatePallet(pallet domain.Pallet) (*domain.Pallet, error) {
-	newPallet, err := infrastructure.AddSupply(pallet)
+func (s *palletService) CreatePallet(pallet domain.Pallet) (*domain.Pallet, error) {
+	newPallet, err := s.repo.AddSupply(pallet)
 	if err != nil {
 		return nil, err
 	}
 
-	qrcodeLink, err := CreateQRCode(newPallet.ID)
+	qrcodeLink, err := s.qrService.CreateQRCode(newPallet.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -40,19 +51,19 @@ func CreatePallet(pallet domain.Pallet) (*domain.Pallet, error) {
 	newPallet.QrCode = qrcodeLink
 	newPallet.QrCodeUrl = "http://localhost:3000/" + strings.TrimPrefix(qrcodeLink, "storage/")
 
-	palletWithQrCode, err := infrastructure.UpdateSupply(newPallet)
+	palletWithQrCode, err := s.repo.UpdateSupply(newPallet)
 	if err != nil {
 		return nil, err
 	}
+
 	log.Printf("New pallet created with QR code: %+v", palletWithQrCode)
 	return palletWithQrCode, nil
 }
 
-func AddProductsToPallet(product domain.PalletizedProductEntity) *domain.Pallet {
-	newPalletProduct, err := infrastructure.AddProductsToPallet(product)
+func (s *palletService) AddProductsToPallet(product domain.PalletizedProductEntity) *domain.Pallet {
+	newPalletProduct, err := s.repo.AddProductsToPallet(product)
 	if err != nil {
 		return nil
 	}
-
 	return newPalletProduct
 }

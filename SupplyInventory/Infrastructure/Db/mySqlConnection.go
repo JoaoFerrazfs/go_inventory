@@ -7,17 +7,14 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
-
-func Connect() {
+func Connect() *gorm.DB {
 	dsn := "root:root@tcp(db:3306)/inventory?charset=utf8mb4&parseTime=True&loc=Local"
-	var err error
-	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Falha ao conectar no banco:", err)
 	}
 
-	sqlDB, err := DB.DB()
+	sqlDB, err := db.DB()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -28,4 +25,5 @@ func Connect() {
 	}
 
 	log.Println("Conexão com o banco realizada com sucesso")
+	return db
 }
