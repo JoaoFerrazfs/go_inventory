@@ -31,6 +31,13 @@ func AddSupply(position domain.Position) (*domain.Position, error) {
 	return &position, nil
 }
 
+func UpdateSupply(position *domain.Position) (*domain.Position, error) {
+	if err := db.DB.Save(&position).Error; err != nil {
+		return nil, err
+	}
+	return position, nil
+}
+
 func AddProductsToPosition(product domain.PositionProduct) (*domain.Position, error) {
 	position, err := GetSupplyById(product.PositionID)
 	if err != nil || position == nil {

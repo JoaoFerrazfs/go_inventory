@@ -1,22 +1,30 @@
 package main
 
 import (
+	"log"
+	"os"
+
 	routes "go_inventory/SupplyInventory/Application/Routes"
 	db "go_inventory/SupplyInventory/Infrastructure/Db"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	r := gin.Default()
+
+	r.Static("/qrcodes", "./storage/qrcodes")
+
+	if err := godotenv.Load(); err != nil {
+		log.Println("Nenhum .env encontrado, usando variáveis do sistema")
+	}
+
 	db.Connect()
 	db.Migrate()
 
-	r.GET("/", func(c *gin.Context) {
-		c.String(200, "Hello, world! 12")
-	})
-
 	routes.RegisterRoutes(r)
 
-	r.Run(":3000") // roda em http://localhost:3000
+	port := os.Getenv("PORT")
+	r.Run(":" + port)
 }

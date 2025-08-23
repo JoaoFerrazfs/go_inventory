@@ -1,6 +1,9 @@
 package services
 
 import (
+	"log"
+	"strings"
+
 	domain "go_inventory/SupplyInventory/Domain"
 	infrastructure "go_inventory/SupplyInventory/Infrastructure"
 )
@@ -29,7 +32,20 @@ func CreatePosition(position domain.Position) (*domain.Position, error) {
 		return nil, err
 	}
 
-	return newPosition, nil
+	qrcodeLink, err := CreateQRCode(newPosition.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	newPosition.QrCode = qrcodeLink
+	newPosition.QrCodeUrl = "http://localhost:3000/" + strings.TrimPrefix(qrcodeLink, "storage/")
+
+	positionWithQrCode, err := infrastructure.UpdateSupply(newPosition)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("New position created with QR code: %+v", positionWithQrCode)
+	return positionWithQrCode, nil
 }
 
 func AddProductsToPositition(product domain.PositionProduct) *domain.Position {
