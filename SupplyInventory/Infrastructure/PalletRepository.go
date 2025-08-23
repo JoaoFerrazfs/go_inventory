@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// Interface para facilitar testes e desacoplamento
 type PalletRepository interface {
 	GetAllPallets() ([]domain.PalletEntity, error)
 	GetSupplyById(id uint) (*domain.PalletEntity, error)
@@ -15,12 +14,10 @@ type PalletRepository interface {
 	AddProductsToPallet(product domain.PalletizedProductEntity) (*domain.PalletEntity, error)
 }
 
-// Implementação concreta
 type palletRepository struct {
 	db *gorm.DB
 }
 
-// Construtor
 func NewPalletRepository(db *gorm.DB) PalletRepository {
 	return &palletRepository{db: db}
 }

@@ -10,12 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Struct do controller
+
 type PalletController struct {
 	service services.PalletService
 }
 
-// Construtor
 func NewPalletController(service services.PalletService) *PalletController {
 	return &PalletController{service: service}
 }
@@ -24,14 +23,11 @@ type PalletRequest struct {
 	Pallet domain.PalletEntity `json:"pallet" binding:"required"`
 }
 
-// Método para registrar rotas
 func (pc *PalletController) Register(group *gin.RouterGroup) {
 	group.GET("/", pc.listPallets)
 	group.GET("/:id", pc.findPalletById)
 	group.POST("/", pc.createPallet)
 }
-
-// Handlers internos
 
 func (pc *PalletController) listPallets(c *gin.Context) {
 	pallets := pc.service.ListPallets()

@@ -20,7 +20,6 @@ type palletService struct {
 	qrService QRCodeService
 }
 
-// Construtor
 func NewPalletService(repo infrastructure.PalletRepository, qrService QRCodeService) PalletService {
 	return &palletService{repo: repo, qrService: qrService}
 }
