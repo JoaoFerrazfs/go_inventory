@@ -9,7 +9,20 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	_ "go_inventory/docs"
 )
+
+// @title           Go Inventory API
+// @version         1.0
+// @description     It is system to manage pallets and related products.
+
+// @contact.name   API Support
+// @contact.email  joaoferrazp@gmail.com
+
+// @host localhost:3000
 
 func main() {
 	r := gin.Default()
@@ -35,6 +48,8 @@ func main() {
 	if port == "" {
 		port = "3000"
 	}
+
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.Run(":" + port)
 }

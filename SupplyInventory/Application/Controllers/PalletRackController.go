@@ -4,13 +4,14 @@ import (
 	"net/http"
 
 	services "go_inventory/SupplyInventory/Application/Services"
-	domain "go_inventory/SupplyInventory/Domain"
 
 	"github.com/gin-gonic/gin"
 )
 
 type PalletRackRequest struct {
-	PalletRack domain.PalletRackEntity `json:"palletRack" binding:"required"`
+	PalletRack struct {
+		Name string `json:"name"`
+	} `json:"palletRack"`
 }
 
 type PalletRackController struct {
@@ -26,13 +27,21 @@ func (controller *PalletRackController) RegisterPalletRack(group *gin.RouterGrou
 	group.GET("/", controller.listRacks)
 }
 
+// @Summary Create Pallet Racks
+// @Tags Pallet Racks
+// @Accept json
+// @Produce json
+// @Param PalletRack body PalletRackRequest true "Palletized Product"
+// @Success 200 {object} domain.PalletRackEntity
+// @Failure 422 {object} map[string]string
+// @Router /api/v1/racks [post]
 func (controller *PalletRackController) createPalletRack(c *gin.Context) {
 	var req PalletRackRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 	}
 
-	newPalletRack, err := controller.palletRackService.Create(req.PalletRack)
+	newPalletRack, err := controller.palletRackService.Create(req.PalletRack.Name)
 
 	if newPalletRack == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})

@@ -7,7 +7,7 @@ import (
 )
 
 type PalletRackRepository interface {
-	Create(palletRack domain.PalletRackEntity) (*domain.PalletRackEntity, error)
+	Create(name string) (*domain.PalletRackEntity, error)
 	ListRacks() ([]domain.PalletRackEntity, error)
 }
 
@@ -19,7 +19,9 @@ func NewPalletRackRepository(db *gorm.DB) PalletRackRepository {
 	return &palletRackRepository{db: db}
 }
 
-func (repository *palletRackRepository) Create(palletRack domain.PalletRackEntity) (*domain.PalletRackEntity, error) {
+func (repository *palletRackRepository) Create(name string) (*domain.PalletRackEntity, error) {
+	var palletRack domain.PalletRackEntity
+	palletRack.Name = name
 	if err := repository.db.Save(&palletRack).Error; err != nil {
 		return nil, err
 	}

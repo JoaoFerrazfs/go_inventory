@@ -1,14 +1,16 @@
 SHELL := /bin/bash
 CONTAINER := go_inventory_dev
 
+# Start containers normalmente
 up:
-	docker compose up -d --build
+	docker compose up
 
-run:
-	docker exec -it $(CONTAINER) ./main
+# Gera swagger automaticamente ao salvar arquivos
+watch-swagger:
+	./watch_swagger.sh
 
-sh:
-	docker exec -it $(CONTAINER) bash
-
-stop:
-	docker compose down
+# Roda docker + watch do swagger ao mesmo tempo
+dev:
+	$(MAKE) up &
+	$(MAKE) watch-swagger &
+	wait

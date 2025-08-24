@@ -1,0 +1,196 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "It is system to manage pallets and related products.",
+        "title": "Go Inventory API",
+        "contact": {
+            "name": "API Support",
+            "email": "joaoferrazp@gmail.com"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:3000",
+    "paths": {
+        "/api/v1/pallet/products": {
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Palletized products"
+                ],
+                "summary": "tres product to",
+                "parameters": [
+                    {
+                        "description": "Palletized Product",
+                        "name": "pallet",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.PalletizedProductRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.PalletizedProductEntity"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/racks": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pallet Racks"
+                ],
+                "summary": "Create Pallet Racks",
+                "parameters": [
+                    {
+                        "description": "Palletized Product",
+                        "name": "PalletRack",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.PalletRackRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.PalletRackEntity"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "controllers.PalletRackRequest": {
+            "type": "object",
+            "properties": {
+                "palletRack": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "controllers.PalletizedProductRequest": {
+            "type": "object",
+            "required": [
+                "PalletizedProduct"
+            ],
+            "properties": {
+                "PalletizedProduct": {
+                    "$ref": "#/definitions/domain.PalletizedProductEntity"
+                }
+            }
+        },
+        "domain.PalletEntity": {
+            "type": "object",
+            "required": [
+                "name",
+                "palletRackId"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "palletRackId": {
+                    "type": "integer"
+                },
+                "palletizedProduct": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.PalletizedProductEntity"
+                    }
+                },
+                "qr_code": {
+                    "type": "string"
+                },
+                "qr_code_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.PalletRackEntity": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "pallets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.PalletEntity"
+                    }
+                }
+            }
+        },
+        "domain.PalletizedProductEntity": {
+            "type": "object",
+            "required": [
+                "ean",
+                "quantity"
+            ],
+            "properties": {
+                "ean": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "palletID": {
+                    "type": "integer"
+                },
+                "quantity": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}

@@ -25,6 +25,14 @@ func (controller *PalletizedProductController) RegisterProductPallet(group *gin.
 	group.PATCH("/:palletId", controller.addProductsToPallet)
 }
 
+// @Summary tres product to
+// @Tags Palletized products
+// @Accept json
+// @Produce json
+// @Param pallet body PalletizedProductRequest true "Palletized Product"
+// @Success 200 {object} domain.PalletizedProductEntity
+// @Failure 422 {object} map[string]string
+// @Router /api/v1/pallet/products [patch]
 func (controller *PalletizedProductController) addProductsToPallet(c *gin.Context) {
 	var req PalletizedProductRequest
 

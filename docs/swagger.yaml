@@ -1,0 +1,127 @@
+definitions:
+  controllers.PalletRackRequest:
+    properties:
+      palletRack:
+        properties:
+          name:
+            type: string
+        type: object
+    type: object
+  controllers.PalletizedProductRequest:
+    properties:
+      PalletizedProduct:
+        $ref: '#/definitions/domain.PalletizedProductEntity'
+    required:
+    - PalletizedProduct
+    type: object
+  domain.PalletEntity:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      palletRackId:
+        type: integer
+      palletizedProduct:
+        items:
+          $ref: '#/definitions/domain.PalletizedProductEntity'
+        type: array
+      qr_code:
+        type: string
+      qr_code_url:
+        type: string
+    required:
+    - name
+    - palletRackId
+    type: object
+  domain.PalletRackEntity:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      pallets:
+        items:
+          $ref: '#/definitions/domain.PalletEntity'
+        type: array
+    required:
+    - name
+    type: object
+  domain.PalletizedProductEntity:
+    properties:
+      ean:
+        type: integer
+      id:
+        type: integer
+      palletID:
+        type: integer
+      quantity:
+        type: integer
+    required:
+    - ean
+    - quantity
+    type: object
+host: localhost:3000
+info:
+  contact:
+    email: joaoferrazp@gmail.com
+    name: API Support
+  description: It is system to manage pallets and related products.
+  title: Go Inventory API
+  version: "1.0"
+paths:
+  /api/v1/pallet/products:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Palletized Product
+        in: body
+        name: pallet
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.PalletizedProductRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.PalletizedProductEntity'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: tres product to
+      tags:
+      - Palletized products
+  /api/v1/racks:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Palletized Product
+        in: body
+        name: PalletRack
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.PalletRackRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.PalletRackEntity'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create Pallet Racks
+      tags:
+      - Pallet Racks
+swagger: "2.0"
