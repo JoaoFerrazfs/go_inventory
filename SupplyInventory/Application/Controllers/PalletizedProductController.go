@@ -10,23 +10,24 @@ import (
 )
 
 type PalletizedProductController struct {
-	service services.PalletService
+	palletizedProductService services.PalletizedProductService
 }
 
-func NewPalletizedProductController(service services.PalletService) *PalletizedProductController {
-	return &PalletizedProductController{service: service}
+func NewPalletizedProductController(palletizedProductService services.PalletizedProductService) *PalletizedProductController {
+	return &PalletizedProductController{palletizedProductService: palletizedProductService}
 }
 
 type PalletizedProductRequest struct {
 	PalletizedProduct domain.PalletizedProductEntity `json:"PalletizedProduct" binding:"required"`
 }
 
-func (pc *PalletizedProductController) RegisterProductPallet(group *gin.RouterGroup) {
-	group.PATCH("/:pallet", pc.addProductsToPallet)
+func (controller *PalletizedProductController) RegisterProductPallet(group *gin.RouterGroup) {
+	group.PATCH("/:palletId", controller.addProductsToPallet)
 }
 
-func (pc *PalletizedProductController) addProductsToPallet(c *gin.Context) {
+func (controller *PalletizedProductController) addProductsToPallet(c *gin.Context) {
 	var req PalletizedProductRequest
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "O body deve conter um produto com o palete, ean e quantidade de produtos",
@@ -34,9 +35,9 @@ func (pc *PalletizedProductController) addProductsToPallet(c *gin.Context) {
 		return
 	}
 
-	updatedPallet := pc.service.AddProductsToPallet(req.PalletizedProduct)
-	if updatedPallet == nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Erro ao adicionar produto ao palete"})
+	updatedPallet, err := controller.palletizedProductService.AddProductsToPallet(req.PalletizedProduct)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

@@ -12,7 +12,6 @@ type PalletService interface {
 	ListPallets() []domain.PalletEntity
 	FindPalletById(id uint) (*domain.PalletEntity, error)
 	CreatePallet(pallet domain.PalletEntity) (*domain.PalletEntity, error)
-	AddProductsToPallet(product domain.PalletizedProductEntity) *domain.PalletEntity
 }
 
 type palletService struct {
@@ -57,12 +56,4 @@ func (s *palletService) CreatePallet(pallet domain.PalletEntity) (*domain.Pallet
 
 	log.Printf("New pallet created with QR code: %+v", palletWithQrCode)
 	return palletWithQrCode, nil
-}
-
-func (s *palletService) AddProductsToPallet(product domain.PalletizedProductEntity) *domain.PalletEntity {
-	newPalletProduct, err := s.repo.AddProductsToPallet(product)
-	if err != nil {
-		return nil
-	}
-	return newPalletProduct
 }

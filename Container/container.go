@@ -10,24 +10,26 @@ import (
 )
 
 func BuildContainer(db *gorm.DB) *dig.Container {
-	c := dig.New()
+	container := dig.New()
 
-	// Registrar dependências
-	c.Provide(func() *gorm.DB { return db })
+	// DataBase
+	container.Provide(func() *gorm.DB { return db })
 
 	// Repositories
-	c.Provide(infrastructure.NewPalletRepository)
-	c.Provide(infrastructure.NewPalletRackRepository)
+	container.Provide(infrastructure.NewPalletRepository)
+	container.Provide(infrastructure.NewPalletRackRepository)
+	container.Provide(infrastructure.NewPalletizedProductRepository)
 
 	// Services
-	c.Provide(services.NewQRCodeService)
-	c.Provide(services.NewPalletService)
-	c.Provide(services.NewPalletRackService)
+	container.Provide(services.NewQRCodeService)
+	container.Provide(services.NewPalletService)
+	container.Provide(services.NewPalletRackService)
+	container.Provide(services.NewPalletizedProductService)
 
 	// Controllers
-	c.Provide(controllers.NewPalletController)
-	c.Provide(controllers.NewPalletizedProductController)
-	c.Provide(controllers.NewPalletRackController)
+	container.Provide(controllers.NewPalletController)
+	container.Provide(controllers.NewPalletizedProductController)
+	container.Provide(controllers.NewPalletRackController)
 
-	return c
+	return container
 }

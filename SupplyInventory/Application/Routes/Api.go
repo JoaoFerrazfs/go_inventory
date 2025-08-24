@@ -1,7 +1,7 @@
 package routes
 
 import (
-	container "go_inventory/Container"
+	baseContainer "go_inventory/Container"
 	controllers "go_inventory/SupplyInventory/Application/Controllers"
 
 	"github.com/gin-gonic/gin"
@@ -9,20 +9,22 @@ import (
 )
 
 func RegisterRoutes(router *gin.Engine, dbInstance *gorm.DB) {
-	c := container.BuildContainer(dbInstance)
+	container := baseContainer.BuildContainer(dbInstance)
 
-	c.Invoke(func(palletController *controllers.PalletController) {
-		apiV1 := router.Group("/api/v1/pallets")
-		palletController.Register(apiV1)
+	apiV1 := router.Group("/api/v1")
+
+	container.Invoke(func(palletController *controllers.PalletController) {
+		palletController.Register(apiV1.Group("/pallets"))
 	})
 
-	c.Invoke(func(palletizedProductsControllers *controllers.PalletizedProductController) {
-		apiV1 := router.Group("/api/v1/pallet/products")
-		palletizedProductsControllers.RegisterProductPallet(apiV1)
+	err := container.Invoke(func(ctrl *controllers.PalletizedProductController) {
+		ctrl.RegisterProductPallet(apiV1.Group("/pallet/products"))
 	})
+	if err != nil {
+		panic(err)
+	}
 
-	c.Invoke(func(palletRackController *controllers.PalletRackController) {
-		apiV1 := router.Group("/api/v1/racks")
-		palletRackController.RegisterPalletRack(apiV1)
+	container.Invoke(func(palletRackController *controllers.PalletRackController) {
+		palletRackController.RegisterPalletRack(apiV1.Group("/racks"))
 	})
 }
