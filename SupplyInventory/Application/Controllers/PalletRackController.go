@@ -23,6 +23,7 @@ func NewPalletRackController(palletRackService services.PalletRackService) *Pall
 
 func (controller *PalletRackController) RegisterPalletRack(group *gin.RouterGroup) {
 	group.POST("/", controller.createPalletRack)
+	group.GET("/", controller.listRacks)
 }
 
 func (controller *PalletRackController) createPalletRack(c *gin.Context) {
@@ -39,4 +40,15 @@ func (controller *PalletRackController) createPalletRack(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, newPalletRack)
+}
+
+func (controller *PalletRackController) listRacks(c *gin.Context) {
+	racks, err := controller.palletRackService.ListRacks()
+
+	if racks == nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, racks)
 }

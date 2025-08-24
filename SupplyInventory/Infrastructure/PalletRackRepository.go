@@ -8,6 +8,7 @@ import (
 
 type PalletRackRepository interface {
 	Create(palletRack domain.PalletRackEntity) (*domain.PalletRackEntity, error)
+	ListRacks() ([]domain.PalletRackEntity, error)
 }
 
 type palletRackRepository struct {
@@ -24,4 +25,14 @@ func (repository *palletRackRepository) Create(palletRack domain.PalletRackEntit
 	}
 
 	return &palletRack, nil
+}
+
+func (repository *palletRackRepository) ListRacks() ([]domain.PalletRackEntity, error) {
+	var racks []domain.PalletRackEntity
+
+	if err := repository.db.Preload("Pallets").Find(&racks).Error; err != nil {
+		return nil, err
+	}
+
+	return racks, nil
 }

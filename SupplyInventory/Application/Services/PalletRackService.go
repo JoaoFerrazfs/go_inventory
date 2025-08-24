@@ -7,6 +7,7 @@ import (
 
 type PalletRackService interface {
 	Create(palletRack domain.PalletRackEntity) (*domain.PalletRackEntity, error)
+	ListRacks() ([]domain.PalletRackEntity, error)
 }
 
 type palletRackService struct {
@@ -24,4 +25,13 @@ func (service *palletRackService) Create(palletRack domain.PalletRackEntity) (*d
 	}
 
 	return newPalletRack, nil
+}
+
+func (service *palletRackService) ListRacks() ([]domain.PalletRackEntity, error) {
+	racks, err := service.repository.ListRacks()
+	if err != nil {
+		return nil, err
+	}
+
+	return racks, nil
 }
