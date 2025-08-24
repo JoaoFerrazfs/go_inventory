@@ -13,19 +13,21 @@ type QRCodeService interface {
 
 type qrCodeService struct{}
 
+const DIRECTORY = "storage/qrcodes"
+
 func NewQRCodeService() QRCodeService {
 	return &qrCodeService{}
 }
 
-func (s *qrCodeService) CreateQRCode(palletId uint) (string, error) {
+func (service *qrCodeService) CreateQRCode(palletId uint) (string, error) {
 	baseUrl := os.Getenv("BASE_URL") + os.Getenv("PORT") + "/pallets/%d"
 	link := fmt.Sprintf(baseUrl, palletId)
 
-	if err := os.MkdirAll("storage/qrcodes", os.ModePerm); err != nil {
+	if err := os.MkdirAll(DIRECTORY, os.ModePerm); err != nil {
 		return "", err
 	}
 
-	qrFile := fmt.Sprintf("storage/qrcodes/pallet_%d.png", palletId)
+	qrFile := fmt.Sprintf(DIRECTORY+"/pallet_%d.png", palletId)
 	err := qrcode.WriteFile(link, qrcode.Highest, 1024, qrFile)
 	if err != nil {
 		return "", err
