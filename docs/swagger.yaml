@@ -65,14 +65,11 @@ definitions:
     type: object
   requests.PalletizedProductRequest:
     properties:
-      ean:
-        type: integer
       palletId:
         type: integer
       quantity:
         type: integer
     required:
-    - ean
     - palletId
     - quantity
     type: object

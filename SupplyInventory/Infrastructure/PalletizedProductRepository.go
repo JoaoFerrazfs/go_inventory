@@ -25,7 +25,18 @@ func (repository *PalletizedProductRepositoryImpl) AddProductsToPallet(product d
 		return false, err
 	}
 
-	product.PalletID = pallet.ID
+	for palletizedProduct := range pallet.PalletizedProduct {
+		if pallet.PalletizedProduct[palletizedProduct].EAN == product.EAN {
+			pallet.PalletizedProduct[palletizedProduct].Quantity += product.Quantity
+
+			if err := repository.db.Save(&pallet.PalletizedProduct[palletizedProduct]).Error; err != nil {
+				return false, err
+			}
+
+			return true, nil
+		}
+	}
+
 	if err := repository.db.Model(pallet).Association("PalletizedProduct").Append(&product); err != nil {
 		return false, err
 	}

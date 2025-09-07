@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	requestsHelper "go_inventory/Helpers/RequestsHelper"
 	requests "go_inventory/SupplyInventory/Application/Requests"
 	services "go_inventory/SupplyInventory/Application/Services"
 
@@ -40,7 +41,13 @@ func (controller *PalletizedProductController) addProductsToPallet(c *gin.Contex
 		return
 	}
 
-	updatedPallet, err := controller.palletizedProductService.AddProductsToPallet(req.PalletID, req.EAN, req.Quantity)
+	palletId, err := requestsHelper.GetIDParam(c, "palletId")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "PalletId inválido"})
+		return
+	}
+
+	updatedPallet, err := controller.palletizedProductService.AddProductsToPallet(palletId, req.EAN, req.Quantity)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

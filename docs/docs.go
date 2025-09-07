@@ -353,14 +353,10 @@ const docTemplate = `{
         "requests.PalletizedProductRequest": {
             "type": "object",
             "required": [
-                "ean",
                 "palletId",
                 "quantity"
             ],
             "properties": {
-                "ean": {
-                    "type": "integer"
-                },
                 "palletId": {
                     "type": "integer"
                 },
