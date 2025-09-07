@@ -3,8 +3,8 @@ package controllers
 import (
 	"net/http"
 
+	requests "go_inventory/SupplyInventory/Application/Requests"
 	services "go_inventory/SupplyInventory/Application/Services"
-	domain "go_inventory/SupplyInventory/Domain"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,24 +17,21 @@ func NewPalletizedProductController(palletizedProductService services.Palletized
 	return &PalletizedProductController{palletizedProductService: palletizedProductService}
 }
 
-type PalletizedProductRequest struct {
-	PalletizedProduct domain.PalletizedProductEntity `json:"PalletizedProduct" binding:"required"`
-}
-
 func (controller *PalletizedProductController) RegisterProductPallet(group *gin.RouterGroup) {
 	group.PATCH("/:palletId", controller.addProductsToPallet)
 }
 
-// @Summary tres product to
+// @Summary Add a product to a pallet
 // @Tags Palletized products
 // @Accept json
 // @Produce json
-// @Param pallet body PalletizedProductRequest true "Palletized Product"
 // @Success 200 {object} domain.PalletizedProductEntity
 // @Failure 422 {object} map[string]string
-// @Router /api/v1/pallet/products [patch]
+// @Param palletId path int true "ID do pallet"
+// @Param pallet body requests.PalletizedProductRequest true "Palletized Product"
+// @Router /api/v1/pallet/products/{palletId} [patch]
 func (controller *PalletizedProductController) addProductsToPallet(c *gin.Context) {
-	var req PalletizedProductRequest
+	var req requests.PalletizedProductRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -43,7 +40,7 @@ func (controller *PalletizedProductController) addProductsToPallet(c *gin.Contex
 		return
 	}
 
-	updatedPallet, err := controller.palletizedProductService.AddProductsToPallet(req.PalletizedProduct)
+	updatedPallet, err := controller.palletizedProductService.AddProductsToPallet(req.PalletID, req.EAN, req.Quantity)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

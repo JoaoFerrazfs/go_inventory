@@ -9,7 +9,7 @@ import (
 type PalletRepository interface {
 	GetAllPallets() ([]domain.PalletEntity, error)
 	GetSupplyById(id uint) (*domain.PalletEntity, error)
-	AddSupply(pallet domain.PalletEntity) (*domain.PalletEntity, error)
+	AddSupply(PalletName string, PalletRackId uint) (*domain.PalletEntity, error)
 	UpdateSupply(pallet *domain.PalletEntity) (*domain.PalletEntity, error)
 	AddProductsToPallet(product domain.PalletizedProductEntity) (*domain.PalletEntity, error)
 }
@@ -39,7 +39,12 @@ func (r *palletRepository) GetSupplyById(id uint) (*domain.PalletEntity, error) 
 	return &pallet, nil
 }
 
-func (r *palletRepository) AddSupply(pallet domain.PalletEntity) (*domain.PalletEntity, error) {
+func (r *palletRepository) AddSupply(PalletName string, PalletRackId uint) (*domain.PalletEntity, error) {
+	pallet := domain.PalletEntity{
+		Name:         PalletName,
+		PalletRackID: PalletRackId,
+	}
+
 	if err := r.db.Create(&pallet).Error; err != nil {
 		return nil, err
 	}

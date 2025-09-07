@@ -18,7 +18,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/pallet/products": {
+        "/api/v1/pallet/products/{palletId}": {
             "patch": {
                 "consumes": [
                     "application/json"
@@ -29,15 +29,22 @@ const docTemplate = `{
                 "tags": [
                     "Palletized products"
                 ],
-                "summary": "tres product to",
+                "summary": "Add a product to a pallet",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID do pallet",
+                        "name": "palletId",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "Palletized Product",
                         "name": "pallet",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.PalletizedProductRequest"
+                            "$ref": "#/definitions/requests.PalletizedProductRequest"
                         }
                     }
                 ],
@@ -60,7 +67,149 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/pallets": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pallets"
+                ],
+                "summary": "List pallets",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.PalletEntity"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pallets"
+                ],
+                "summary": "Create Pallet",
+                "parameters": [
+                    {
+                        "description": "Palletized Product",
+                        "name": "pallet",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.PalletRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.PalletEntity"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pallets/{id}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pallets"
+                ],
+                "summary": "Get pallet by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID do pallet",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.PalletEntity"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
         "/api/v1/racks": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pallet Racks"
+                ],
+                "summary": "List Pallet Racks",
+                "parameters": [
+                    {
+                        "description": "Palletized Product",
+                        "name": "PalletRack",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.PalletRackRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.PalletRackEntity"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
             "post": {
                 "consumes": [
                     "application/json"
@@ -79,7 +228,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.PalletRackRequest"
+                            "$ref": "#/definitions/requests.PalletRackRequest"
                         }
                     }
                 ],
@@ -104,30 +253,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "controllers.PalletRackRequest": {
-            "type": "object",
-            "properties": {
-                "palletRack": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "controllers.PalletizedProductRequest": {
-            "type": "object",
-            "required": [
-                "PalletizedProduct"
-            ],
-            "properties": {
-                "PalletizedProduct": {
-                    "$ref": "#/definitions/domain.PalletizedProductEntity"
-                }
-            }
-        },
         "domain.PalletEntity": {
             "type": "object",
             "required": [
@@ -192,6 +317,51 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "palletID": {
+                    "type": "integer"
+                },
+                "quantity": {
+                    "type": "integer"
+                }
+            }
+        },
+        "requests.PalletRackRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.PalletRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "palletRackId"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "palletRackId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "requests.PalletizedProductRequest": {
+            "type": "object",
+            "required": [
+                "ean",
+                "palletId",
+                "quantity"
+            ],
+            "properties": {
+                "ean": {
+                    "type": "integer"
+                },
+                "palletId": {
                     "type": "integer"
                 },
                 "quantity": {

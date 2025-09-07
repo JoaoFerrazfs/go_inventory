@@ -9,9 +9,9 @@ import (
 )
 
 type PalletService interface {
-	ListPallets() []domain.PalletEntity
+	ListPallets() ([]domain.PalletEntity, error)
 	FindPalletById(id uint) (*domain.PalletEntity, error)
-	CreatePallet(pallet domain.PalletEntity) (*domain.PalletEntity, error)
+	CreatePallet(PalletName string, PalletRackId uint) (*domain.PalletEntity, error)
 }
 
 type palletService struct {
@@ -23,20 +23,20 @@ func NewPalletService(repo infrastructure.PalletRepository, qrService QRCodeServ
 	return &palletService{repo: repo, qrService: qrService}
 }
 
-func (s *palletService) ListPallets() []domain.PalletEntity {
+func (s *palletService) ListPallets() ([]domain.PalletEntity, error) {
 	pallets, err := s.repo.GetAllPallets()
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return pallets
+	return pallets, nil
 }
 
 func (s *palletService) FindPalletById(id uint) (*domain.PalletEntity, error) {
 	return s.repo.GetSupplyById(id)
 }
 
-func (s *palletService) CreatePallet(pallet domain.PalletEntity) (*domain.PalletEntity, error) {
-	newPallet, err := s.repo.AddSupply(pallet)
+func (s *palletService) CreatePallet(PalletName string, PalletRackId uint) (*domain.PalletEntity, error) {
+	newPallet, err := s.repo.AddSupply(PalletName, PalletRackId)
 	if err != nil {
 		return nil, err
 	}

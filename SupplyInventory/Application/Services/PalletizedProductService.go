@@ -6,7 +6,7 @@ import (
 )
 
 type PalletizedProductService interface {
-	AddProductsToPallet(product domain.PalletizedProductEntity) (*domain.PalletEntity, error)
+	AddProductsToPallet(PalletID uint, Ean int, Quantity int) (*domain.PalletEntity, error)
 }
 
 type palletizedProductService struct {
@@ -21,7 +21,13 @@ func NewPalletizedProductService(
 	return &palletizedProductService{palletRepository: palletRepository, palletizedProductRepository: palletizedProductRepository}
 }
 
-func (service *palletizedProductService) AddProductsToPallet(product domain.PalletizedProductEntity) (*domain.PalletEntity, error) {
+func (service *palletizedProductService) AddProductsToPallet(PalletID uint, Ean int, Quantity int) (*domain.PalletEntity, error) {
+	product := domain.PalletizedProductEntity{
+		PalletID: PalletID,
+		EAN:      Ean,
+		Quantity: Quantity,
+	}
+
 	_, err := service.palletizedProductRepository.AddProductsToPallet(product)
 	if err != nil {
 		return nil, err
