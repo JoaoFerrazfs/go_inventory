@@ -7,6 +7,7 @@ import (
 
 type PalletizedProductService interface {
 	AddProductsToPallet(PalletID uint, Ean int, Quantity int) (*domain.PalletEntity, error)
+	DeleteProductsFromPallet(palletId uint, productsEan int) (bool, error)
 }
 
 type palletizedProductService struct {
@@ -39,4 +40,13 @@ func (service *palletizedProductService) AddProductsToPallet(PalletID uint, Ean 
 	}
 
 	return pallet, nil
+}
+
+func (service *palletizedProductService) DeleteProductsFromPallet(palletId uint, productsEan int) (bool, error) {
+	deleted, err := service.palletizedProductRepository.DeleteProductsFromPallet(palletId, productsEan)
+	if err != nil {
+		return false, err
+	}
+
+	return deleted, nil
 }

@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	errors "go_inventory/Helpers/Errors"
 	domain "go_inventory/SupplyInventory/Domain"
 
 	"gorm.io/gorm"
@@ -8,6 +9,7 @@ import (
 
 type PalletizedProductRepository interface {
 	AddProductsToPallet(product domain.PalletizedProductEntity) (bool, error)
+	DeleteProductsFromPallet(palletId uint, productsEan int) (bool, error)
 }
 
 type PalletizedProductRepositoryImpl struct {
@@ -27,7 +29,7 @@ func (repository *PalletizedProductRepositoryImpl) AddProductsToPallet(product d
 
 	for palletizedProduct := range pallet.PalletizedProduct {
 		if pallet.PalletizedProduct[palletizedProduct].EAN == product.EAN {
-			pallet.PalletizedProduct[palletizedProduct].Quantity += product.Quantity
+			pallet.PalletizedProduct[palletizedProduct].Quantity = product.Quantity
 
 			if err := repository.db.Save(&pallet.PalletizedProduct[palletizedProduct]).Error; err != nil {
 				return false, err
@@ -42,4 +44,25 @@ func (repository *PalletizedProductRepositoryImpl) AddProductsToPallet(product d
 	}
 
 	return true, nil
+}
+
+func (repository *PalletizedProductRepositoryImpl) DeleteProductsFromPallet(palletId uint, productsEan int) (bool, error) {
+	pallet, err := repository.palletRepository.GetSupplyById(palletId)
+	if err != nil || pallet == nil {
+		return false, err
+	}
+
+	for palletizedProduct := range pallet.PalletizedProduct {
+		if pallet.PalletizedProduct[palletizedProduct].EAN == productsEan {
+			if err := repository.db.Delete(&pallet.PalletizedProduct[palletizedProduct]).Error; err != nil {
+				return false, err
+			}
+
+			return true, err
+		}
+	}
+
+	err = errors.NewAppError("product is not in the pallet")
+
+	return false, err
 }

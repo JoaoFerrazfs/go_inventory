@@ -67,6 +67,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/pallet/products/{palletId}/{productsEan}": {
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Palletized products"
+                ],
+                "summary": "Delete product from pallet",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID do pallet",
+                        "name": "palletId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "EAN do produto",
+                        "name": "productsEan",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/pallets": {
             "get": {
                 "consumes": [
@@ -353,11 +406,11 @@ const docTemplate = `{
         "requests.PalletizedProductRequest": {
             "type": "object",
             "required": [
-                "palletId",
+                "ean",
                 "quantity"
             ],
             "properties": {
-                "palletId": {
+                "ean": {
                     "type": "integer"
                 },
                 "quantity": {

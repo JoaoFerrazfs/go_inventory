@@ -65,12 +65,12 @@ definitions:
     type: object
   requests.PalletizedProductRequest:
     properties:
-      palletId:
+      ean:
         type: integer
       quantity:
         type: integer
     required:
-    - palletId
+    - ean
     - quantity
     type: object
 host: localhost:3000
@@ -112,6 +112,41 @@ paths:
               type: string
             type: object
       summary: Add a product to a pallet
+      tags:
+      - Palletized products
+  /api/v1/pallet/products/{palletId}/{productsEan}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do pallet
+        in: path
+        name: palletId
+        required: true
+        type: integer
+      - description: EAN do produto
+        in: path
+        name: productsEan
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete product from pallet
       tags:
       - Palletized products
   /api/v1/pallets:

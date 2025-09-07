@@ -20,6 +20,7 @@ func NewPalletizedProductController(palletizedProductService services.Palletized
 
 func (controller *PalletizedProductController) RegisterProductPallet(group *gin.RouterGroup) {
 	group.PATCH("/:palletId", controller.addProductsToPallet)
+	group.DELETE("/:palletId/:productsEan", controller.deleteProductsFromPallet)
 }
 
 // @Summary Add a product to a pallet
@@ -54,4 +55,36 @@ func (controller *PalletizedProductController) addProductsToPallet(c *gin.Contex
 	}
 
 	c.JSON(http.StatusOK, updatedPallet)
+}
+
+// @Summary Delete product from pallet
+// @Tags Palletized products
+// @Accept json
+// @Produce json
+// @Success 204 "No Content"
+// @Failure 400 {object} map[string]string
+// @Failure 422 {object} map[string]string
+// @Param palletId path int true "ID do pallet"
+// @Param productsEan path int true "EAN do produto"
+// @Router /api/v1/pallet/products/{palletId}/{productsEan} [Delete]
+func (controller *PalletizedProductController) deleteProductsFromPallet(c *gin.Context) {
+	palletId, err := requestsHelper.GetIDParam(c, "palletId")
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Invalid palletId"})
+		return
+	}
+
+	productsEan, err := requestsHelper.GetParamAsInt(c, "productsEan")
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Invalid productsEan"})
+		return
+	}
+
+	_, err = controller.palletizedProductService.DeleteProductsFromPallet(palletId, productsEan)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
