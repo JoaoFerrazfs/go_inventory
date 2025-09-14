@@ -19,9 +19,10 @@ func NewPalletController(service services.PalletService) *PalletController {
 }
 
 func (pc *PalletController) Register(group *gin.RouterGroup) {
-	group.GET("/", pc.listPallets)
-	group.GET("/:id", pc.findPalletById)
-	group.POST("/", pc.createPallet)
+	group.GET("/", pc.ListPallets)
+	group.GET("/:id", pc.FindPalletById)
+	group.POST("/", pc.CreatePallet)
+	group.DELETE("/:id", pc.DeletePalletById)
 }
 
 // @Summary List pallets
@@ -31,10 +32,10 @@ func (pc *PalletController) Register(group *gin.RouterGroup) {
 // @Success 200 {array} domain.PalletEntity
 // @Failure 404 "Not Found"
 // @Router /api/v1/pallets [get]
-func (pc *PalletController) listPallets(c *gin.Context) {
-	pallets, err := pc.service.ListPallets()
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{})
+func (pc *PalletController) ListPallets(c *gin.Context) {
+	pallets, appErr := pc.service.ListPallets()
+	if appErr != nil {
+		c.JSON(appErr.ErrorCode(), appErr.Error())
 	}
 
 	c.JSON(http.StatusOK, pallets)
@@ -48,20 +49,48 @@ func (pc *PalletController) listPallets(c *gin.Context) {
 // @Failure 404 "Not Found"
 // @Param id path int true "ID do pallet"
 // @Router /api/v1/pallets/{id} [get]
-func (pc *PalletController) findPalletById(c *gin.Context) {
+func (pc *PalletController) FindPalletById(c *gin.Context) {
 	id, err := requestsHelper.GetIDParam(c, "id")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "ID inválido"})
 		return
 	}
 
-	pallet, err := pc.service.FindPalletById(id)
+	pallet, appErr := pc.service.FindPalletById(id)
 	if pallet == nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		c.JSON(appErr.ErrorCode(), gin.H{"message": appErr.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, pallet)
+}
+
+// @Summary Delete Pallet
+// @Tags Pallets
+// @Accept json
+// @Produce json
+// @Param pallet body requests.PalletRequest true "Palletized Product"
+// @Success 200 {object} domain.PalletEntity
+// @Failure 422 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Param id path int true "ID do pallet"
+// @Router /api/v1/pallets/{id} [delete]
+func (pc *PalletController) DeletePalletById(c *gin.Context) {
+	id, err := requestsHelper.GetIDParam(c, "id")
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "ID inválido"})
+		return
+	}
+
+	result, appErr := pc.service.DeletePalletById(id)
+
+	if appErr != nil {
+		c.JSON(appErr.ErrorCode(), gin.H{"message": appErr.Error()})
+		return
+	}
+
+	c.JSON(http.StatusNoContent, result)
 }
 
 // @Summary Create Pallet
@@ -72,17 +101,17 @@ func (pc *PalletController) findPalletById(c *gin.Context) {
 // @Success 200 {object} domain.PalletEntity
 // @Failure 422 {object} map[string]string
 // @Router /api/v1/pallets [post]
-func (pc *PalletController) createPallet(c *gin.Context) {
+func (pc *PalletController) CreatePallet(c *gin.Context) {
 	var req requests.PalletRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
 
-	newPallet, err := pc.service.CreatePallet(req.Name, req.PalletRackID)
+	newPallet, appErr := pc.service.CreatePallet(req.Name, req.PalletRackID)
 
-	if newPallet == nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+	if appErr != nil {
+		c.JSON(appErr.ErrorCode(), gin.H{"message": appErr.Error()})
 		return
 	}
 

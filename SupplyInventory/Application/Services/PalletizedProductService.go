@@ -1,13 +1,14 @@
 package services
 
 import (
+	errors "go_inventory/Helpers/Errors"
 	domain "go_inventory/SupplyInventory/Domain"
 	infrastructure "go_inventory/SupplyInventory/Infrastructure"
 )
 
 type PalletizedProductService interface {
-	AddProductsToPallet(PalletID uint, Ean int, Quantity int) (*domain.PalletEntity, error)
-	DeleteProductsFromPallet(palletId uint, productsEan int) (bool, error)
+	AddProductsToPallet(PalletID uint, Ean int, Quantity int) (*domain.PalletEntity, *errors.AppError)
+	DeleteProductsFromPallet(palletId uint, productsEan int) (bool, *errors.AppError)
 }
 
 type palletizedProductService struct {
@@ -22,7 +23,7 @@ func NewPalletizedProductService(
 	return &palletizedProductService{palletRepository: palletRepository, palletizedProductRepository: palletizedProductRepository}
 }
 
-func (service *palletizedProductService) AddProductsToPallet(PalletID uint, Ean int, Quantity int) (*domain.PalletEntity, error) {
+func (service *palletizedProductService) AddProductsToPallet(PalletID uint, Ean int, Quantity int) (*domain.PalletEntity, *errors.AppError) {
 	product := domain.PalletizedProductEntity{
 		PalletID: PalletID,
 		EAN:      Ean,
@@ -31,21 +32,21 @@ func (service *palletizedProductService) AddProductsToPallet(PalletID uint, Ean 
 
 	_, err := service.palletizedProductRepository.AddProductsToPallet(product)
 	if err != nil {
-		return nil, err
+		return nil, errors.NewAppError(err.Error(), 400)
 	}
 
-	pallet, err := service.palletRepository.GetSupplyById(product.PalletID)
-	if err != nil {
-		return nil, err
+	pallet, appErr := service.palletRepository.GetSupplyById(product.PalletID)
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	return pallet, nil
 }
 
-func (service *palletizedProductService) DeleteProductsFromPallet(palletId uint, productsEan int) (bool, error) {
-	deleted, err := service.palletizedProductRepository.DeleteProductsFromPallet(palletId, productsEan)
-	if err != nil {
-		return false, err
+func (service *palletizedProductService) DeleteProductsFromPallet(palletId uint, productsEan int) (bool, *errors.AppError) {
+	deleted, appErr := service.palletizedProductRepository.DeleteProductsFromPallet(palletId, productsEan)
+	if appErr != nil {
+		return false, appErr
 	}
 
 	return deleted, nil

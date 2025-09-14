@@ -48,9 +48,9 @@ func (controller *PalletizedProductController) addProductsToPallet(c *gin.Contex
 		return
 	}
 
-	updatedPallet, err := controller.palletizedProductService.AddProductsToPallet(palletId, req.EAN, req.Quantity)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	updatedPallet, appErr := controller.palletizedProductService.AddProductsToPallet(palletId, req.EAN, req.Quantity)
+	if appErr != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": appErr.Error()})
 		return
 	}
 
@@ -80,9 +80,9 @@ func (controller *PalletizedProductController) deleteProductsFromPallet(c *gin.C
 		return
 	}
 
-	_, err = controller.palletizedProductService.DeleteProductsFromPallet(palletId, productsEan)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	_, appErr := controller.palletizedProductService.DeleteProductsFromPallet(palletId, productsEan)
+	if appErr != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": appErr.Error()})
 		return
 	}
 

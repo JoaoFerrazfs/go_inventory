@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	requestsHelper "go_inventory/Helpers/RequestsHelper"
 	requests "go_inventory/SupplyInventory/Application/Requests"
 	services "go_inventory/SupplyInventory/Application/Services"
 
@@ -20,6 +21,8 @@ func NewPalletRackController(palletRackService services.PalletRackService) *Pall
 func (controller *PalletRackController) RegisterPalletRack(group *gin.RouterGroup) {
 	group.POST("/", controller.createPalletRack)
 	group.GET("/", controller.listRacks)
+	group.GET("/:id", controller.FindRackById)
+	group.DELETE("/:id", controller.DeleteRack)
 }
 
 // @Summary Create Pallet Racks
@@ -51,7 +54,7 @@ func (controller *PalletRackController) createPalletRack(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param PalletRack body requests.PalletRackRequest true "Palletized Product"
-// @Success 200 {object} domain.PalletRackEntity
+// @Success 200 {array} domain.PalletRackEntity
 // @Failure 404 {object} map[string]string
 // @Router /api/v1/racks [get]
 func (controller *PalletRackController) listRacks(c *gin.Context) {
@@ -62,4 +65,55 @@ func (controller *PalletRackController) listRacks(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, racks)
+}
+
+// @Summary Get Rack
+// @Tags Pallet Racks
+// @Accept json
+// @Produce json
+// @Success 200 {object} domain.PalletRackEntity
+// @Failure 404 {object} map[string]string
+// @Failure 422 {object} map[string]string
+// @Param id path int true "ID do Rack"
+// @Router /api/v1/racks/{id} [get]
+func (pc *PalletRackController) FindRackById(c *gin.Context) {
+	id, err := requestsHelper.GetIDParam(c, "id")
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "ID inválido"})
+		return
+	}
+
+	pallet, appErr := pc.palletRackService.FindPalletById(id)
+	if pallet == nil {
+		c.JSON(appErr.ErrorCode(), gin.H{"message": appErr.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, pallet)
+}
+
+// @Summary Delete Rack
+// @Tags Pallet Racks
+// @Accept json
+// @Produce json
+// @Success 204 "Delete successful"
+// @Failure 404 {object} map[string]string
+// @Failure 422 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Param id path int true "ID do Rack"
+// @Router /api/v1/racks/{id} [delete]
+func (pc *PalletRackController) DeleteRack(c *gin.Context) {
+	id, err := requestsHelper.GetIDParam(c, "id")
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "ID inválido"})
+		return
+	}
+
+	_, appErr := pc.palletRackService.DeleteRack(id)
+	if appErr != nil {
+		c.JSON(appErr.ErrorCode(), gin.H{"message": appErr.Error()})
+		return
+	}
+
+	c.Status(http.StatusOK)
 }

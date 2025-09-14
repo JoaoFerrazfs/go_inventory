@@ -194,6 +194,49 @@ paths:
       tags:
       - Pallets
   /api/v1/pallets/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Palletized Product
+        in: body
+        name: pallet
+        required: true
+        schema:
+          $ref: '#/definitions/requests.PalletRequest'
+      - description: ID do pallet
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.PalletEntity'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete Pallet
+      tags:
+      - Pallets
     get:
       consumes:
       - application/json
@@ -232,7 +275,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.PalletRackEntity'
+            items:
+              $ref: '#/definitions/domain.PalletRackEntity'
+            type: array
         "404":
           description: Not Found
           schema:
@@ -266,6 +311,73 @@ paths:
               type: string
             type: object
       summary: Create Pallet Racks
+      tags:
+      - Pallet Racks
+  /api/v1/racks/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do Rack
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Delete successful
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete Rack
+      tags:
+      - Pallet Racks
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do Rack
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.PalletRackEntity'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get Rack
       tags:
       - Pallet Racks
 swagger: "2.0"

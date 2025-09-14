@@ -8,8 +8,8 @@ import (
 )
 
 type PalletizedProductRepository interface {
-	AddProductsToPallet(product domain.PalletizedProductEntity) (bool, error)
-	DeleteProductsFromPallet(palletId uint, productsEan int) (bool, error)
+	AddProductsToPallet(product domain.PalletizedProductEntity) (bool, *errors.AppError)
+	DeleteProductsFromPallet(palletId uint, productsEan int) (bool, *errors.AppError)
 }
 
 type PalletizedProductRepositoryImpl struct {
@@ -21,7 +21,7 @@ func NewPalletizedProductRepository(db *gorm.DB, palletRepository PalletReposito
 	return &PalletizedProductRepositoryImpl{db: db, palletRepository: palletRepository}
 }
 
-func (repository *PalletizedProductRepositoryImpl) AddProductsToPallet(product domain.PalletizedProductEntity) (bool, error) {
+func (repository *PalletizedProductRepositoryImpl) AddProductsToPallet(product domain.PalletizedProductEntity) (bool, *errors.AppError) {
 	pallet, err := repository.palletRepository.GetSupplyById(product.PalletID)
 	if err != nil || pallet == nil {
 		return false, err
@@ -32,7 +32,7 @@ func (repository *PalletizedProductRepositoryImpl) AddProductsToPallet(product d
 			pallet.PalletizedProduct[palletizedProduct].Quantity = product.Quantity
 
 			if err := repository.db.Save(&pallet.PalletizedProduct[palletizedProduct]).Error; err != nil {
-				return false, err
+				return false, errors.NewAppError(err.Error(), 500)
 			}
 
 			return true, nil
@@ -40,13 +40,13 @@ func (repository *PalletizedProductRepositoryImpl) AddProductsToPallet(product d
 	}
 
 	if err := repository.db.Model(pallet).Association("PalletizedProduct").Append(&product); err != nil {
-		return false, err
+		return false, errors.NewAppError(err.Error(), 500)
 	}
 
 	return true, nil
 }
 
-func (repository *PalletizedProductRepositoryImpl) DeleteProductsFromPallet(palletId uint, productsEan int) (bool, error) {
+func (repository *PalletizedProductRepositoryImpl) DeleteProductsFromPallet(palletId uint, productsEan int) (bool, *errors.AppError) {
 	pallet, err := repository.palletRepository.GetSupplyById(palletId)
 	if err != nil || pallet == nil {
 		return false, err
@@ -55,10 +55,10 @@ func (repository *PalletizedProductRepositoryImpl) DeleteProductsFromPallet(pall
 	for palletizedProduct := range pallet.PalletizedProduct {
 		if pallet.PalletizedProduct[palletizedProduct].EAN == productsEan {
 			if err := repository.db.Delete(&pallet.PalletizedProduct[palletizedProduct]).Error; err != nil {
-				return false, err
+				return false, errors.NewAppError(err.Error(), 500)
 			}
 
-			return true, err
+			return true, errors.NewAppError(err.Error(), 500)
 		}
 	}
 

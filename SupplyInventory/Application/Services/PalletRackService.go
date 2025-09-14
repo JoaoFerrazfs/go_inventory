@@ -1,6 +1,7 @@
 package services
 
 import (
+	errors "go_inventory/Helpers/Errors"
 	domain "go_inventory/SupplyInventory/Domain"
 	infrastructure "go_inventory/SupplyInventory/Infrastructure"
 )
@@ -8,6 +9,8 @@ import (
 type PalletRackService interface {
 	Create(name string) (*domain.PalletRackEntity, error)
 	ListRacks() ([]domain.PalletRackEntity, error)
+	FindPalletById(id uint) (*domain.PalletRackEntity, *errors.AppError)
+	DeleteRack(id uint) (bool, *errors.AppError)
 }
 
 type palletRackService struct {
@@ -34,4 +37,22 @@ func (service *palletRackService) ListRacks() ([]domain.PalletRackEntity, error)
 	}
 
 	return racks, nil
+}
+
+func (service *palletRackService) FindPalletById(id uint) (*domain.PalletRackEntity, *errors.AppError) {
+	racks, appErr := service.repository.FindPalletById(id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return racks, nil
+}
+
+func (service *palletRackService) DeleteRack(id uint) (bool, *errors.AppError) {
+	_, appErr := service.repository.DeleteRack(id)
+	if appErr != nil {
+		return false, appErr
+	}
+
+	return true, nil
 }

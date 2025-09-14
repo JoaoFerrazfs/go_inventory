@@ -11,6 +11,10 @@ func (e *AppError) Error() string {
 	return e.Message
 }
 
+func (e *AppError) ErrorCode() int {
+	return e.Code
+}
+
 func NewAppError(message string, code ...int) *AppError {
 	status := DEFAULT_ERROR_CODE
 	if len(code) > 0 {
