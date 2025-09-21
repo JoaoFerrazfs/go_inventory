@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	webRoutes "go_inventory/Front/Application/WebRoutes"
 	routes "go_inventory/SupplyInventory/Application/Routes"
 	db "go_inventory/SupplyInventory/Infrastructure/Db"
 
@@ -30,7 +31,13 @@ func main() {
 	// Pasta estática para QR codes
 	r.Static("/qrcodes", "./storage/qrcodes")
 
+	r.Static("/static", "./static")
+
+	// Templates
+	r.LoadHTMLGlob("templates/*")
+
 	// Carregar variáveis de ambiente
+
 	if err := godotenv.Load(); err != nil {
 		log.Println("Nenhum .env encontrado, usando variáveis do sistema")
 	}
@@ -41,6 +48,7 @@ func main() {
 
 	// Registrar rotas passando a instância do DB
 	routes.RegisterRoutes(r, dbInstance)
+	webRoutes.RegisterWebRoutes(r, dbInstance)
 
 	// Pegar porta do .env
 	port := os.Getenv("PORT")

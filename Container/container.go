@@ -1,6 +1,7 @@
 package container
 
 import (
+	webControllers "go_inventory/Front/Application/WebControllers"
 	controllers "go_inventory/SupplyInventory/Application/Controllers"
 	services "go_inventory/SupplyInventory/Application/Services"
 	infrastructure "go_inventory/SupplyInventory/Infrastructure"
@@ -26,10 +27,13 @@ func BuildContainer(db *gorm.DB) *dig.Container {
 	container.Provide(services.NewPalletRackService)
 	container.Provide(services.NewPalletizedProductService)
 
-	// Controllers
+	// Api Controllers
 	container.Provide(controllers.NewPalletController)
 	container.Provide(controllers.NewPalletizedProductController)
 	container.Provide(controllers.NewPalletRackController)
+
+	// Web Controllers
+	container.Provide(webControllers.NewGeneralController)
 
 	return container
 }
