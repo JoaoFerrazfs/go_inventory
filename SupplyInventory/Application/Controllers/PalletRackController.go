@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	development "go_inventory/Helpers/Development"
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
 	requests "go_inventory/SupplyInventory/Application/Requests"
 	services "go_inventory/SupplyInventory/Application/Services"
@@ -36,10 +37,12 @@ func (controller *PalletRackController) RegisterPalletRack(group *gin.RouterGrou
 func (controller *PalletRackController) createPalletRack(c *gin.Context) {
 	var req requests.PalletRackRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		development.Dump(req)
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": requestsHelper.FormatValidationErrors(err)})
+		return
 	}
 
-	newPalletRack, err := controller.palletRackService.Create(req.Name)
+	newPalletRack, err := controller.palletRackService.Create(req.Name, req.Location, req.TotalCapacity)
 
 	if newPalletRack == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})

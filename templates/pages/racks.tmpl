@@ -1,0 +1,138 @@
+{{define "pages/racks"}}
+    {{template "layouts/base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="container mx-auto p-4 flex-1">
+    
+    <header class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-blue-900">Racks Cadastrados</h1>
+        <a href="/racks/novo" 
+            class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-full transition-colors shadow-lg flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            Novo
+        </a>
+    </header>
+
+
+    <div id="racks-list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+
+        <p id="loading-message" class="col-span-full text-center text-gray-500">Carregando racks...</p>
+    </div>
+    
+
+    <template id="rack-card-template">
+        <a href="#" class="block rack-link">
+            <div class="bg-white p-4 rounded-xl shadow-lg hover:shadow-xl transition-shadow border-t-4 border-blue-600">
+                
+                <div class="flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h14a1 1 0 001-1V4a1 1 0 00-1-1H3zm1 2h12v2H4V5zm0 4h12v2H4V9zm0 4h12v2H4v-2z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+
+                <h2 class="text-xl font-semibold text-gray-800 mb-2 truncate rack-name" title=""></h2>
+                
+                <p class="text-sm text-gray-500 mb-1">
+                    **Localização:** <span class="font-medium text-gray-700 rack-location"></span>
+                </p>
+                
+                <p class="text-sm text-gray-500 mb-3">
+                    **Capacidade:** <span class="font-medium text-gray-700 rack-capacity"></span>
+                </p>
+
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="h-2.5 rounded-full rack-progress-bar" style="width: 0%">
+                    </div>
+                </div>
+                <p class="text-xs text-right mt-1 text-gray-600 rack-percentage"></p>
+            </div>
+        </a>
+    </template>
+
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const racksListContainer = document.getElementById('racks-list');
+        const loadingMessage = document.getElementById('loading-message');
+        const cardTemplate = document.getElementById('rack-card-template');
+
+        const API_URL = '/api/v1/racks';
+
+        function renderRack(rack) {
+
+            const clone = cardTemplate.content.cloneNode(true);
+            const card = clone.querySelector('a');
+            
+
+            const percentage = parseFloat(rack.PercetageUsed || 0).toFixed(0);
+            const slotsOcupados = rack.Pallets ? rack.Pallets.length : 0;
+            
+
+            card.href = `/racks/${rack.ID}`;
+            
+            card.querySelector('.rack-name').textContent = rack.Name;
+            card.querySelector('.rack-name').title = rack.Name;
+            card.querySelector('.rack-location').textContent = rack.Location;
+            card.querySelector('.rack-capacity').textContent = `${slotsOcupados} / ${rack.TotalCapacity} Pallets`;
+            
+            const progressBar = card.querySelector('.rack-progress-bar');
+            progressBar.style.width = `${percentage}%`;
+            
+            let progressBarClass = 'bg-green-500';
+            if (percentage > 80) {
+                progressBarClass = 'bg-red-500';
+            } else if (percentage > 50) {
+                progressBarClass = 'bg-yellow-500';
+            }
+            progressBar.classList.add(progressBarClass);
+
+            card.querySelector('.rack-percentage').textContent = `${percentage}% Ocupado`;
+
+            return card;
+        }
+
+        function fetchRacks() {
+
+            racksListContainer.innerHTML = '';
+            
+            fetch(API_URL)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Erro HTTP: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(racks => {
+                    if (racks && racks.length > 0) {
+                        racks.forEach(rack => {
+                            const rackElement = renderRack(rack);
+                            racksListContainer.appendChild(rackElement);
+                        });
+                    } else {
+                        racksListContainer.innerHTML = `
+                            <div class="col-span-full text-center p-10 bg-white rounded-xl shadow-lg mt-8">
+                                <p class="text-gray-500 text-lg">Nenhum rack cadastrado ainda. Comece adicionando um novo! 🚀</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Falha ao buscar racks:', error);
+                    racksListContainer.innerHTML = `
+                        <div class="col-span-full text-center p-10 bg-white rounded-xl shadow-lg mt-8 text-red-600">
+                            <p class="text-lg">Erro ao carregar os dados. Tente novamente mais tarde. 🙁</p>
+                            <p class="text-sm">Detalhe: ${error.message}</p>
+                        </div>
+                    `;
+                });
+        }
+        fetchRacks();
+    });
+</script>
+
+{{end}}

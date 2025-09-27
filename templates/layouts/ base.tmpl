@@ -1,0 +1,27 @@
+{{define "layouts/base"}}
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="flex flex-col min-h-screen bg-gray-100 font-sans">
+
+    <header class="flex justify-between items-center bg-blue-900 text-white px-4 py-3">
+        <div class="text-2xl font-bold">Go Inventory</div>
+        <img src="/static/img/logo2.png" alt="Logo" class="h-12 md:h-14 object-contain">
+    </header>
+
+    {{template "content" .}}
+
+    <footer class="bg-blue-900 text-white text-center py-4 mt-auto">
+        <p>&copy; 2025 Go Inventory. Todos os direitos reservados.</p>
+    </footer>
+
+</body>
+</html>
+{{end}}

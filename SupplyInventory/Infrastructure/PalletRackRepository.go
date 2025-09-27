@@ -10,7 +10,7 @@ import (
 )
 
 type PalletRackRepository interface {
-	Create(name string) (*domain.PalletRackEntity, error)
+	Create(name string, location string, totalCapacity int) (*domain.PalletRackEntity, error)
 	ListRacks() ([]domain.PalletRackEntity, error)
 	FindPalletById(id uint) (*domain.PalletRackEntity, *errors.AppError)
 	DeleteRack(id uint) (bool, *errors.AppError)
@@ -24,14 +24,14 @@ func NewPalletRackRepository(db *gorm.DB) PalletRackRepository {
 	return &palletRackRepository{db: db}
 }
 
-func (repository *palletRackRepository) Create(name string) (*domain.PalletRackEntity, error) {
-	var palletRack domain.PalletRackEntity
-	palletRack.Name = name
+func (repository *palletRackRepository) Create(name string, location string, totalCapacity int) (*domain.PalletRackEntity, error) {
+	palletRack := domain.NewPalletRackEntity(name, location, totalCapacity)
+
 	if err := repository.db.Save(&palletRack).Error; err != nil {
 		return nil, err
 	}
 
-	return &palletRack, nil
+	return palletRack, nil
 }
 
 func (repository *palletRackRepository) ListRacks() ([]domain.PalletRackEntity, error) {

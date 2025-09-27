@@ -26,15 +26,15 @@ import (
 // @host localhost:3000
 
 func main() {
-	r := gin.Default()
+	router := gin.Default()
 
 	// Pasta estática para QR codes
-	r.Static("/qrcodes", "./storage/qrcodes")
+	router.Static("/qrcodes", "./storage/qrcodes")
 
-	r.Static("/static", "./static")
+	router.Static("/static", "./static")
 
 	// Templates
-	r.LoadHTMLGlob("templates/*")
+	router.LoadHTMLGlob("templates/**/*.tmpl")
 
 	// Carregar variáveis de ambiente
 
@@ -47,8 +47,8 @@ func main() {
 	db.Migrate(dbInstance)
 
 	// Registrar rotas passando a instância do DB
-	routes.RegisterRoutes(r, dbInstance)
-	webRoutes.RegisterWebRoutes(r, dbInstance)
+	routes.RegisterRoutes(router, dbInstance)
+	webRoutes.RegisterWebRoutes(router, dbInstance)
 
 	// Pegar porta do .env
 	port := os.Getenv("PORT")
@@ -57,7 +57,7 @@ func main() {
 		port = "3000"
 	}
 
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	r.Run(":" + port)
+	router.Run(":" + port)
 }
