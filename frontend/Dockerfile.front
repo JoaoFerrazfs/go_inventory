@@ -1,0 +1,20 @@
+# Usa imagem do Node
+FROM node:20
+
+# Define diretório de trabalho dentro do container
+WORKDIR /app
+
+# Copia só os arquivos de dependência primeiro (cache de build)
+COPY package*.json ./
+
+# Instala dependências
+RUN npm install
+
+# Copia o restante do código
+COPY . .
+
+# Expõe a porta do React (3000 dentro do container)
+EXPOSE 3000
+
+# Comando padrão: roda em modo dev
+CMD ["npm", "start"]
