@@ -60,9 +60,6 @@ func main() {
 		c.File("./frontend/build/index.html")
 	})
 
-	// Templates Go (se ainda precisar)
-	router.LoadHTMLGlob("templates/**/*.tmpl")
-
 	// Carregar variáveis de ambiente
 	if err := godotenv.Load(); err != nil {
 		log.Println("Nenhum .env encontrado, usando variáveis do sistema")
