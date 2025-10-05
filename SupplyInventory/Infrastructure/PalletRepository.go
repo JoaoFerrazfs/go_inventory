@@ -14,6 +14,7 @@ type PalletRepository interface {
 	UpdateSupply(pallet *domain.PalletEntity) (*domain.PalletEntity, *errors.AppError)
 	AddProductsToPallet(product domain.PalletizedProductEntity) (*domain.PalletEntity, *errors.AppError)
 	DeletePalletById(id uint) (bool, *errors.AppError)
+	UpdatePallet(id uint, Name string, PalletRackId uint) (*domain.PalletEntity, *errors.AppError)
 }
 
 type palletRepository struct {
@@ -24,63 +25,63 @@ func NewPalletRepository(db *gorm.DB) PalletRepository {
 	return &palletRepository{db: db}
 }
 
-func (r *palletRepository) GetAllPallets() ([]domain.PalletEntity, *errors.AppError) {
+func (repository *palletRepository) GetAllPallets() ([]domain.PalletEntity, *errors.AppError) {
 	var pallets []domain.PalletEntity
-	if err := r.db.Preload("PalletizedProduct").Find(&pallets).Error; err != nil {
+	if err := repository.db.Preload("PalletizedProduct").Find(&pallets).Error; err != nil {
 		return nil, errors.NewAppError("Pallets not found", 404)
 	}
 	return pallets, nil
 }
 
-func (r *palletRepository) GetSupplyById(id uint) (*domain.PalletEntity, *errors.AppError) {
+func (repository *palletRepository) GetSupplyById(id uint) (*domain.PalletEntity, *errors.AppError) {
 	var pallet domain.PalletEntity
-	if err := r.db.Preload("PalletizedProduct").First(&pallet, id).Error; err != nil {
+	if err := repository.db.Preload("PalletizedProduct").First(&pallet, id).Error; err != nil {
 		return nil, errors.NewAppError(err.Error(), 500)
 	}
 
 	return &pallet, nil
 }
 
-func (r *palletRepository) AddSupply(PalletName string, PalletRackId uint) (*domain.PalletEntity, *errors.AppError) {
+func (repository *palletRepository) AddSupply(PalletName string, PalletRackId uint) (*domain.PalletEntity, *errors.AppError) {
 	pallet := domain.PalletEntity{
 		Name:         PalletName,
 		PalletRackID: PalletRackId,
 	}
 
-	if err := r.db.Create(&pallet).Error; err != nil {
+	if err := repository.db.Create(&pallet).Error; err != nil {
 		return nil, errors.NewAppError(err.Error(), 500)
 	}
 
 	return &pallet, nil
 }
 
-func (r *palletRepository) UpdateSupply(pallet *domain.PalletEntity) (*domain.PalletEntity, *errors.AppError) {
-	if err := r.db.Save(pallet).Error; err != nil {
+func (repository *palletRepository) UpdateSupply(pallet *domain.PalletEntity) (*domain.PalletEntity, *errors.AppError) {
+	if err := repository.db.Save(pallet).Error; err != nil {
 		return nil, errors.NewAppError(err.Error(), 500)
 	}
 	return pallet, nil
 }
 
-func (r *palletRepository) AddProductsToPallet(product domain.PalletizedProductEntity) (*domain.PalletEntity, *errors.AppError) {
-	pallet, err := r.GetSupplyById(product.PalletID)
+func (repository *palletRepository) AddProductsToPallet(product domain.PalletizedProductEntity) (*domain.PalletEntity, *errors.AppError) {
+	pallet, err := repository.GetSupplyById(product.PalletID)
 	if err != nil || pallet == nil {
 		return nil, errors.NewAppError("Pallet not found", 404)
 	}
 
 	product.PalletID = pallet.ID
-	if err := r.db.Model(pallet).Association("PalletizedProduct").Append(&product); err != nil {
+	if err := repository.db.Model(pallet).Association("PalletizedProduct").Append(&product); err != nil {
 		return nil, errors.NewAppError(err.Error(), 422)
 	}
 
-	if err := r.db.Preload("PalletizedProduct").First(pallet, pallet.ID).Error; err != nil {
+	if err := repository.db.Preload("PalletizedProduct").First(pallet, pallet.ID).Error; err != nil {
 		return nil, errors.NewAppError(err.Error(), 400)
 	}
 
 	return pallet, nil
 }
 
-func (r *palletRepository) DeletePalletById(id uint) (bool, *errors.AppError) {
-	result := r.db.Select("PalletizedProduct").Delete(&domain.PalletEntity{}, id)
+func (repository *palletRepository) DeletePalletById(id uint) (bool, *errors.AppError) {
+	result := repository.db.Select("PalletizedProduct").Delete(&domain.PalletEntity{}, id)
 
 	if result.Error != nil {
 		return false, errors.NewAppError(result.Error.Error(), 500)
@@ -91,4 +92,20 @@ func (r *palletRepository) DeletePalletById(id uint) (bool, *errors.AppError) {
 	}
 
 	return true, nil
+}
+
+func (repository *palletRepository) UpdatePallet(id uint, Name string, PalletRackId uint) (*domain.PalletEntity, *errors.AppError) {
+	var pallet domain.PalletEntity
+	if err := repository.db.Preload("PalletizedProduct").First(&pallet, id).Error; err != nil {
+		return nil, errors.NewAppError("Pallet not found", 404)
+	}
+
+	pallet.Name = Name
+	pallet.PalletRackID = PalletRackId
+
+	if err := repository.db.Save(&pallet).Error; err != nil {
+		return nil, errors.NewAppError(err.Error(), 500)
+	}
+
+	return &pallet, nil
 }

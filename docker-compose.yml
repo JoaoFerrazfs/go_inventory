@@ -13,19 +13,6 @@ services:
       - .:/app
     command: air -c .air.toml
     
-  frontend:
-    container_name: go_inventory_front
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.front
-    ports:
-      - "3001:3000"   # porta 3001 no host -> 3000 dentro do container
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules  # evita conflito de node_modules
-    stdin_open: true
-    tty: true
-
   db:
     image: mysql:8
     restart: always

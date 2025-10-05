@@ -47,7 +47,8 @@ func (repository *palletRackRepository) ListRacks() ([]domain.PalletRackEntity, 
 func (repository *palletRackRepository) FindPalletById(id uint) (*domain.PalletRackEntity, *errors.AppError) {
 	var rack domain.PalletRackEntity
 
-	if err := repository.db.Preload("Pallets").First(&rack, id).Error; err != nil {
+	if err := repository.db.Preload("Pallets.PalletizedProduct").
+		Preload("Pallets").First(&rack, id).Error; err != nil {
 		return nil, errors.NewAppError("Rack not found", 404)
 	}
 

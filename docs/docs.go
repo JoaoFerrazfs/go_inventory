@@ -285,6 +285,53 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pallets"
+                ],
+                "summary": "Update Pallet",
+                "parameters": [
+                    {
+                        "description": "Palletized Product",
+                        "name": "pallet",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.PalletRequest"
+                        }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID do pallet",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.PalletEntity"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/v1/racks": {
@@ -509,11 +556,16 @@ const docTemplate = `{
         "domain.PalletRackEntity": {
             "type": "object",
             "required": [
-                "name"
+                "location",
+                "name",
+                "total_capacity"
             ],
             "properties": {
                 "id": {
                     "type": "integer"
+                },
+                "location": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -523,6 +575,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/domain.PalletEntity"
                     }
+                },
+                "total_capacity": {
+                    "type": "integer"
                 }
             }
         },
@@ -550,11 +605,20 @@ const docTemplate = `{
         "requests.PalletRackRequest": {
             "type": "object",
             "required": [
-                "name"
+                "location",
+                "name",
+                "totalCapacity"
             ],
             "properties": {
+                "location": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
+                },
+                "totalCapacity": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             }
         },

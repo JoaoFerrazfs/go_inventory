@@ -36,15 +36,13 @@ func (controller *PalletizedProductController) addProductsToPallet(c *gin.Contex
 	var req requests.PalletizedProductRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "O body deve conter um produto com o palete, ean e quantidade de produtos",
-		})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": requestsHelper.FormatValidationErrors(err)})
 		return
 	}
 
 	palletId, err := requestsHelper.GetIDParam(c, "palletId")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "PalletId inválido"})
+		c.Status(http.StatusNotFound)
 		return
 	}
 
