@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	requestsHelper "go_inventory/Helpers/RequestsHelper"
 	requests "go_inventory/SupplyInventory/Application/Requests"
 	services "go_inventory/SupplyInventory/Application/Services"
 
@@ -10,11 +11,12 @@ import (
 )
 
 type LoginController struct {
-	jwtService services.JWTService
+	jwtService  services.JWTService
+	userService services.UserService
 }
 
-func NewLoginController(jwtService services.JWTService) *LoginController {
-	return &LoginController{jwtService: jwtService}
+func NewLoginController(jwtService services.JWTService, userService services.UserService) *LoginController {
+	return &LoginController{jwtService: jwtService, userService: userService}
 }
 
 func (controller *LoginController) RegisterLogin(group *gin.RouterGroup) {
@@ -25,16 +27,17 @@ func (controller *LoginController) Login(context *gin.Context) {
 	var req requests.LoginRequest
 
 	if err := context.ShouldBindJSON(&req); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		context.JSON(http.StatusBadRequest, gin.H{"error": requestsHelper.FormatValidationErrors(err)})
 		return
 	}
 
-	if req.Username != "admin" || req.Password != "1234" {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+	user, err := controller.userService.Login(req.Email, req.Password)
+	if err != nil {
+		context.JSON(err.ErrorCode(), err.Error())
 		return
 	}
 
-	token, appErr := controller.jwtService.GenerateToken(1234, req.Username)
+	token, appErr := controller.jwtService.GenerateToken(user.ID, user.Email)
 	if appErr != nil {
 		context.JSON(appErr.ErrorCode(), appErr.Error())
 		return

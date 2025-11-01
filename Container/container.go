@@ -20,6 +20,7 @@ func BuildContainer(db *gorm.DB) *dig.Container {
 	container.Provide(infrastructure.NewPalletRepository)
 	container.Provide(infrastructure.NewPalletRackRepository)
 	container.Provide(infrastructure.NewPalletizedProductRepository)
+	container.Provide(infrastructure.NewUserRepository)
 
 	// Services
 	container.Provide(services.NewQRCodeService)
@@ -27,12 +28,14 @@ func BuildContainer(db *gorm.DB) *dig.Container {
 	container.Provide(services.NewPalletRackService)
 	container.Provide(services.NewPalletizedProductService)
 	container.Provide(services.NewJWTService)
+	container.Provide(services.NewUserService)
 
 	// Api Controllers
 	container.Provide(controllers.NewPalletController)
 	container.Provide(controllers.NewPalletizedProductController)
 	container.Provide(controllers.NewPalletRackController)
 	container.Provide(controllers.NewLoginController)
+	container.Provide(controllers.NewUserController)
 
 	// Middlewares
 	container.Provide(middlewares.NewAuthMiddleware)

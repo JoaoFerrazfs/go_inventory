@@ -14,6 +14,7 @@ func Migrate(db *gorm.DB) {
 		&domain.PalletRackEntity{},
 		&domain.PalletEntity{},
 		&domain.PalletizedProductEntity{},
+		&domain.UserEntity{},
 	)
 	if err != nil {
 		log.Fatal("Erro na migration:", err)

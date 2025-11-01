@@ -11,7 +11,7 @@ import (
 
 type JWTService interface {
 	GenerateToken(userID uint, username string) (string, *errors.AppError)
-	ValidateToken(tokenString string) (bool, *errors.AppError)
+	ValidateToken(tokenString string) (*jwt.Token, *errors.AppError)
 }
 
 type jwtService struct{}
@@ -37,7 +37,7 @@ func (service *jwtService) GenerateToken(userID uint, username string) (string, 
 	return tokenString, nil
 }
 
-func (service *jwtService) ValidateToken(tokenString string) (bool, *errors.AppError) {
+func (service *jwtService) ValidateToken(tokenString string) (*jwt.Token, *errors.AppError) {
 	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -47,8 +47,8 @@ func (service *jwtService) ValidateToken(tokenString string) (bool, *errors.AppE
 		return jwtSecret, nil
 	})
 	if err != nil {
-		return false, errors.NewAppError(err.Error(), 401)
+		return nil, errors.NewAppError(err.Error(), 401)
 	}
 
-	return token.Valid, nil
+	return token, nil
 }

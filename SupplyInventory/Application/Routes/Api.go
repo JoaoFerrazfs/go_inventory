@@ -35,4 +35,8 @@ func RegisterRoutes(router *gin.Engine, dbInstance *gorm.DB) {
 	container.Invoke(func(loginController *controllers.LoginController) {
 		loginController.RegisterLogin(apiV1.Group("/auth"))
 	})
+
+	container.Invoke(func(userController *controllers.UserController) {
+		userController.RegisterUserRoutes(apiV1.Group("/users"))
+	})
 }

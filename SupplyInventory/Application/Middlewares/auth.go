@@ -4,9 +4,11 @@ import (
 	"net/http"
 	"strings"
 
+	errors "go_inventory/Helpers/Errors"
 	services "go_inventory/SupplyInventory/Application/Services"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type AuthMiddleware struct {
@@ -31,11 +33,19 @@ func (m *AuthMiddleware) Handler() gin.HandlerFunc {
 			return
 		}
 
-		valid, appErr := m.JWTService.ValidateToken(tokenString)
-		if appErr != nil || !valid {
+		token, appErr := m.JWTService.ValidateToken(tokenString)
+		if appErr != nil || !token.Valid {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 			return
 		}
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok || !token.Valid {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errors.NewAppError("invalid token", 401))
+		}
+
+		c.Set("userID", claims["userID"])
+		c.Set("username", claims["username"])
 
 		c.Next()
 	}

@@ -105,7 +105,7 @@ func (controller *PalletController) DeletePalletById(c *gin.Context) {
 func (controller *PalletController) CreatePallet(c *gin.Context) {
 	var req requests.PalletRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": requestsHelper.FormatValidationErrors(err)})
 		return
 	}
 
