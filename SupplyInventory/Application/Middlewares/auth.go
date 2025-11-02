@@ -44,8 +44,13 @@ func (m *AuthMiddleware) Handler() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, errors.NewAppError("invalid token", 401))
 		}
 
-		c.Set("userID", claims["userID"])
-		c.Set("username", claims["username"])
+		tokenType, ok := claims["tokenType"].(string)
+		if !ok || tokenType != "access" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errors.NewAppError("invalid token type", 403))
+		}
+
+		c.Set("userID", uint(claims["userID"].(float64)))
+		c.Set("username", claims["username"].(string))
 
 		c.Next()
 	}

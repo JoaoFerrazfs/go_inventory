@@ -21,6 +21,7 @@ func NewLoginController(jwtService services.JWTService, userService services.Use
 
 func (controller *LoginController) RegisterLogin(group *gin.RouterGroup) {
 	group.POST("/login", controller.Login)
+	group.POST("/refreshToken", controller.RefreshToken)
 }
 
 func (controller *LoginController) Login(context *gin.Context) {
@@ -43,5 +44,33 @@ func (controller *LoginController) Login(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, gin.H{"token": token})
+	refreshToken, appErr := controller.jwtService.GenerateRefreshToken(user.ID, user.Email)
+	if appErr != nil {
+		context.JSON(appErr.ErrorCode(), appErr.Error())
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{
+		"token":        token,
+		"refreshToken": refreshToken,
+	})
+}
+
+func (controller *LoginController) RefreshToken(context *gin.Context) {
+	var req requests.RefreshTokenRequest
+
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": requestsHelper.FormatValidationErrors(err)})
+		return
+	}
+
+	token, appErr := controller.jwtService.RefreshToken(req.RefreshToken)
+	if appErr != nil {
+		context.JSON(appErr.ErrorCode(), appErr.Error())
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{
+		"token": token,
+	})
 }

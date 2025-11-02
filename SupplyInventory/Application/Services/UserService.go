@@ -54,6 +54,6 @@ func (service *userService) Login(email string, password string) (*domain.UserEn
 	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
 		return nil, errors.NewAppError("invalid credentials", 401)
 	}
-
+	
 	return user, nil
 }
