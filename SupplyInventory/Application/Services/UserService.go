@@ -24,12 +24,12 @@ func NewUserService(repository infrastructure.UserRepository) UserService {
 func (service *userService) CreateUser(name, email, password string) (*domain.UserEntity, *errors.AppError) {
 	emailExists, _ := service.Repository.FindByEmail(email)
 	if emailExists != nil {
-		return nil, errors.NewAppError("Error checking existing email", 500)
+		return nil, errors.NewAppError("Error checking existing email", 422)
 	}
 
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, errors.NewAppError("could not hash password", 500)
+		return nil, errors.NewAppError("Could not hash password", 500)
 	}
 
 	user := &domain.UserEntity{
@@ -54,6 +54,6 @@ func (service *userService) Login(email string, password string) (*domain.UserEn
 	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
 		return nil, errors.NewAppError("invalid credentials", 401)
 	}
-	
+
 	return user, nil
 }

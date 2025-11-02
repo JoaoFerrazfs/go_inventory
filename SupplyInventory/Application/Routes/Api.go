@@ -32,7 +32,7 @@ func RegisterRoutes(router *gin.Engine, dbInstance *gorm.DB) {
 		palletRackController.RegisterPalletRack(racksGroup)
 	})
 
-	container.Invoke(func(loginController *controllers.LoginController) {
+	container.Invoke(func(loginController *controllers.AuthController) {
 		loginController.RegisterLogin(apiV1.Group("/auth"))
 	})
 

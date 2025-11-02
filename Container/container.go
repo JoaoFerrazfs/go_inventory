@@ -34,7 +34,7 @@ func BuildContainer(db *gorm.DB) *dig.Container {
 	container.Provide(controllers.NewPalletController)
 	container.Provide(controllers.NewPalletizedProductController)
 	container.Provide(controllers.NewPalletRackController)
-	container.Provide(controllers.NewLoginController)
+	container.Provide(controllers.NewAuthController)
 	container.Provide(controllers.NewUserController)
 
 	// Middlewares

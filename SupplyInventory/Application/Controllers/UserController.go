@@ -22,19 +22,28 @@ func (controller *UserController) RegisterUserRoutes(group *gin.RouterGroup) {
 	group.POST("/create", controller.create)
 }
 
+// @Summary Create User
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param user body requests.UserRequest true "User"
+// @Success 201 {object} domain.UserEntity
+// @Failure 422 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /api/v1/users/create [post]
 func (controller *UserController) create(c *gin.Context) {
-	req := requests.UserRequest
+	var req requests.UserRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": requestsHelper.FormatValidationErrors(err)})
 		return
 	}
 
-	user, err := controller.userService.CreateUser(req.Name, req.Email, req.Password)
-	if err != nil {
-		c.JSON(http.StatusNotFound, err.Error())
+	user, appErr := controller.userService.CreateUser(req.Name, req.Email, req.Password)
+	if appErr != nil {
+		c.JSON(appErr.Code, appErr.Message)
 		return
 	}
 
-	c.JSON(200, gin.H{"user": user})
+	c.JSON(http.StatusCreated, user)
 }
