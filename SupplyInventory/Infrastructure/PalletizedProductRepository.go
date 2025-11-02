@@ -52,17 +52,14 @@ func (repository *PalletizedProductRepositoryImpl) DeleteProductsFromPallet(pall
 		return false, err
 	}
 
-	for palletizedProduct := range pallet.PalletizedProduct {
-		if pallet.PalletizedProduct[palletizedProduct].EAN == productsEan {
-			if err := repository.db.Delete(&pallet.PalletizedProduct[palletizedProduct]).Error; err != nil {
+	for i := range pallet.PalletizedProduct {
+		if pallet.PalletizedProduct[i].EAN == productsEan {
+			if err := repository.db.Delete(&pallet.PalletizedProduct[i]).Error; err != nil {
 				return false, errors.NewAppError(err.Error(), 500)
 			}
-
-			return true, errors.NewAppError(err.Error(), 500)
+			return true, nil
 		}
 	}
 
-	err = errors.NewAppError("product is not in the pallet")
-
-	return false, err
+	return false, errors.NewAppError("product is not in the pallet", 404)
 }
