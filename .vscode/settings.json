@@ -4,4 +4,9 @@
             "file": "./.github/instructions/copilot-commit-message-instructions.md"
         }
     ],
+    "github.copilot.chat.pullRequestDescription.instructions": [
+        {
+            "file": "./.github/instructions/copilot-pull-request-instructions.md"
+        }
+    ]
 }
