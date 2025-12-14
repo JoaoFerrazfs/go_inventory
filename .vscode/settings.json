@@ -4,7 +4,7 @@
             "file": "./.github/instructions/copilot-commit-message-instructions.md"
         }
     ],
-    "github.copilot.chat.pullRequestDescription.instructions": [
+    "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
         {
             "file": "./.github/instructions/copilot-pull-request-instructions.md"
         }
