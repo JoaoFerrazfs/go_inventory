@@ -49,3 +49,5 @@ O código segue uma arquitetura em camadas inspirada na Clean Architecture:
 - **Ferramentas de Build/Dev**: `Makefile` para comandos como `make dev` para executar containers e monitorar Swagger. 🔧
 
 No geral, o projeto está bem estruturado para uma API estilo microserviço, com boa separação de responsabilidades. 🤝
+
+so um teste
