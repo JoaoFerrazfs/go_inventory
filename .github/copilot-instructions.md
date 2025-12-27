@@ -11,7 +11,7 @@
   - Stay updated with the latest developments in relevant technologies and best practices.
   - Prioritize security in all aspects of development.
   - Write tests to cover critical functionality and edge cases.
-### Apis
+### APIs
   - Use RESTful API design principles.
   - Use consistent naming conventions for endpoints (e.g., plural nouns).
   - Implement proper HTTP status codes for responses.
@@ -33,7 +33,7 @@
   - Review and revise documentation regularly to ensure accuracy.
   - Host documentation in this folder "/documents".
   - Each document must be organized following the same paste structure as the other project files
-    - For example follogind files, where each related document is stored in:
+    - For example following files, where each related document is stored in:
       - /documents/domain/Pallet
       - /documents/domain/PalletProduct
       - /documents/domain/PalletRackEntity
@@ -48,7 +48,7 @@
   - Use testing frameworks and tools appropriate for the technology stack.
   - Write clear and descriptive test cases that outline expected behavior.
   - Perform load and performance testing to ensure the application can handle expected traffic.
-  - The tests estructure must follow the same structure as the main codebase
+  - The tests structure must follow the same structure as the main codebase
     - For example, if there is a file in:
       - /src/domain/PalletService.ts
     - The test file must be located in:
