@@ -34,8 +34,11 @@ jobs:
       - name: Run tests
         run: go test ./...
 
-      - name: Run tests with coverage
-        run: go test -coverprofile=coverage.out ./...
+      - name: Run tests with coverage (including main code)
+        run: |
+          go list ./SupplyInventory/... ./Helpers/... ./Container/... ./main.go | tr '\n' ',' | sed 's/,$//' > pkgs.txt
+          PKGS=$(cat pkgs.txt)
+          go test -coverpkg=$PKGS -coverprofile=coverage.out ./tests/...
 
       - name: Show coverage summary
         run: |
