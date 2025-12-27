@@ -19,7 +19,7 @@ func NewUserController(userService services.UserService) *UserController {
 }
 
 func (controller *UserController) RegisterUserRoutes(group *gin.RouterGroup) {
-	group.POST("/create", controller.create)
+	group.POST("/create", controller.Create)
 }
 
 // @Summary Create User
@@ -31,7 +31,7 @@ func (controller *UserController) RegisterUserRoutes(group *gin.RouterGroup) {
 // @Failure 422 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /api/v1/users/create [post]
-func (controller *UserController) create(c *gin.Context) {
+func (controller *UserController) Create(c *gin.Context) {
 	var req requests.UserRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {

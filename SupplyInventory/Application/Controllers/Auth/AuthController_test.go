@@ -13,9 +13,12 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	errors "go_inventory/Helpers/Errors"
-	controllers "go_inventory/SupplyInventory/Application/Controllers"
+
+	auth "go_inventory/SupplyInventory/Application/Controllers/Auth"
 	domain "go_inventory/SupplyInventory/Domain"
 )
+
+
 
 type mockJWTService struct {
 	mock.Mock
@@ -78,7 +81,7 @@ func TestLogin_Success(t *testing.T) {
 	// Set
 	jwtMock := new(mockJWTService)
 	userMock := new(mockUserService)
-	controller := controllers.NewAuthController(jwtMock, userMock)
+	controller := auth.NewAuthController(jwtMock, userMock)
 
 	user := &domain.UserEntity{ID: 1, Email: "test@example.com"}
 
@@ -102,6 +105,13 @@ func TestLogin_Success(t *testing.T) {
 
 	// Assertions
 	assert.Equal(t, http.StatusOK, w.Code)
+
+	// Assertions - response body
+	var resp map[string]string
+	err := json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "token", resp["token"])
+	assert.Equal(t, "refresh", resp["refreshToken"])
 }
 
 func TestLogin_InvalidRequest(t *testing.T) {
@@ -110,7 +120,7 @@ func TestLogin_InvalidRequest(t *testing.T) {
 	// Set
 	jwtMock := new(mockJWTService)
 	userMock := new(mockUserService)
-	controller := controllers.NewAuthController(jwtMock, userMock)
+	controller := auth.NewAuthController(jwtMock, userMock)
 
 	// Actions
 	w := httptest.NewRecorder()
@@ -130,7 +140,7 @@ func TestLogin_UserServiceError(t *testing.T) {
 	// Set
 	jwtMock := new(mockJWTService)
 	userMock := new(mockUserService)
-	controller := controllers.NewAuthController(jwtMock, userMock)
+	controller := auth.NewAuthController(jwtMock, userMock)
 
 	// Expectations
 	userMock.On("Login", "fail@example.com", "bad").Return(nil, errors.NewAppError("invalid", 401))
@@ -153,7 +163,7 @@ func TestRefreshToken_Success(t *testing.T) {
 	// Set
 	jwtMock := new(mockJWTService)
 	userMock := new(mockUserService)
-	controller := controllers.NewAuthController(jwtMock, userMock)
+	controller := auth.NewAuthController(jwtMock, userMock)
 
 	// Expectations
 	jwtMock.On("RefreshToken", "refresh_token").Return("new_token", nil)
@@ -176,7 +186,7 @@ func TestRefreshToken_InvalidRequest(t *testing.T) {
 	// Set
 	jwtMock := new(mockJWTService)
 	userMock := new(mockUserService)
-	controller := controllers.NewAuthController(jwtMock, userMock)
+	controller := auth.NewAuthController(jwtMock, userMock)
 
 	// Actions
 	w := httptest.NewRecorder()
@@ -196,7 +206,7 @@ func TestRefreshToken_Error(t *testing.T) {
 	// Set
 	jwtMock := new(mockJWTService)
 	userMock := new(mockUserService)
-	controller := controllers.NewAuthController(jwtMock, userMock)
+	controller := auth.NewAuthController(jwtMock, userMock)
 
 	// Expectations
 	jwtMock.On("RefreshToken", "bad_token").Return("", errors.NewAppError("invalid", 401))
@@ -212,4 +222,37 @@ func TestRefreshToken_Error(t *testing.T) {
 
 	// Assertions
 	assert.NotEqual(t, http.StatusOK, w.Code)
+}
+
+func TestLogin_EmptyTokenAndRefreshToken(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	// Set
+	jwtMock := new(mockJWTService)
+	userMock := new(mockUserService)
+	controller := auth.NewAuthController(jwtMock, userMock)
+
+	user := &domain.UserEntity{ID: 4, Email: "empty@example.com"}
+
+	// Expectations
+	userMock.On("Login", "empty@example.com", "password").Return(user, nil)
+	jwtMock.On("GenerateToken", user.ID, user.Email).Return("", nil)
+	jwtMock.On("GenerateRefreshToken", user.ID, user.Email).Return("", nil)
+
+	// Actions
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	body, _ := json.Marshal(map[string]string{"email": "empty@example.com", "password": "password"})
+	c.Request, _ = http.NewRequest("POST", "/login", bytes.NewBuffer(body))
+	c.Request.Header.Set("Content-Type", "application/json")
+
+	controller.Login(c)
+
+	// Assertions
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]string
+	err := json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "", resp["token"])
+	assert.Equal(t, "", resp["refreshToken"])
 }
