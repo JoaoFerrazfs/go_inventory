@@ -1,4 +1,3 @@
-// ...existing code...
 package controllers_test
 
 import (
@@ -12,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	controllers "go_inventory/SupplyInventory/Application/Controllers"
+	auth "go_inventory/SupplyInventory/Application/Controllers/Auth"
 	requests "go_inventory/SupplyInventory/Application/Requests"
 	services "go_inventory/SupplyInventory/Application/Services"
 	domain "go_inventory/SupplyInventory/Domain"
@@ -40,7 +39,7 @@ func setupRouter() *gin.Engine {
 	jwtService := services.NewJWTService()
 	mockRepo := new(mockUserRepository)
 	userService := services.NewUserService(mockRepo)
-	controller := controllers.NewAuthController(jwtService, userService)
+	controller := auth.NewAuthController(jwtService, userService)
 
 	r := gin.Default()
 	api := r.Group("/api/v1/auth")
@@ -49,27 +48,27 @@ func setupRouter() *gin.Engine {
 }
 
 func TestIntegration_Login(t *testing.T) {
-       gin.SetMode(gin.TestMode)
+	gin.SetMode(gin.TestMode)
 
-       // Set
-       jwtService := services.NewJWTService()
-       mockRepo := new(mockUserRepository)
-       user := &domain.UserEntity{ID: 1, Email: "admin@example.com", Password: "$2a$10$hash"}
-   userService := services.NewUserService(mockRepo)
-       controller := controllers.NewAuthController(jwtService, userService)
-   r := gin.Default()
-       api := r.Group("/api/v1/auth")
-       controller.RegisterLogin(api)
+	// Set
+	jwtService := services.NewJWTService()
+	mockRepo := new(mockUserRepository)
+	user := &domain.UserEntity{ID: 1, Email: "admin@example.com", Password: "$2a$10$hash"}
+	userService := services.NewUserService(mockRepo)
+	controller := auth.NewAuthController(jwtService, userService)
+	r := gin.Default()
+	api := r.Group("/api/v1/auth")
+	controller.RegisterLogin(api)
 
-   loginReq := requests.LoginRequest{
-       Email:    "admin@example.com",
-       Password: "admin123",
-       }
-   
-       body, _ := json.Marshal(loginReq)
+	loginReq := requests.LoginRequest{
+		Email:    "admin@example.com",
+		Password: "admin123",
+	}
 
-       // Expectations
-       mockRepo.On("FindByEmail", "admin@example.com").Return(user, nil)
+	body, _ := json.Marshal(loginReq)
+
+	// Expectations
+	mockRepo.On("FindByEmail", "admin@example.com").Return(user, nil)
 
 	// Actions
 	w := httptest.NewRecorder()
