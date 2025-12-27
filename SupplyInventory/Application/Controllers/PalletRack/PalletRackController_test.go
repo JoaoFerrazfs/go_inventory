@@ -65,3 +65,103 @@ func TestCreatePalletRack_Success(t *testing.T) {
 	// Assertions
 	assert.Equal(t, http.StatusCreated, w.Code)
 }
+
+func TestCreatePalletRack_InvalidRequest(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockService := new(mockPalletRackService)
+	controller := palletRack.NewPalletRackController(mockService)
+	r := gin.Default()
+	group := r.Group("/")
+	controller.RegisterPalletRack(group)
+	req, _ := http.NewRequest("POST", "/", bytes.NewBuffer([]byte(`{"Name":123}`)))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, 422, w.Code)
+}
+
+func TestListRacks_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockService := new(mockPalletRackService)
+	controller := palletRack.NewPalletRackController(mockService)
+	racks := []apiContracts.TransformedRack{{ID: 1, Name: "Rack1"}}
+	mockService.On("ListRacks").Return(racks, nil)
+	r := gin.Default()
+	group := r.Group("/")
+	controller.RegisterPalletRack(group)
+	req, _ := http.NewRequest("GET", "/", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusCreated, w.Code)
+}
+
+func TestListRacks_Error(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockService := new(mockPalletRackService)
+	controller := palletRack.NewPalletRackController(mockService)
+	mockService.On("ListRacks").Return([]apiContracts.TransformedRack{}, assert.AnError)
+	r := gin.Default()
+	group := r.Group("/")
+	controller.RegisterPalletRack(group)
+	req, _ := http.NewRequest("GET", "/", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, 404, w.Code)
+}
+
+func TestFindRackById_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockService := new(mockPalletRackService)
+	controller := palletRack.NewPalletRackController(mockService)
+	rack := &domain.PalletRackEntity{ID: 1, Name: "Rack1"}
+	mockService.On("FindPalletById", uint(1)).Return(rack, (*errors.AppError)(nil))
+	r := gin.Default()
+	group := r.Group("/")
+	controller.RegisterPalletRack(group)
+	req, _ := http.NewRequest("GET", "/1", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestFindRackById_NotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockService := new(mockPalletRackService)
+	controller := palletRack.NewPalletRackController(mockService)
+	mockService.On("FindPalletById", uint(2)).Return(nil, errors.NewAppError("not found", 404))
+	r := gin.Default()
+	group := r.Group("/")
+	controller.RegisterPalletRack(group)
+	req, _ := http.NewRequest("GET", "/2", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, 404, w.Code)
+}
+
+func TestDeleteRack_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockService := new(mockPalletRackService)
+	controller := palletRack.NewPalletRackController(mockService)
+	mockService.On("DeleteRack", uint(1)).Return(true, (*errors.AppError)(nil))
+	r := gin.Default()
+	group := r.Group("/")
+	controller.RegisterPalletRack(group)
+	req, _ := http.NewRequest("DELETE", "/1", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestDeleteRack_Error(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockService := new(mockPalletRackService)
+	controller := palletRack.NewPalletRackController(mockService)
+	mockService.On("DeleteRack", uint(2)).Return(false, errors.NewAppError("fail", 404))
+	r := gin.Default()
+	group := r.Group("/")
+	controller.RegisterPalletRack(group)
+	req, _ := http.NewRequest("DELETE", "/2", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, 404, w.Code)
+}

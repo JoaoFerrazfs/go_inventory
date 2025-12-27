@@ -18,6 +18,8 @@ import (
 	domain "go_inventory/SupplyInventory/Domain"
 )
 
+
+
 type mockJWTService struct {
 	mock.Mock
 }
@@ -103,6 +105,13 @@ func TestLogin_Success(t *testing.T) {
 
 	// Assertions
 	assert.Equal(t, http.StatusOK, w.Code)
+
+	// Assertions - response body
+	var resp map[string]string
+	err := json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "token", resp["token"])
+	assert.Equal(t, "refresh", resp["refreshToken"])
 }
 
 func TestLogin_InvalidRequest(t *testing.T) {
@@ -213,4 +222,37 @@ func TestRefreshToken_Error(t *testing.T) {
 
 	// Assertions
 	assert.NotEqual(t, http.StatusOK, w.Code)
+}
+
+func TestLogin_EmptyTokenAndRefreshToken(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	// Set
+	jwtMock := new(mockJWTService)
+	userMock := new(mockUserService)
+	controller := auth.NewAuthController(jwtMock, userMock)
+
+	user := &domain.UserEntity{ID: 4, Email: "empty@example.com"}
+
+	// Expectations
+	userMock.On("Login", "empty@example.com", "password").Return(user, nil)
+	jwtMock.On("GenerateToken", user.ID, user.Email).Return("", nil)
+	jwtMock.On("GenerateRefreshToken", user.ID, user.Email).Return("", nil)
+
+	// Actions
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	body, _ := json.Marshal(map[string]string{"email": "empty@example.com", "password": "password"})
+	c.Request, _ = http.NewRequest("POST", "/login", bytes.NewBuffer(body))
+	c.Request.Header.Set("Content-Type", "application/json")
+
+	controller.Login(c)
+
+	// Assertions
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]string
+	err := json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "", resp["token"])
+	assert.Equal(t, "", resp["refreshToken"])
 }
