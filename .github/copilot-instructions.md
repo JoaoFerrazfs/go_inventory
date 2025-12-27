@@ -40,6 +40,21 @@
       - /documents/domain/User
   - Provide troubleshooting guides for common issues.  
 ### Testing
+  - Para rodar os testes Go, utilize sempre o container Docker da aplicação.
+  - Comandos principais:
+    - Testes unitários:
+      - docker exec -it go_inventory_dev go test ./tests/unit/SupplyInventory/Application/Controllers/...
+    - Testes de integração:
+      - docker exec -it go_inventory_dev go test ./tests/integration/SupplyInventory/Application/Controllers/...
+    - Todos os testes:
+      - docker exec -it go_inventory_dev go test ./...
+  - Certifique-se de instalar as dependências de teste no ambiente do container:
+    - github.com/stretchr/testify
+    - github.com/davecgh/go-spew/spew
+    - github.com/pmezard/go-difflib/difflib
+    - github.com/stretchr/objx
+  - Use mocks do testify para simular serviços e repositórios nos testes.
+  - Siga a estrutura de pastas de testes conforme o domínio do código.
   - Write unit tests for individual components and functions.
   - Implement integration tests to verify interactions between components.
     - Each api need to have a integration test.
@@ -48,13 +63,58 @@
   - Use testing frameworks and tools appropriate for the technology stack.
   - Write clear and descriptive test cases that outline expected behavior.
   - Perform load and performance testing to ensure the application can handle expected traffic.
-  - The tests structure must follow the same structure as the main codebase
-    - For example, if there is a file in:
+  - The tests structure must follow the mesma estrutura de pastas do código principal.
+    - Por exemplo, se existe um arquivo em:
       - /src/domain/PalletService.ts
-    - The test file must be located in:
+    - O teste deve estar em:
       - /tests/integration/domain/PalletService.test.ts
       - /tests/unit/domain/PalletService.test.ts
-  - The tests must use // Set // Expectations // Actions // Assertions structure for better readability.
+
+  - **Organização dos blocos dos testes:**
+    - Todos os testes devem ser organizados em blocos separados e comentados, seguindo a ordem:
+      - // Set
+      - // Expectations (se houver)
+      - // Actions
+      - // Assertions
+    - Deve haver uma linha em branco entre cada bloco.
+    - O bloco // Expectations só deve aparecer se houver expectativas de mocks; caso contrário, omita.
+    - Todos os comentários devem ser em inglês.
+
+    **Exemplo ERRADO:**
+    ```go
+    func TestCreatePallet_Success(t *testing.T) {
+        // Set
+        palletRepo := new(mocks.PalletRepository)
+        palletService := domain.NewPalletService(palletRepo)
+        pallet := &domain.Pallet{ID: "123", Name: "Test Pallet"}
+        palletRepo.On("Save", pallet).Return(nil)
+        // Actions
+        err := palletService.CreatePallet(pallet)
+        // Assertions
+        assert.NoError(t, err)
+        palletRepo.AssertExpectations(t)
+    }
+    ```
+
+    **Exemplo CERTO:**
+    ```go
+    func TestCreatePallet_Success(t *testing.T) {
+        // Set
+        palletRepo := new(mocks.PalletRepository)
+        palletService := domain.NewPalletService(palletRepo)
+        pallet := &domain.Pallet{ID: "123", Name: "Test Pallet"}
+
+        // Expectations
+        palletRepo.On("Save", pallet).Return(nil)
+
+        // Actions
+        err := palletService.CreatePallet(pallet)
+
+        // Assertions
+        assert.NoError(t, err)
+        palletRepo.AssertExpectations(t)
+    }
+    ```
 ### Commits
   - Use clear and descriptive commit messages that summarize the changes made.
   - Follow a consistent format for commit messages, such as:
