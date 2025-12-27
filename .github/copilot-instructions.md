@@ -52,7 +52,8 @@
     - For example, if there is a file in:
       - /src/domain/PalletService.ts
     - The test file must be located in:
-      - /tests/domain/PalletService.test.ts
+      - /tests/integration/domain/PalletService.test.ts
+      - /tests/unit/domain/PalletService.test.ts
   - The tests must use // Set // Expectations // Actions // Assertions structure for better readability.
 ### Commits
   - Use clear and descriptive commit messages that summarize the changes made.
