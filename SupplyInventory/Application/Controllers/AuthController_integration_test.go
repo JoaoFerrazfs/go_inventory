@@ -1,3 +1,4 @@
+// ...existing code...
 package controllers_test
 
 import (
@@ -54,17 +55,17 @@ func TestIntegration_Login(t *testing.T) {
        jwtService := services.NewJWTService()
        mockRepo := new(mockUserRepository)
        user := &domain.UserEntity{ID: 1, Email: "admin@example.com", Password: "$2a$10$hash"}
-	   userService := services.NewUserService(mockRepo)
+   userService := services.NewUserService(mockRepo)
        controller := controllers.NewAuthController(jwtService, userService)
-	   r := gin.Default()
+   r := gin.Default()
        api := r.Group("/api/v1/auth")
        controller.RegisterLogin(api)
 
-	   loginReq := requests.LoginRequest{
-	       Email:    "admin@example.com",
-	       Password: "admin123",
+   loginReq := requests.LoginRequest{
+       Email:    "admin@example.com",
+       Password: "admin123",
        }
-	   
+   
        body, _ := json.Marshal(loginReq)
 
        // Expectations

@@ -63,12 +63,9 @@
   - Use testing frameworks and tools appropriate for the technology stack.
   - Write clear and descriptive test cases that outline expected behavior.
   - Perform load and performance testing to ensure the application can handle expected traffic.
-  - The tests structure must follow the mesma estrutura de pastas do código principal.
-    - Por exemplo, se existe um arquivo em:
-      - /src/domain/PalletService.ts
-    - O teste deve estar em:
-      - /tests/integration/domain/PalletService.test.ts
-      - /tests/unit/domain/PalletService.test.ts
+  - Todos os arquivos de teste Go (_test.go) devem ficar na mesma pasta do arquivo que testam.
+    - Exemplo: se existe /SupplyInventory/Application/Controllers/AuthController.go, o teste deve ser /SupplyInventory/Application/Controllers/AuthController_test.go.
+    - Isso garante que o coverage funcione corretamente e segue o padrão da comunidade Go.
 
   - **Organização dos blocos dos testes:**
     - Todos os testes devem ser organizados em blocos separados e comentados, seguindo a ordem:
