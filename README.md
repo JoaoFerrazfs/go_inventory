@@ -47,5 +47,3 @@ O código segue uma arquitetura em camadas inspirada na Clean Architecture:
 - **Conteinerização**: Docker Compose para app e DB. 🐳
 - **Outras Bibliotecas**: `go-qrcode` para geração de QR, `dig` para DI, `gin-swagger` para docs, `godotenv` para vars de ambiente. 📚
 - **Ferramentas de Build/Dev**: `Makefile` para comandos como `make dev` para executar containers e monitorar Swagger. 🔧
-
-No geral, o projeto está bem estruturado para uma API estilo microserviço, com boa separação de responsabilidades. 🤝
