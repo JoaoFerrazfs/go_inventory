@@ -42,22 +42,25 @@
 ### Testing
   - Para rodar os testes Go, utilize sempre o container Docker da aplicação.
   - Comandos principais:
-    - Testes unitários:
-      - docker exec -it go_inventory_dev go test ./tests/unit/SupplyInventory/Application/Controllers/...
-    - Testes de integração:
-      - docker exec -it go_inventory_dev go test ./tests/integration/SupplyInventory/Application/Controllers/...
-    - Todos os testes:
+    - Testes unitários (com mocks):
+      - docker exec -it go_inventory_dev go test ./SupplyInventory/Application/Controllers/Auth/...
+    - Testes de integração (com banco de dados real):
+      - docker exec -it go_inventory_dev go test -tags integration ./SupplyInventory/Application/Controllers/Auth/...
+    - Todos os testes unitários:
       - docker exec -it go_inventory_dev go test ./...
+    - Todos os testes de integração:
+      - docker exec -it go_inventory_dev go test -tags integration ./...
   - Certifique-se de instalar as dependências de teste no ambiente do container:
     - github.com/stretchr/testify
     - github.com/davecgh/go-spew/spew
     - github.com/pmezard/go-difflib/difflib
     - github.com/stretchr/objx
-  - Use mocks do testify para simular serviços e repositórios nos testes.
+  - Use mocks do testify para simular serviços e repositórios nos testes unitários.
+  - Para testes de integração, use banco de dados MySQL real com containers.
   - Siga a estrutura de pastas de testes conforme o domínio do código.
   - Write unit tests for individual components and functions.
   - Implement integration tests to verify interactions between components.
-    - Each api need to have a integration test.
+    - Each API endpoint must have an integration test.
   - Use end-to-end testing to simulate real user scenarios.
   - Aim for high test coverage, focusing on critical and complex areas of the codebase.
   - Use testing frameworks and tools appropriate for the technology stack.
@@ -67,8 +70,9 @@
     - Exemplo: se existe /SupplyInventory/Application/Controllers/AuthController.go, o teste deve ser /SupplyInventory/Application/Controllers/AuthController_test.go.
     - Isso garante que o coverage funcione corretamente e segue o padrão da comunidade Go.
 
-  - **Organização dos blocos dos testes:**
-    - Todos os testes devem ser organizados em blocos separados e comentados, seguindo a ordem:
+  - **Estrutura dos Testes Unitários:**
+    - Use mocks para repositórios e serviços externos.
+    - Organize os testes em blocos separados e comentados, seguindo a ordem:
       - // Set
       - // Expectations (se houver)
       - // Actions
@@ -112,6 +116,79 @@
         palletRepo.AssertExpectations(t)
     }
     ```
+
+  - **Estrutura dos Testes de Integração:**
+    - Use banco de dados MySQL real (inventory_test) com AutoMigrate.
+    - Utilize transações para isolamento: cada teste roda dentro de uma transação que é revertida ao final.
+    - Trunque as tabelas antes de cada teste para garantir estado limpo.
+    - Use fixtures para criar dados de teste (CreateTestUser, CreateTestPallet, etc.).
+    - Os testes de integração devem usar build tags: //go:build integration
+    - Organize os testes em blocos separados e comentados, seguindo a ordem:
+      - // Set
+      - // Actions
+      - // Assertions
+    - Use IntegrationTestHelper para setup do banco e routers.
+    - Cada teste deve truncar tabelas fora da transação e usar transação para rollback.
+
+    **Exemplo de Teste de Integração:**
+    ```go
+    //go:build integration
+    // +build integration
+
+    package controllers_test
+
+    import (
+        "bytes"
+        "encoding/json"
+        "net/http"
+        "net/http/httptest"
+        "testing"
+
+        "github.com/stretchr/testify/assert"
+        "gorm.io/gorm"
+
+        userRequests "go_inventory/SupplyInventory/Application/Requests/User"
+        integration "go_inventory/SupplyInventory/tests/integration"
+    )
+
+    func TestIntegration_CreateUser(t *testing.T) {
+        h := integration.NewIntegrationTestHelper()
+        h.TruncateTables(h.DB)
+        h.DB.Transaction(func(tx *gorm.DB) error {
+            // Set
+            r := h.SetupRouterForUser(tx)
+
+            createReq := userRequests.UserRequest{
+                Name:     "Admin",
+                Email:    "admin@example.com",
+                Password: "admin123",
+            }
+            body, _ := json.Marshal(createReq)
+
+            // Actions
+            w := httptest.NewRecorder()
+            req, _ := http.NewRequest("POST", "/api/v1/users/create", bytes.NewBuffer(body))
+            req.Header.Set("Content-Type", "application/json")
+            r.ServeHTTP(w, req)
+
+            // Assertions
+            assert.Equal(t, http.StatusCreated, w.Code)
+            return nil
+        })
+    }
+    ```
+
+  - **Utilitários de Teste:**
+    - SupplyInventory/tests/testutils/db.go: SetupTestDB para criar DB de teste e AutoMigrate.
+    - SupplyInventory/tests/testutils/fixtures.go: Funções para criar dados de teste (CreateTestUser, etc.).
+    - SupplyInventory/tests/integration/helpers.go: IntegrationTestHelper com métodos para setup de routers e fixtures.
+    - Use transações para isolamento e truncate para limpeza entre testes.
+    - **Adicionando novas rotas:** Atualize a função `setupTestDependencies()` e crie método `SetupRouterFor{NewController}` - não é necessário modificar main.go.
+
+    **Estrutura do IntegrationTestHelper:**
+    - `setupTestDependencies(db)`: Função central que cria todas as dependências (repos, serviços) com DB de teste
+    - `SetupRouterFor{Controller}(db)`: Métodos específicos que usam as dependências para configurar routers individuais
+    - `SetupTestRouter(db)`: Router completo com todas as rotas para testes abrangentes
 ### Commits
   - Use clear and descriptive commit messages that summarize the changes made.
   - Follow a consistent format for commit messages, such as:

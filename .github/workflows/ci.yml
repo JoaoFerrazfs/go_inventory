@@ -7,17 +7,15 @@ on:
     branches: [ main ]
 
 jobs:
-  build-test-coverage:
+  unit-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-
       - name: Cache Go modules
         uses: actions/cache@v4
         with:
@@ -27,24 +25,50 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-
       - name: Build
         run: go build ./...
+      - name: Run unit tests
+        run: go test ./...  # Excludes integration due to build tags
 
-      - name: Run tests
-        run: go test ./...
-
+  integration-tests:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: inventory_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Wait for MySQL
+        run: |
+          until mysqladmin ping -h localhost -P 3306 --silent; do
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
+      - name: Run integration tests
+        env:
+          TEST_DB_DSN: root:root@tcp(localhost:3306)/inventory_test?charset=utf8mb4&parseTime=True&loc=Local
+        run: go test -tags integration ./...
       - name: Run tests with coverage (including main code)
         run: |
           PKGS=$(go list ./... | grep -v /tests/ | tr '\n' ',')
-          go test -coverpkg="$PKGS" -coverprofile=coverage.out ./...
-
-      - name: Show coverage summary
-        run: |
+          go test -tags integration -coverpkg="$PKGS" -coverprofile=coverage.out ./...
           go tool cover -func=coverage.out
-          total_cov=$(go tool cover -func=coverage.out | grep total | awk '{print substr($3, 1, length($3)-1)}')
-          echo "Total coverage: $total_cov%"
-          cov_num=${total_cov%.*}
-          if [ "$cov_num" -lt 80 ]; then
-            echo "::warning ::Test coverage is below 80% ($total_cov%)"
-          fi

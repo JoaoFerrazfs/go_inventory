@@ -1,3 +1,6 @@
+//go:build integration
+// +build integration
+
 package controllers_test
 
 import (
@@ -5,94 +8,39 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
+	"gorm.io/gorm"
 
-	errors "go_inventory/Helpers/Errors"
-	palletizedproduct "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
 	palletizedProductRequests "go_inventory/SupplyInventory/Application/Requests/PalletizedProduct"
-	palletizedProductService "go_inventory/SupplyInventory/Application/Services/PalletizedProduct"
-	entities "go_inventory/SupplyInventory/Domain/Entities"
+	integration "go_inventory/SupplyInventory/tests/integration"
 )
 
-type mockPalletRepository struct {
-	mock.Mock
-}
-
-func (m *mockPalletRepository) Create(pallet *entities.PalletEntity) error { return nil }
-func (m *mockPalletRepository) FindByID(id uint) (*entities.PalletEntity, error) { return nil, nil }
-func (m *mockPalletRepository) List() ([]*entities.PalletEntity, error) { return nil, nil }
-func (m *mockPalletRepository) DeleteByID(id uint) error { return nil }
-func (m *mockPalletRepository) Update(pallet *entities.PalletEntity) error { return nil }
-func (m *mockPalletRepository) AddProductsToPallet(product entities.PalletizedProductEntity) (*entities.PalletEntity, *errors.AppError) {
-	args := m.Called(product)
-	if args.Get(0) == nil {
-		return nil, args.Get(1).(*errors.AppError)
-	}
-	return args.Get(0).(*entities.PalletEntity), args.Get(1).(*errors.AppError)
-}
-func (m *mockPalletRepository) GetAllPallets() ([]entities.PalletEntity, *errors.AppError) { return nil, nil }
-func (m *mockPalletRepository) GetSupplyById(id uint) (*entities.PalletEntity, *errors.AppError) { return nil, nil }
-func (m *mockPalletRepository) AddSupply(name string, rackId uint) (*entities.PalletEntity, *errors.AppError) { return nil, nil }
-func (m *mockPalletRepository) UpdateSupply(pallet *entities.PalletEntity) (*entities.PalletEntity, *errors.AppError) { return nil, nil }
-func (m *mockPalletRepository) DeletePalletById(id uint) (bool, *errors.AppError) { return false, nil }
-func (m *mockPalletRepository) UpdatePallet(id uint, name string, rackId uint) (*entities.PalletEntity, *errors.AppError) { return nil, nil }
-
-type mockPalletizedProductRepository struct {
-	mock.Mock
-}
-
-// Métodos obrigatórios do PalletizedProductRepository
-func (m *mockPalletizedProductRepository) AddProductsToPallet(product entities.PalletizedProductEntity) (bool, *errors.AppError) {
-	args := m.Called(product)
-	return args.Bool(0), args.Get(1).(*errors.AppError)
-}
-func (m *mockPalletizedProductRepository) DeleteProductsFromPallet(palletId uint, productsEan int) (bool, *errors.AppError) {
-	args := m.Called(palletId, productsEan)
-	return args.Bool(0), args.Get(1).(*errors.AppError)
-}
-
-func setupPalletizedProductRouter() *gin.Engine {
-	mockPalletRepo := new(mockPalletRepository)
-	mockProductRepo := new(mockPalletizedProductRepository)
-	service := palletizedProductService.NewPalletizedProductService(mockPalletRepo, mockProductRepo)
-	controller := palletizedproduct.NewPalletizedProductController(service)
-
-	r := gin.Default()
-	api := r.Group("/api/v1/pallet/products")
-	controller.RegisterProductPallet(api)
-	return r
-}
-
 func TestIntegration_AddProductsToPallet(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	// Set
-	mockPalletRepo := new(mockPalletRepository)
-	mockProductRepo := new(mockPalletizedProductRepository)
-	service := palletizedProductService.NewPalletizedProductService(mockPalletRepo, mockProductRepo)
-	controller := palletizedproduct.NewPalletizedProductController(service)
-	r := gin.Default()
-	api := r.Group("/api/v1/pallet/products")
-	controller.RegisterProductPallet(api)
+	h := integration.NewIntegrationTestHelper()
+	h.TruncateTables(h.DB)
+	h.DB.Transaction(func(tx *gorm.DB) error {
+		// Set
+		rack := h.CreateTestPalletRack(tx, "Rack1_Product", "Location1", 10)
+		pallet := h.CreateTestPallet(tx, "Pallet1_Product", rack.ID)
+		r := h.SetupRouterForPalletizedProduct(tx)
 
-	addReq := palletizedProductRequests.PalletizedProductRequest{
-		EAN:      123,
-		Quantity: 10,
-	}
-	body, _ := json.Marshal(addReq)
+		addReq := palletizedProductRequests.PalletizedProductRequest{
+			EAN:      123,
+			Quantity: 10,
+		}
+		body, _ := json.Marshal(addReq)
 
-	// Expectations
-	mockProductRepo.On("AddProductsToPallet", mock.AnythingOfType("entities.PalletizedProductEntity")).Return(true, (*errors.AppError)(nil))
+		// Actions
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("PATCH", "/api/v1/palletized-products/"+strconv.Itoa(int(pallet.ID)), bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
+		r.ServeHTTP(w, req)
 
-	// Actions
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PATCH", "/api/v1/pallet/products/1", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-
-	// Assertions
-	assert.Contains(t, []int{http.StatusOK, http.StatusUnprocessableEntity}, w.Code)
+		// Assertions
+		assert.Equal(t, http.StatusOK, w.Code)
+		return nil
+	})
 }
