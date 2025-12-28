@@ -59,9 +59,21 @@ jobs:
             ${{ runner.os }}-go-
       - name: Wait for MySQL
         run: |
-          until mysqladmin ping -h localhost -P 3306 --silent; do
+          # Ensure mysql client is available on the runner
+          sudo apt-get update || true
+          sudo apt-get install -y default-mysql-client || sudo apt-get install -y mysql-client || true
+
+          # Wait for MySQL to become available with a timeout to avoid hanging the job
+          TIMEOUT=${{ env.MYSQL_STARTUP_TIMEOUT || 60 }}
+          INTERVAL=${{ env.MYSQL_POLL_INTERVAL || 2 }}
+          DEADLINE=$((SECONDS+TIMEOUT))
+          until mysqladmin ping -h 127.0.0.1 -P 3306 --silent; do
+            if [ $SECONDS -ge $DEADLINE ]; then
+              echo "Timed out waiting for MySQL after ${TIMEOUT}s"
+              exit 1
+            fi
             echo "Waiting for MySQL..."
-            sleep 2
+            sleep $INTERVAL
           done
       - name: Run integration tests
         env:
