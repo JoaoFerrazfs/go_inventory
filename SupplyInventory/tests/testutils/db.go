@@ -13,6 +13,9 @@ import (
 var TestDB *gorm.DB
 
 func SetupTestDB() *gorm.DB {
+	if TestDB != nil {
+		return TestDB
+	}
 	var dsn string
 	var dbName string = "inventory_test"
 
