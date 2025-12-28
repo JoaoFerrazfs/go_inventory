@@ -28,8 +28,6 @@ import (
 
 // TestDependencies holds all dependencies for integration tests
 type TestDependencies struct {
-	fx.Out
-
 	UserRepo                 User.UserRepository
 	PalletRepo               Pallet.PalletRepository
 	PalletizedProductRepo    PalletizedProduct.PalletizedProductRepository
