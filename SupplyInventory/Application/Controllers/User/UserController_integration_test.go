@@ -14,24 +14,24 @@ import (
 	user "go_inventory/SupplyInventory/Application/Controllers/User"
 	requests "go_inventory/SupplyInventory/Application/Requests"
 	services "go_inventory/SupplyInventory/Application/Services"
-	domain "go_inventory/SupplyInventory/Domain"
+	entities "go_inventory/SupplyInventory/Domain/Entities"
 )
 
 type mockUserRepository struct {
 	mock.Mock
 }
 
-func (m *mockUserRepository) Create(user *domain.UserEntity) error {
+func (m *mockUserRepository) Create(user *entities.UserEntity) error {
 	args := m.Called(user)
 	return args.Error(0)
 }
 
-func (m *mockUserRepository) FindByEmail(email string) (*domain.UserEntity, error) {
+func (m *mockUserRepository) FindByEmail(email string) (*entities.UserEntity, error) {
 	args := m.Called(email)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*domain.UserEntity), args.Error(1)
+	return args.Get(0).(*entities.UserEntity), args.Error(1)
 }
 
 func setupUserRouter() *gin.Engine {
@@ -65,7 +65,7 @@ func TestIntegration_CreateUser(t *testing.T) {
 
 	// Expectations
 	mockRepo.On("FindByEmail", "admin@example.com").Return(nil, nil)
-	mockRepo.On("Create", mock.AnythingOfType("*domain.UserEntity")).Return(nil)
+	mockRepo.On("Create", mock.AnythingOfType("*entities.UserEntity")).Return(nil)
 
 	// Actions
 	w := httptest.NewRecorder()

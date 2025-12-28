@@ -27,7 +27,7 @@ func (controller *PalletizedProductController) RegisterProductPallet(group *gin.
 // @Tags Palletized products
 // @Accept json
 // @Produce json
-// @Success 200 {object} domain.PalletizedProductEntity
+// @Success 200 {object} entities.PalletizedProductEntity
 // @Failure 422 {object} map[string]string
 // @Param palletId path int true "ID do pallet"
 // @Param pallet body requests.PalletizedProductRequest true "Palletized Product"

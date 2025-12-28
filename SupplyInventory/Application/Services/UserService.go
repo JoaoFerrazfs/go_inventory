@@ -2,26 +2,26 @@ package services
 
 import (
 	errors "go_inventory/Helpers/Errors"
-	domain "go_inventory/SupplyInventory/Domain"
-	infrastructure "go_inventory/SupplyInventory/Infrastructure"
+	entities "go_inventory/SupplyInventory/Domain/Entities"
+	userRepo "go_inventory/SupplyInventory/Domain/contracts/repositories/User"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService interface {
-	CreateUser(name string, email string, password string) (*domain.UserEntity, *errors.AppError)
-	Login(email string, password string) (*domain.UserEntity, *errors.AppError)
+    CreateUser(name string, email string, password string) (*entities.UserEntity, *errors.AppError)
+    Login(email string, password string) (*entities.UserEntity, *errors.AppError)
 }
 
 type userService struct {
-	Repository infrastructure.UserRepository
+	Repository userRepo.UserRepository
 }
 
-func NewUserService(repository infrastructure.UserRepository) UserService {
+func NewUserService(repository userRepo.UserRepository) UserService {
 	return &userService{Repository: repository}
 }
 
-func (service *userService) CreateUser(name, email, password string) (*domain.UserEntity, *errors.AppError) {
+func (service *userService) CreateUser(name, email, password string) (*entities.UserEntity, *errors.AppError) {
 	emailExists, _ := service.Repository.FindByEmail(email)
 	if emailExists != nil {
 		return nil, errors.NewAppError("Error checking existing email", 422)
@@ -32,7 +32,7 @@ func (service *userService) CreateUser(name, email, password string) (*domain.Us
 		return nil, errors.NewAppError("Could not hash password", 500)
 	}
 
-	user := &domain.UserEntity{
+	user := &entities.UserEntity{
 		Name:     name,
 		Email:    email,
 		Password: string(hashed),
@@ -45,7 +45,7 @@ func (service *userService) CreateUser(name, email, password string) (*domain.Us
 	return user, nil
 }
 
-func (service *userService) Login(email string, password string) (*domain.UserEntity, *errors.AppError) {
+func (service *userService) Login(email string, password string) (*entities.UserEntity, *errors.AppError) {
 	user, err := service.Repository.FindByEmail(email)
 	if err != nil {
 		return nil, errors.NewAppError("user not found", 404)

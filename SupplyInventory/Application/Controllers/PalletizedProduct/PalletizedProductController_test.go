@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	errors "go_inventory/Helpers/Errors"
 	palletizedproduct "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
-	domain "go_inventory/SupplyInventory/Domain"
+	entities "go_inventory/SupplyInventory/Domain/Entities"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -105,12 +105,12 @@ type mockPalletizedProductService struct {
 	mock.Mock
 }
 
-func (m *mockPalletizedProductService) AddProductsToPallet(palletId uint, ean int, quantity int) (*domain.PalletEntity, *errors.AppError) {
+func (m *mockPalletizedProductService) AddProductsToPallet(palletId uint, ean int, quantity int) (*entities.PalletEntity, *errors.AppError) {
 	args := m.Called(palletId, ean, quantity)
 	if args.Get(0) == nil {
 		return nil, args.Get(1).(*errors.AppError)
 	}
-	return args.Get(0).(*domain.PalletEntity), args.Get(1).(*errors.AppError)
+	return args.Get(0).(*entities.PalletEntity), args.Get(1).(*errors.AppError)
 }
 func (m *mockPalletizedProductService) DeleteProductsFromPallet(palletId uint, productsEan int) (bool, *errors.AppError) {
 	args := m.Called(palletId, productsEan)
@@ -122,7 +122,7 @@ func TestAddProductsToPallet_Success(t *testing.T) {
 	// Set
 	mockService := new(mockPalletizedProductService)
 	controller := palletizedproduct.NewPalletizedProductController(mockService)
-	pallet := &domain.PalletEntity{ID: 1, Name: "Test Pallet"}
+	pallet := &entities.PalletEntity{ID: 1, Name: "Test Pallet"}
 
 	// Expectations
 	mockService.On("AddProductsToPallet", uint(1), 123, 10).Return(pallet, (*errors.AppError)(nil))

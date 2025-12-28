@@ -1,24 +1,20 @@
 package db
 
 import (
-	"log"
-
-	domain "go_inventory/SupplyInventory/Domain"
+	entities "go_inventory/SupplyInventory/Domain/Entities"
 
 	"gorm.io/gorm"
 )
 
-// Recebe a instância do DB
-func Migrate(db *gorm.DB) {
+func Migrate(db *gorm.DB) error {
 	err := db.AutoMigrate(
-		&domain.PalletRackEntity{},
-		&domain.PalletEntity{},
-		&domain.PalletizedProductEntity{},
-		&domain.UserEntity{},
+		&entities.PalletRackEntity{},
+		&entities.PalletEntity{},
+		&entities.PalletizedProductEntity{},
+		&entities.UserEntity{},
 	)
 	if err != nil {
-		log.Fatal("Erro na migration:", err)
+		return err
 	}
-
-	log.Println("Migration realizada com sucesso")
+	return nil
 }

@@ -2,29 +2,30 @@ package services
 
 import (
 	errors "go_inventory/Helpers/Errors"
-	domain "go_inventory/SupplyInventory/Domain"
-	infrastructure "go_inventory/SupplyInventory/Infrastructure"
+	entities "go_inventory/SupplyInventory/Domain/Entities"
+	repositories "go_inventory/SupplyInventory/Domain/contracts/repositories/Pallet"
+	pproductRepo "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletizedProduct"
 )
 
 type PalletizedProductService interface {
-	AddProductsToPallet(PalletID uint, Ean int, Quantity int) (*domain.PalletEntity, *errors.AppError)
+	AddProductsToPallet(PalletID uint, Ean int, Quantity int) (*entities.PalletEntity, *errors.AppError)
 	DeleteProductsFromPallet(palletId uint, productsEan int) (bool, *errors.AppError)
 }
 
 type palletizedProductService struct {
-	palletRepository            infrastructure.PalletRepository
-	palletizedProductRepository infrastructure.PalletizedProductRepository
+	palletRepository            repositories.PalletRepository
+	palletizedProductRepository pproductRepo.PalletizedProductRepository
 }
 
 func NewPalletizedProductService(
-	palletRepository infrastructure.PalletRepository,
-	palletizedProductRepository infrastructure.PalletizedProductRepository,
+	palletRepository repositories.PalletRepository,
+	palletizedProductRepository pproductRepo.PalletizedProductRepository,
 ) PalletizedProductService {
 	return &palletizedProductService{palletRepository: palletRepository, palletizedProductRepository: palletizedProductRepository}
 }
 
-func (service *palletizedProductService) AddProductsToPallet(PalletID uint, Ean int, Quantity int) (*domain.PalletEntity, *errors.AppError) {
-	product := domain.PalletizedProductEntity{
+func (service *palletizedProductService) AddProductsToPallet(PalletID uint, Ean int, Quantity int) (*entities.PalletEntity, *errors.AppError) {
+	product := entities.PalletizedProductEntity{
 		PalletID: PalletID,
 		EAN:      Ean,
 		Quantity: Quantity,

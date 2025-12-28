@@ -1,4 +1,4 @@
-package domain
+package entities
 
 type PalletizedProductEntity struct {
 	ID       uint `gorm:"primaryKey"`

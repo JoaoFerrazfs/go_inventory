@@ -31,7 +31,7 @@ func (controller *PalletRackController) RegisterPalletRack(group *gin.RouterGrou
 // @Accept json
 // @Produce json
 // @Param PalletRack body requests.PalletRackRequest true "Palletized Product"
-// @Success 200 {object} domain.PalletRackEntity
+// @Success 200 {object} entities.PalletRackEntity
 // @Failure 422 {object} map[string]string
 // @Router /api/v1/racks [post]
 func (controller *PalletRackController) createPalletRack(c *gin.Context) {
@@ -57,7 +57,7 @@ func (controller *PalletRackController) createPalletRack(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param PalletRack body requests.PalletRackRequest true "Palletized Product"
-// @Success 200 {array} domain.PalletRackEntity
+// @Success 200 {array} entities.PalletRackEntity
 // @Failure 404 {object} map[string]string
 // @Router /api/v1/racks [get]
 func (controller *PalletRackController) listRacks(c *gin.Context) {
@@ -74,7 +74,7 @@ func (controller *PalletRackController) listRacks(c *gin.Context) {
 // @Tags Pallet Racks
 // @Accept json
 // @Produce json
-// @Success 200 {object} domain.PalletRackEntity
+// @Success 200 {object} entities.PalletRackEntity
 // @Failure 404 {object} map[string]string
 // @Failure 422 {object} map[string]string
 // @Param id path int true "ID do Rack"

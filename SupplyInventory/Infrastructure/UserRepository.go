@@ -1,32 +1,29 @@
 package infrastructure
 
 import (
-	domain "go_inventory/SupplyInventory/Domain"
+	entities "go_inventory/SupplyInventory/Domain/Entities"
+	repositories "go_inventory/SupplyInventory/Domain/contracts/repositories/User"
 
 	"gorm.io/gorm"
 )
 
-type UserRepository interface {
-	Create(user *domain.UserEntity) error
-	FindByEmail(email string) (*domain.UserEntity, error)
-}
 
 type userRepository struct {
 	db *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) UserRepository {
+func NewUserRepository(db *gorm.DB) repositories.UserRepository {
 	return &userRepository{db: db}
 }
 
-func (repository *userRepository) Create(user *domain.UserEntity) error {
+func (repository *userRepository) Create(user *entities.UserEntity) error {
 	return repository.db.Create(user).Error
 }
 
-func (repository *userRepository) FindByEmail(email string) (*domain.UserEntity, error) {
-	var user domain.UserEntity
-	if err := repository.db.Where("email = ?", email).First(&user).Error; err != nil {
-		return nil, err
-	}
-	return &user, nil
+func (repository *userRepository) FindByEmail(email string) (*entities.UserEntity, error) {
+       var user entities.UserEntity
+       if err := repository.db.Where("email = ?", email).First(&user).Error; err != nil {
+	       return nil, err
+       }
+       return &user, nil
 }

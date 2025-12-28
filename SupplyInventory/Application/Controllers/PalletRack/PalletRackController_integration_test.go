@@ -15,27 +15,27 @@ import (
 	palletRack "go_inventory/SupplyInventory/Application/Controllers/PalletRack"
 	requests "go_inventory/SupplyInventory/Application/Requests"
 	services "go_inventory/SupplyInventory/Application/Services"
-	domain "go_inventory/SupplyInventory/Domain"
+	entities "go_inventory/SupplyInventory/Domain/Entities"
 )
 
 type mockPalletRackRepository struct {
 	mock.Mock
 }
 
-func (m *mockPalletRackRepository) Create(name string, location string, totalCapacity int) (*domain.PalletRackEntity, error) {
+func (m *mockPalletRackRepository) Create(name string, location string, totalCapacity int) (*entities.PalletRackEntity, error) {
 	args := m.Called(name, location, totalCapacity)
-	return args.Get(0).(*domain.PalletRackEntity), args.Error(1)
+	return args.Get(0).(*entities.PalletRackEntity), args.Error(1)
 }
-func (m *mockPalletRackRepository) ListRacks() ([]domain.PalletRackEntity, error) {
+func (m *mockPalletRackRepository) ListRacks() ([]entities.PalletRackEntity, error) {
 	args := m.Called()
-	return args.Get(0).([]domain.PalletRackEntity), args.Error(1)
+	return args.Get(0).([]entities.PalletRackEntity), args.Error(1)
 }
-func (m *mockPalletRackRepository) FindPalletById(id uint) (*domain.PalletRackEntity, *errors.AppError) {
+func (m *mockPalletRackRepository) FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError) {
 	args := m.Called(id)
 	if args.Get(0) == nil {
 		return nil, args.Get(1).(*errors.AppError)
 	}
-	return args.Get(0).(*domain.PalletRackEntity), args.Get(1).(*errors.AppError)
+	return args.Get(0).(*entities.PalletRackEntity), args.Get(1).(*errors.AppError)
 }
 func (m *mockPalletRackRepository) DeleteRack(id uint) (bool, *errors.AppError) {
 	args := m.Called(id)
@@ -72,7 +72,7 @@ func TestIntegration_CreatePalletRack(t *testing.T) {
 
 	// Expectations
 	mockRepo.On("Create", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("int")).
-		Return(&domain.PalletRackEntity{}, nil)
+		Return(&entities.PalletRackEntity{}, nil)
 
 	// Actions
 	w := httptest.NewRecorder()

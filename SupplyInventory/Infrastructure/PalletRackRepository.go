@@ -1,18 +1,18 @@
 package infrastructure
 
 import (
-	"strings"
-
 	errors "go_inventory/Helpers/Errors"
-	domain "go_inventory/SupplyInventory/Domain"
+	domain "go_inventory/SupplyInventory/Domain/Entities"
+	entities "go_inventory/SupplyInventory/Domain/Entities"
+	"strings"
 
 	"gorm.io/gorm"
 )
 
 type PalletRackRepository interface {
-	Create(name string, location string, totalCapacity int) (*domain.PalletRackEntity, error)
-	ListRacks() ([]domain.PalletRackEntity, error)
-	FindPalletById(id uint) (*domain.PalletRackEntity, *errors.AppError)
+	Create(name string, location string, totalCapacity int) (*entities.PalletRackEntity, error)
+	ListRacks() ([]entities.PalletRackEntity, error)
+	FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError)
 	DeleteRack(id uint) (bool, *errors.AppError)
 }
 
@@ -24,8 +24,8 @@ func NewPalletRackRepository(db *gorm.DB) PalletRackRepository {
 	return &palletRackRepository{db: db}
 }
 
-func (repository *palletRackRepository) Create(name string, location string, totalCapacity int) (*domain.PalletRackEntity, error) {
-	palletRack := domain.NewPalletRackEntity(name, location, totalCapacity)
+func (repository *palletRackRepository) Create(name string, location string, totalCapacity int) (*entities.PalletRackEntity, error) {
+	palletRack := entities.NewPalletRackEntity(name, location, totalCapacity)
 
 	if err := repository.db.Save(&palletRack).Error; err != nil {
 		return nil, err
@@ -34,8 +34,8 @@ func (repository *palletRackRepository) Create(name string, location string, tot
 	return palletRack, nil
 }
 
-func (repository *palletRackRepository) ListRacks() ([]domain.PalletRackEntity, error) {
-	var racks []domain.PalletRackEntity
+func (repository *palletRackRepository) ListRacks() ([]entities.PalletRackEntity, error) {
+	var racks []entities.PalletRackEntity
 
 	if err := repository.db.Preload("Pallets").Find(&racks).Error; err != nil {
 		return nil, err
@@ -44,8 +44,8 @@ func (repository *palletRackRepository) ListRacks() ([]domain.PalletRackEntity, 
 	return racks, nil
 }
 
-func (repository *palletRackRepository) FindPalletById(id uint) (*domain.PalletRackEntity, *errors.AppError) {
-	var rack domain.PalletRackEntity
+func (repository *palletRackRepository) FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError) {
+	var rack entities.PalletRackEntity
 
 	if err := repository.db.Preload("Pallets.PalletizedProduct").
 		Preload("Pallets").First(&rack, id).Error; err != nil {

@@ -2,36 +2,33 @@ package infrastructure
 
 import (
 	errors "go_inventory/Helpers/Errors"
-	domain "go_inventory/SupplyInventory/Domain"
+	entities "go_inventory/SupplyInventory/Domain/Entities"
+	palletRepo "go_inventory/SupplyInventory/Domain/contracts/repositories/Pallet"
+	productRepo "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletizedProduct"
 
 	"gorm.io/gorm"
 )
 
-type PalletizedProductRepository interface {
-	AddProductsToPallet(product domain.PalletizedProductEntity) (bool, *errors.AppError)
-	DeleteProductsFromPallet(palletId uint, productsEan int) (bool, *errors.AppError)
-}
-
 type PalletizedProductRepositoryImpl struct {
-	db               *gorm.DB
-	palletRepository PalletRepository
+       db               *gorm.DB
+       palletRepository palletRepo.PalletRepository
 }
 
-func NewPalletizedProductRepository(db *gorm.DB, palletRepository PalletRepository) PalletizedProductRepository {
+func NewPalletizedProductRepository(db *gorm.DB, palletRepository palletRepo.PalletRepository) productRepo.PalletizedProductRepository {
 	return &PalletizedProductRepositoryImpl{db: db, palletRepository: palletRepository}
 }
 
-func (repository *PalletizedProductRepositoryImpl) AddProductsToPallet(product domain.PalletizedProductEntity) (bool, *errors.AppError) {
+func (repository *PalletizedProductRepositoryImpl) AddProductsToPallet(product entities.PalletizedProductEntity) (bool, *errors.AppError) {
 	pallet, err := repository.palletRepository.GetSupplyById(product.PalletID)
 	if err != nil || pallet == nil {
 		return false, err
 	}
 
-	for palletizedProduct := range pallet.PalletizedProduct {
-		if pallet.PalletizedProduct[palletizedProduct].EAN == product.EAN {
-			pallet.PalletizedProduct[palletizedProduct].Quantity = product.Quantity
+	for i := range pallet.PalletizedProduct {
+		if pallet.PalletizedProduct[i].EAN == product.EAN {
+			pallet.PalletizedProduct[i].Quantity = product.Quantity
 
-			if err := repository.db.Save(&pallet.PalletizedProduct[palletizedProduct]).Error; err != nil {
+			if err := repository.db.Save(&pallet.PalletizedProduct[i]).Error; err != nil {
 				return false, errors.NewAppError(err.Error(), 500)
 			}
 

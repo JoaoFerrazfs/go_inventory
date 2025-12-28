@@ -1,11 +1,11 @@
 package apiContracts
 
-import domain "go_inventory/SupplyInventory/Domain"
+import entities "go_inventory/SupplyInventory/Domain/Entities"
 
 type TransformedRack struct {
 	ID            uint
 	Name          string
-	Pallets       []domain.PalletEntity
+	Pallets       []entities.PalletEntity
 	Location      string
 	TotalCapacity int
 	PercetageUsed float64

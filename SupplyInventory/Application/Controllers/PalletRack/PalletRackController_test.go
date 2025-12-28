@@ -14,27 +14,27 @@ import (
 	errors "go_inventory/Helpers/Errors"
 	apiContracts "go_inventory/SupplyInventory/Application/ApiContracts"
 	palletRack "go_inventory/SupplyInventory/Application/Controllers/PalletRack"
-	domain "go_inventory/SupplyInventory/Domain"
+	entities "go_inventory/SupplyInventory/Domain/Entities"
 )
 
 type mockPalletRackService struct {
 	mock.Mock
 }
 
-func (m *mockPalletRackService) Create(name, location string, totalCapacity int) (*domain.PalletRackEntity, error) {
+func (m *mockPalletRackService) Create(name, location string, totalCapacity int) (*entities.PalletRackEntity, error) {
 	args := m.Called(name, location, totalCapacity)
-	return args.Get(0).(*domain.PalletRackEntity), nil
+	return args.Get(0).(*entities.PalletRackEntity), nil
 }
 func (m *mockPalletRackService) ListRacks() ([]apiContracts.TransformedRack, error) {
 	args := m.Called()
 	return args.Get(0).([]apiContracts.TransformedRack), args.Error(1)
 }
-func (m *mockPalletRackService) FindPalletById(id uint) (*domain.PalletRackEntity, *errors.AppError) {
+func (m *mockPalletRackService) FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError) {
 	args := m.Called(id)
 	if args.Get(0) == nil {
 		return nil, args.Get(1).(*errors.AppError)
 	}
-	return args.Get(0).(*domain.PalletRackEntity), nil
+	return args.Get(0).(*entities.PalletRackEntity), nil
 }
 func (m *mockPalletRackService) DeleteRack(id uint) (bool, *errors.AppError) {
 	args := m.Called(id)
@@ -46,7 +46,7 @@ func TestCreatePalletRack_Success(t *testing.T) {
 	// Set
 	mockService := new(mockPalletRackService)
 	controller := palletRack.NewPalletRackController(mockService)
-	rack := &domain.PalletRackEntity{ID: 1, Name: "Rack1"}
+	rack := &entities.PalletRackEntity{ID: 1, Name: "Rack1"}
 
 	// Expectations
 	mockService.On("Create", "Rack1", "A1", 100).Return(rack, nil)
@@ -113,7 +113,7 @@ func TestFindRackById_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mockService := new(mockPalletRackService)
 	controller := palletRack.NewPalletRackController(mockService)
-	rack := &domain.PalletRackEntity{ID: 1, Name: "Rack1"}
+	rack := &entities.PalletRackEntity{ID: 1, Name: "Rack1"}
 	mockService.On("FindPalletById", uint(1)).Return(rack, (*errors.AppError)(nil))
 	r := gin.Default()
 	group := r.Group("/")

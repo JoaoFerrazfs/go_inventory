@@ -1,4 +1,4 @@
-package domain
+package entities
 
 type PalletRackEntity struct {
 	ID            uint           `gorm:"primaryKey" json:"id"`

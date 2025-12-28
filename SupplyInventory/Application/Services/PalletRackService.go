@@ -3,14 +3,14 @@ package services
 import (
 	errors "go_inventory/Helpers/Errors"
 	apiContracts "go_inventory/SupplyInventory/Application/ApiContracts"
-	domain "go_inventory/SupplyInventory/Domain"
+	entities "go_inventory/SupplyInventory/Domain/Entities"
 	infrastructure "go_inventory/SupplyInventory/Infrastructure"
 )
 
 type PalletRackService interface {
-	Create(name string, location string, totalCapacity int) (*domain.PalletRackEntity, error)
+	Create(name string, location string, totalCapacity int) (*entities.PalletRackEntity, error)
 	ListRacks() ([]apiContracts.TransformedRack, error)
-	FindPalletById(id uint) (*domain.PalletRackEntity, *errors.AppError)
+	FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError)
 	DeleteRack(id uint) (bool, *errors.AppError)
 }
 
@@ -22,13 +22,13 @@ func NewPalletRackService(repository infrastructure.PalletRackRepository) Pallet
 	return &palletRackService{repository: repository}
 }
 
-func (service *palletRackService) Create(name string, location string, totalCapacity int) (*domain.PalletRackEntity, error) {
-	newPalletRack, err := service.repository.Create(name, location, totalCapacity)
-	if err != nil {
-		return nil, err
-	}
+func (service *palletRackService) Create(name string, location string, totalCapacity int) (*entities.PalletRackEntity, error) {
+       newPalletRack, err := service.repository.Create(name, location, totalCapacity)
+       if err != nil {
+	       return nil, err
+       }
 
-	return newPalletRack, nil
+       return newPalletRack, nil
 }
 
 func (service *palletRackService) ListRacks() ([]apiContracts.TransformedRack, error) {
@@ -56,13 +56,13 @@ func (service *palletRackService) ListRacks() ([]apiContracts.TransformedRack, e
 	return newIndices, nil
 }
 
-func (service *palletRackService) FindPalletById(id uint) (*domain.PalletRackEntity, *errors.AppError) {
-	racks, appErr := service.repository.FindPalletById(id)
-	if appErr != nil {
-		return nil, appErr
-	}
+func (service *palletRackService) FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError) {
+       racks, appErr := service.repository.FindPalletById(id)
+       if appErr != nil {
+	       return nil, appErr
+       }
 
-	return racks, nil
+       return racks, nil
 }
 
 func (service *palletRackService) DeleteRack(id uint) (bool, *errors.AppError) {

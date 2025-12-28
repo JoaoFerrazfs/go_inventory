@@ -30,7 +30,7 @@ func (controller *PalletController) Register(group *gin.RouterGroup) {
 // @Tags Pallets
 // @Accept json
 // @Produce json
-// @Success 200 {array} domain.PalletEntity
+// @Success 200 {array} entities.PalletEntity
 // @Failure 404 "Not Found"
 // @Router /api/v1/pallets [get]
 func (controller *PalletController) ListPallets(c *gin.Context) {
@@ -46,7 +46,7 @@ func (controller *PalletController) ListPallets(c *gin.Context) {
 // @Tags Pallets
 // @Accept json
 // @Produce json
-// @Success 200 {object} domain.PalletEntity
+// @Success 200 {object} entities.PalletEntity
 // @Failure 404 "Not Found"
 // @Param id path int true "ID do pallet"
 // @Router /api/v1/pallets/{id} [get]
@@ -71,7 +71,7 @@ func (controller *PalletController) FindPalletById(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param pallet body requests.PalletRequest true "Palletized Product"
-// @Success 200 {object} domain.PalletEntity
+// @Success 200 {object} entities.PalletEntity
 // @Failure 422 {object} map[string]string
 // @Failure 404 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -99,7 +99,7 @@ func (controller *PalletController) DeletePalletById(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param pallet body requests.PalletRequest true "Palletized Product"
-// @Success 200 {object} domain.PalletEntity
+// @Success 200 {object} entities.PalletEntity
 // @Failure 422 {object} map[string]string
 // @Router /api/v1/pallets [post]
 func (controller *PalletController) CreatePallet(c *gin.Context) {
@@ -124,7 +124,7 @@ func (controller *PalletController) CreatePallet(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param pallet body requests.PalletRequest true "Palletized Product"
-// @Success 200 {object} domain.PalletEntity
+// @Success 200 {object} entities.PalletEntity
 // @Failure 422 {object} map[string]string
 // @Param id path int true "ID do pallet"
 // @Router /api/v1/pallets/{id} [patch]

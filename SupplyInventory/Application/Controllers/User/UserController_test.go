@@ -13,14 +13,14 @@ import (
 
 	errors "go_inventory/Helpers/Errors"
 	user "go_inventory/SupplyInventory/Application/Controllers/User"
-	domain "go_inventory/SupplyInventory/Domain"
+	entities "go_inventory/SupplyInventory/Domain/Entities"
 )
 
 type mockUserService struct {
 	mock.Mock
 }
 
-func (m *mockUserService) CreateUser(name, email, password string) (*domain.UserEntity, *errors.AppError) {
+func (m *mockUserService) CreateUser(name, email, password string) (*entities.UserEntity, *errors.AppError) {
 	args := m.Called(name, email, password)
 	var appErr *errors.AppError
 	if args.Get(1) != nil {
@@ -29,10 +29,10 @@ func (m *mockUserService) CreateUser(name, email, password string) (*domain.User
 	if args.Get(0) == nil {
 		return nil, appErr
 	}
-	return args.Get(0).(*domain.UserEntity), appErr
+	return args.Get(0).(*entities.UserEntity), appErr
 }
 
-func (m *mockUserService) Login(email, password string) (*domain.UserEntity, *errors.AppError) {
+func (m *mockUserService) Login(email, password string) (*entities.UserEntity, *errors.AppError) {
 	return nil, nil
 }
 
@@ -41,7 +41,7 @@ func TestCreateUser_Success(t *testing.T) {
 	// Set
 	userMock := new(mockUserService)
 	controller := user.NewUserController(userMock)
-	user := &domain.UserEntity{ID: 1, Email: "test@example.com", Name: "Test User"}
+	user := &entities.UserEntity{ID: 1, Email: "test@example.com", Name: "Test User"}
 
 	// Expectations
 	userMock.On("CreateUser", "Test User", "test@example.com", "password").Return(user, nil)

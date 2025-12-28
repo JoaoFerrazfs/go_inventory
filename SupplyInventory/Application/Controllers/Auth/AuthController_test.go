@@ -15,7 +15,7 @@ import (
 	errors "go_inventory/Helpers/Errors"
 
 	auth "go_inventory/SupplyInventory/Application/Controllers/Auth"
-	domain "go_inventory/SupplyInventory/Domain"
+	entities "go_inventory/SupplyInventory/Domain/Entities"
 )
 
 
@@ -59,11 +59,11 @@ type mockUserService struct {
 	mock.Mock
 }
 
-func (m *mockUserService) CreateUser(name, email, password string) (*domain.UserEntity, *errors.AppError) {
+func (m *mockUserService) CreateUser(name, email, password string) (*entities.UserEntity, *errors.AppError) {
 	return nil, nil
 }
 
-func (m *mockUserService) Login(email, password string) (*domain.UserEntity, *errors.AppError) {
+func (m *mockUserService) Login(email, password string) (*entities.UserEntity, *errors.AppError) {
 	args := m.Called(email, password)
 	var appErr *errors.AppError
 	if args.Get(1) != nil {
@@ -72,7 +72,7 @@ func (m *mockUserService) Login(email, password string) (*domain.UserEntity, *er
 	if args.Get(0) == nil {
 		return nil, appErr
 	}
-	return args.Get(0).(*domain.UserEntity), appErr
+	return args.Get(0).(*entities.UserEntity), appErr
 }
 
 func TestLogin_Success(t *testing.T) {
@@ -83,7 +83,7 @@ func TestLogin_Success(t *testing.T) {
 	userMock := new(mockUserService)
 	controller := auth.NewAuthController(jwtMock, userMock)
 
-	user := &domain.UserEntity{ID: 1, Email: "test@example.com"}
+	user := &entities.UserEntity{ID: 1, Email: "test@example.com"}
 
 	// Expectations
 	userMock.On("Login", "test@example.com", "password").Return(user, nil)
@@ -232,7 +232,7 @@ func TestLogin_EmptyTokenAndRefreshToken(t *testing.T) {
 	userMock := new(mockUserService)
 	controller := auth.NewAuthController(jwtMock, userMock)
 
-	user := &domain.UserEntity{ID: 4, Email: "empty@example.com"}
+	user := &entities.UserEntity{ID: 4, Email: "empty@example.com"}
 
 	// Expectations
 	userMock.On("Login", "empty@example.com", "password").Return(user, nil)

@@ -27,7 +27,7 @@ func (controller *UserController) RegisterUserRoutes(group *gin.RouterGroup) {
 // @Accept json
 // @Produce json
 // @Param user body requests.UserRequest true "User"
-// @Success 201 {object} domain.UserEntity
+// @Success 201 {object} entities.UserEntity
 // @Failure 422 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /api/v1/users/create [post]
