@@ -1,23 +1,24 @@
+// (removed invalid import lines)
 package services
 
 import (
 	errors "go_inventory/Helpers/Errors"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
-	userRepo "go_inventory/SupplyInventory/Domain/contracts/repositories/User"
+	repositories "go_inventory/SupplyInventory/Domain/contracts/repositories/User"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService interface {
-    CreateUser(name string, email string, password string) (*entities.UserEntity, *errors.AppError)
-    Login(email string, password string) (*entities.UserEntity, *errors.AppError)
+	CreateUser(name string, email string, password string) (*entities.UserEntity, *errors.AppError)
+	Login(email string, password string) (*entities.UserEntity, *errors.AppError)
 }
 
 type userService struct {
-	Repository userRepo.UserRepository
+	Repository repositories.UserRepository
 }
 
-func NewUserService(repository userRepo.UserRepository) UserService {
+func NewUserService(repository repositories.UserRepository) UserService {
 	return &userService{Repository: repository}
 }
 

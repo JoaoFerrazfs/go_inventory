@@ -1,10 +1,11 @@
+// (removed invalid import lines)
 package services
 
 import (
 	errors "go_inventory/Helpers/Errors"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 	repositories "go_inventory/SupplyInventory/Domain/contracts/repositories/Pallet"
-	pproductRepo "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletizedProduct"
+	repositoriesProduct "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletizedProduct"
 )
 
 type PalletizedProductService interface {
@@ -14,12 +15,12 @@ type PalletizedProductService interface {
 
 type palletizedProductService struct {
 	palletRepository            repositories.PalletRepository
-	palletizedProductRepository pproductRepo.PalletizedProductRepository
+	palletizedProductRepository repositoriesProduct.PalletizedProductRepository
 }
 
 func NewPalletizedProductService(
 	palletRepository repositories.PalletRepository,
-	palletizedProductRepository pproductRepo.PalletizedProductRepository,
+	palletizedProductRepository repositoriesProduct.PalletizedProductRepository,
 ) PalletizedProductService {
 	return &palletizedProductService{palletRepository: palletRepository, palletizedProductRepository: palletizedProductRepository}
 }
