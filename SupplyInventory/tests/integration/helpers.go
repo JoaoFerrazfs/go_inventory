@@ -21,6 +21,12 @@ import (
 	User "go_inventory/SupplyInventory/Domain/contracts/repositories/User"
 	testutils "go_inventory/SupplyInventory/tests/testutils"
 
+	// infra repos for building services bound to provided DB
+	palletInfra "go_inventory/SupplyInventory/Infrastructure/repositories/Pallet"
+	palletRackInfra "go_inventory/SupplyInventory/Infrastructure/repositories/PalletRack"
+	palletizedProductInfra "go_inventory/SupplyInventory/Infrastructure/repositories/PalletizedProduct"
+	userInfra "go_inventory/SupplyInventory/Infrastructure/repositories/User"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
@@ -105,7 +111,10 @@ func (h *IntegrationTestHelper) Stop() error {
 // Each controller must have a corresponding SetupRouterFor{Controller} method
 // to ensure integration tests use the same dependency injection as production
 func (h *IntegrationTestHelper) SetupRouterForAuth(db *gorm.DB) *gin.Engine {
-	controller := auth.NewAuthController(h.JwtService, h.UserService)
+	// Build user service bound to provided DB/tx so it sees uncommitted data in the same transaction
+	userRepo := userInfra.NewUserRepository(db)
+	userSrv := userService.NewUserService(userRepo)
+	controller := auth.NewAuthController(h.JwtService, userSrv)
 	r := gin.Default()
 	api := r.Group("/api/v1/auth")
 	controller.RegisterLogin(api)
@@ -113,7 +122,10 @@ func (h *IntegrationTestHelper) SetupRouterForAuth(db *gorm.DB) *gin.Engine {
 }
 
 func (h *IntegrationTestHelper) SetupRouterForPallet(db *gorm.DB) *gin.Engine {
-	controller := pallet.NewPalletController(h.PalletService)
+	palletRepo := palletInfra.NewPalletRepository(db)
+	qrSrv := h.QrCodeService
+	palletSrv := palletService.NewPalletService(palletRepo, qrSrv)
+	controller := pallet.NewPalletController(palletSrv)
 	r := gin.Default()
 	api := r.Group("/api/v1/pallets")
 	controller.Register(api)
@@ -121,7 +133,10 @@ func (h *IntegrationTestHelper) SetupRouterForPallet(db *gorm.DB) *gin.Engine {
 }
 
 func (h *IntegrationTestHelper) SetupRouterForPalletizedProduct(db *gorm.DB) *gin.Engine {
-	controller := palletizedProduct.NewPalletizedProductController(h.PalletizedProductService)
+	palletRepo := palletInfra.NewPalletRepository(db)
+	palletizedProductRepo := palletizedProductInfra.NewPalletizedProductRepository(db, palletRepo)
+	palletizedProductSrv := palletizedProductService.NewPalletizedProductService(palletRepo, palletizedProductRepo)
+	controller := palletizedProduct.NewPalletizedProductController(palletizedProductSrv)
 	r := gin.Default()
 	api := r.Group("/api/v1/palletized-products")
 	controller.RegisterProductPallet(api)
@@ -129,7 +144,9 @@ func (h *IntegrationTestHelper) SetupRouterForPalletizedProduct(db *gorm.DB) *gi
 }
 
 func (h *IntegrationTestHelper) SetupRouterForPalletRack(db *gorm.DB) *gin.Engine {
-	controller := palletRack.NewPalletRackController(h.PalletRackService)
+	palletRackRepo := palletRackInfra.NewPalletRackRepository(db)
+	palletRackSrv := palletRackService.NewPalletRackService(palletRackRepo)
+	controller := palletRack.NewPalletRackController(palletRackSrv)
 	r := gin.Default()
 	api := r.Group("/api/v1/pallet-racks")
 	controller.RegisterPalletRack(api)
@@ -137,7 +154,9 @@ func (h *IntegrationTestHelper) SetupRouterForPalletRack(db *gorm.DB) *gin.Engin
 }
 
 func (h *IntegrationTestHelper) SetupRouterForUser(db *gorm.DB) *gin.Engine {
-	controller := user.NewUserController(h.UserService)
+	userRepo := userInfra.NewUserRepository(db)
+	userSrv := userService.NewUserService(userRepo)
+	controller := user.NewUserController(userSrv)
 	r := gin.Default()
 	api := r.Group("/api/v1/users")
 	controller.RegisterUserRoutes(api)
