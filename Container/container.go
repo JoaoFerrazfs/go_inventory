@@ -25,63 +25,61 @@ import (
 	contractPalletized "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletizedProduct"
 	contractUser "go_inventory/SupplyInventory/Domain/contracts/repositories/User"
 
-	"go.uber.org/dig"
+	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
 
-func BuildContainer(db *gorm.DB) *dig.Container {
-	container := dig.New()
+func BuildOptions(db *gorm.DB) fx.Option {
+	return fx.Options(
+		// Database
+		fx.Supply(db),
 
-	// DataBase
-	container.Provide(func() *gorm.DB { return db })
+		// Repositories Module
+		fx.Module("repositories",
+			fx.Provide(func(db *gorm.DB) contractPallet.PalletRepository {
+				return repositoriesPallet.NewPalletRepository(db)
+			}),
+			fx.Provide(func(db *gorm.DB) contractPalletRack.PalletRackRepository {
+				return repositoriesPalletRack.NewPalletRackRepository(db)
+			}),
+			fx.Provide(func(db *gorm.DB, palletRepo contractPallet.PalletRepository) contractPalletized.PalletizedProductRepository {
+				return repositoriesPalletizedProduct.NewPalletizedProductRepository(db, palletRepo)
+			}),
+			fx.Provide(func(db *gorm.DB) contractUser.UserRepository {
+				return repositoriesUser.NewUserRepository(db)
+			}),
+		),
 
-	// Repositories
-	container.Provide(func(db *gorm.DB) contractPallet.PalletRepository {
-		return repositoriesPallet.NewPalletRepository(db)
-	})
+		// Services Module
+		fx.Module("services",
+			fx.Provide(qrcode.NewQRCodeService),
+			fx.Provide(func(repo contractPallet.PalletRepository, qrService qrcode.QRCodeService) pallet.PalletService {
+				return pallet.NewPalletService(repo, qrService)
+			}),
+			fx.Provide(func(repo contractPalletRack.PalletRackRepository) palletrack.PalletRackService {
+				return palletrack.NewPalletRackService(repo)
+			}),
+			fx.Provide(func(palletRepo contractPallet.PalletRepository, palletizedRepo contractPalletized.PalletizedProductRepository) palletizedproduct.PalletizedProductService {
+				return palletizedproduct.NewPalletizedProductService(palletRepo, palletizedRepo)
+			}),
+			fx.Provide(jwt.NewJWTService),
+			fx.Provide(func(repo contractUser.UserRepository) user.UserService {
+				return user.NewUserService(repo)
+			}),
+		),
 
-	container.Provide(func(db *gorm.DB) contractPalletRack.PalletRackRepository {
-		return repositoriesPalletRack.NewPalletRackRepository(db)
-	})
+		// Controllers Module
+		fx.Module("controllers",
+			fx.Provide(palletController.NewPalletController),
+			fx.Provide(palletizedProductController.NewPalletizedProductController),
+			fx.Provide(palletRackController.NewPalletRackController),
+			fx.Provide(authController.NewAuthController),
+			fx.Provide(userController.NewUserController),
+		),
 
-	container.Provide(func(db *gorm.DB, palletRepo contractPallet.PalletRepository) contractPalletized.PalletizedProductRepository {
-		return repositoriesPalletizedProduct.NewPalletizedProductRepository(db, palletRepo)
-	})
-
-	container.Provide(func(db *gorm.DB) contractUser.UserRepository {
-		return repositoriesUser.NewUserRepository(db)
-	})
-
-	// Services
-	container.Provide(qrcode.NewQRCodeService)
-
-	container.Provide(func(repo contractPallet.PalletRepository, qrService qrcode.QRCodeService) pallet.PalletService {
-		return pallet.NewPalletService(repo, qrService)
-	})
-
-	container.Provide(func(repo contractPalletRack.PalletRackRepository) palletrack.PalletRackService {
-		return palletrack.NewPalletRackService(repo)
-	})
-
-	container.Provide(func(palletRepo contractPallet.PalletRepository, palletizedRepo contractPalletized.PalletizedProductRepository) palletizedproduct.PalletizedProductService {
-		return palletizedproduct.NewPalletizedProductService(palletRepo, palletizedRepo)
-	})
-
-	container.Provide(jwt.NewJWTService)
-
-	container.Provide(func(repo contractUser.UserRepository) user.UserService {
-		return user.NewUserService(repo)
-	})
-
-	// Api Controllers
-	container.Provide(palletController.NewPalletController)
-	container.Provide(palletizedProductController.NewPalletizedProductController)
-	container.Provide(palletRackController.NewPalletRackController)
-	container.Provide(authController.NewAuthController)
-	container.Provide(userController.NewUserController)
-
-	// Middlewares
-	container.Provide(middlewares.NewAuthMiddleware)
-
-	return container
+		// Middleware Module
+		fx.Module("middleware",
+			fx.Provide(middlewares.NewAuthMiddleware),
+		),
+	)
 }

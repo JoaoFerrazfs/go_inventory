@@ -1,19 +1,29 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
-	routes "go_inventory/SupplyInventory/Application/Routes"
+	container "go_inventory/Container"
 	db "go_inventory/SupplyInventory/Infrastructure/Db"
+
+	authControllerPkg "go_inventory/SupplyInventory/Application/Controllers/Auth"
+	palletControllerPkg "go_inventory/SupplyInventory/Application/Controllers/Pallet"
+	palletRackControllerPkg "go_inventory/SupplyInventory/Application/Controllers/PalletRack"
+	palletizedProductControllerPkg "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
+	userControllerPkg "go_inventory/SupplyInventory/Application/Controllers/User"
+	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"go.uber.org/fx"
+	"gorm.io/gorm"
 
 	_ "go_inventory/docs"
 )
@@ -28,6 +38,29 @@ import (
 // @host localhost:3000
 
 func main() {
+	// Carregar variáveis de ambiente
+	if err := godotenv.Load(); err != nil {
+		log.Println("Nenhum .env encontrado, usando variáveis do sistema")
+	}
+
+	// Conectar DB
+	dbInstance := db.Connect()
+
+	// Criar router
+	router := setupRouter()
+
+	app := fx.New(
+		container.BuildOptions(dbInstance),
+		fx.Provide(func() *gin.Engine { return router }),
+		fx.Invoke(migrateDB),
+		fx.Invoke(registerRoutes),
+		fx.Invoke(startServer),
+	)
+
+	app.Run()
+}
+
+func setupRouter() *gin.Engine {
 	router := gin.Default()
 
 	// Habilitar CORS para qualquer origem
@@ -61,31 +94,65 @@ func main() {
 		c.File("./frontend/build/index.html")
 	})
 
-	// Carregar variáveis de ambiente
-	if err := godotenv.Load(); err != nil {
-		log.Println("Nenhum .env encontrado, usando variáveis do sistema")
-	}
+	// Swagger
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Conectar e migrar DB
-	dbInstance := db.Connect()
+	return router
+}
+
+func migrateDB(dbInstance *gorm.DB) {
 	log.Println("Iniciando migration do banco de dados...")
 	if err := db.Migrate(dbInstance); err != nil {
 		log.Fatalf("Erro ao rodar migration: %v", err)
 	}
 	log.Println("Migration concluída com sucesso.")
+}
 
-	// Registrar rotas API
-	routes.RegisterRoutes(router, dbInstance)
+func registerRoutes(
+	router *gin.Engine,
+	palletController *palletControllerPkg.PalletController,
+	palletizedProductController *palletizedProductControllerPkg.PalletizedProductController,
+	palletRackController *palletRackControllerPkg.PalletRackController,
+	authController *authControllerPkg.AuthController,
+	userController *userControllerPkg.UserController,
+	authMiddleware *middlewares.AuthMiddleware,
+) {
+	apiV1 := router.Group("/api/v1")
 
-	// Swagger
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	palletsGroup := apiV1.Group("/pallets")
+	palletsGroup.Use(authMiddleware.Handler())
+	palletController.Register(palletsGroup)
 
+	palletProductsGroup := apiV1.Group("/pallet/products")
+	palletProductsGroup.Use(authMiddleware.Handler())
+	palletizedProductController.RegisterProductPallet(palletProductsGroup)
+
+	racksGroup := apiV1.Group("/racks")
+	racksGroup.Use(authMiddleware.Handler())
+	palletRackController.RegisterPalletRack(racksGroup)
+
+	authController.RegisterLogin(apiV1.Group("/auth"))
+
+	userController.RegisterUserRoutes(apiV1.Group("/users"))
+}
+
+func startServer(lc fx.Lifecycle, router *gin.Engine) {
 	port := os.Getenv("PORT")
 	server := &http.Server{
 		Addr:           ":" + port,
 		Handler:        router,
-		MaxHeaderBytes: 1 << 60, // 1MB, pode aumentar se precisar
+		MaxHeaderBytes: 1 << 60,
 	}
 
-	server.ListenAndServe()
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			log.Println("Starting server...")
+			go server.ListenAndServe()
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			log.Println("Stopping server...")
+			return server.Shutdown(ctx)
+		},
+	})
 }
