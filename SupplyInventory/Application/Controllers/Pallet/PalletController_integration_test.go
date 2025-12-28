@@ -13,7 +13,7 @@ import (
 
 	errors "go_inventory/Helpers/Errors"
 	pallet "go_inventory/SupplyInventory/Application/Controllers/Pallet"
-	requests "go_inventory/SupplyInventory/Application/Requests"
+	palletRequests "go_inventory/SupplyInventory/Application/Requests/Pallet"
 	palletService "go_inventory/SupplyInventory/Application/Services/Pallet"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 )
@@ -122,7 +122,7 @@ func TestIntegration_CreatePallet(t *testing.T) {
 	api := r.Group("/api/v1/pallets")
 	controller.Register(api)
 
-	createReq := requests.PalletRequest{
+	createReq := palletRequests.PalletRequest{
 		Name:        "Pallet1",
 		PalletRackID: 1,
 	}

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
-	requests "go_inventory/SupplyInventory/Application/Requests"
+	palletRequests "go_inventory/SupplyInventory/Application/Requests/Pallet"
 	pallet "go_inventory/SupplyInventory/Application/Services/Pallet"
 
 	"github.com/gin-gonic/gin"
@@ -70,7 +70,7 @@ func (controller *PalletController) FindPalletById(c *gin.Context) {
 // @Tags Pallets
 // @Accept json
 // @Produce json
-// @Param pallet body requests.PalletRequest true "Palletized Product"
+// @Param pallet body pallet.PalletRequest true "Palletized Product"
 // @Success 200 {object} entities.PalletEntity
 // @Failure 422 {object} map[string]string
 // @Failure 404 {object} map[string]string
@@ -98,12 +98,12 @@ func (controller *PalletController) DeletePalletById(c *gin.Context) {
 // @Tags Pallets
 // @Accept json
 // @Produce json
-// @Param pallet body requests.PalletRequest true "Palletized Product"
+// @Param pallet body pallet.PalletRequest true "Palletized Product"
 // @Success 200 {object} entities.PalletEntity
 // @Failure 422 {object} map[string]string
 // @Router /api/v1/pallets [post]
 func (controller *PalletController) CreatePallet(c *gin.Context) {
-	var req requests.PalletRequest
+	var req palletRequests.PalletRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": requestsHelper.FormatValidationErrors(err)})
 		return
@@ -123,7 +123,7 @@ func (controller *PalletController) CreatePallet(c *gin.Context) {
 // @Tags Pallets
 // @Accept json
 // @Produce json
-// @Param pallet body requests.PalletRequest true "Palletized Product"
+// @Param pallet body pallet.PalletRequest true "Palletized Product"
 // @Success 200 {object} entities.PalletEntity
 // @Failure 422 {object} map[string]string
 // @Param id path int true "ID do pallet"
@@ -135,7 +135,7 @@ func (controller *PalletController) UpdatePallet(c *gin.Context) {
 		return
 	}
 
-	var req requests.PalletRequest
+	var req palletRequests.PalletRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return

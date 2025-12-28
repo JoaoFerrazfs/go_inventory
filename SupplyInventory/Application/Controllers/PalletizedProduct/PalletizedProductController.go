@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
-	requests "go_inventory/SupplyInventory/Application/Requests"
+	palletizedProductRequests "go_inventory/SupplyInventory/Application/Requests/PalletizedProduct"
 	palletizedproduct "go_inventory/SupplyInventory/Application/Services/PalletizedProduct"
 
 	"github.com/gin-gonic/gin"
@@ -30,10 +30,10 @@ func (controller *PalletizedProductController) RegisterProductPallet(group *gin.
 // @Success 200 {object} entities.PalletizedProductEntity
 // @Failure 422 {object} map[string]string
 // @Param palletId path int true "ID do pallet"
-// @Param pallet body requests.PalletizedProductRequest true "Palletized Product"
+// @Param pallet body palletizedproduct.PalletizedProductRequest true "Palletized Product"
 // @Router /api/v1/pallet/products/{palletId} [patch]
 func (controller *PalletizedProductController) addProductsToPallet(c *gin.Context) {
-	var req requests.PalletizedProductRequest
+	var req palletizedProductRequests.PalletizedProductRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": requestsHelper.FormatValidationErrors(err)})

@@ -37,7 +37,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.LoginRequest"
+                            "$ref": "#/definitions/auth.LoginRequest"
                         }
                     }
                 ],
@@ -45,7 +45,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.AuthResponse"
+                            "$ref": "#/definitions/auth.AuthResponse"
                         }
                     },
                     "401": {
@@ -106,7 +106,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.RefreshTokenRequest"
+                            "$ref": "#/definitions/auth.RefreshTokenRequest"
                         }
                     }
                 ],
@@ -114,7 +114,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.RefreshResponse"
+                            "$ref": "#/definitions/auth.RefreshResponse"
                         }
                     },
                     "401": {
@@ -173,7 +173,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.PalletizedProductRequest"
+                            "$ref": "#/definitions/palletizedproduct.PalletizedProductRequest"
                         }
                     }
                 ],
@@ -181,7 +181,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.PalletizedProductEntity"
+                            "$ref": "#/definitions/entities.PalletizedProductEntity"
                         }
                     },
                     "422": {
@@ -267,7 +267,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/domain.PalletEntity"
+                                "$ref": "#/definitions/entities.PalletEntity"
                             }
                         }
                     },
@@ -294,7 +294,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.PalletRequest"
+                            "$ref": "#/definitions/pallet.PalletRequest"
                         }
                     }
                 ],
@@ -302,7 +302,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.PalletEntity"
+                            "$ref": "#/definitions/entities.PalletEntity"
                         }
                     },
                     "422": {
@@ -342,7 +342,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.PalletEntity"
+                            "$ref": "#/definitions/entities.PalletEntity"
                         }
                     },
                     "404": {
@@ -368,7 +368,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.PalletRequest"
+                            "$ref": "#/definitions/pallet.PalletRequest"
                         }
                     },
                     {
@@ -383,7 +383,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.PalletEntity"
+                            "$ref": "#/definitions/entities.PalletEntity"
                         }
                     },
                     "404": {
@@ -433,7 +433,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.PalletRequest"
+                            "$ref": "#/definitions/pallet.PalletRequest"
                         }
                     },
                     {
@@ -448,7 +448,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.PalletEntity"
+                            "$ref": "#/definitions/entities.PalletEntity"
                         }
                     },
                     "422": {
@@ -482,7 +482,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.PalletRackRequest"
+                            "$ref": "#/definitions/paletrack.PalletRackRequest"
                         }
                     }
                 ],
@@ -492,7 +492,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/domain.PalletRackEntity"
+                                "$ref": "#/definitions/entities.PalletRackEntity"
                             }
                         }
                     },
@@ -525,7 +525,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.PalletRackRequest"
+                            "$ref": "#/definitions/paletrack.PalletRackRequest"
                         }
                     }
                 ],
@@ -533,7 +533,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.PalletRackEntity"
+                            "$ref": "#/definitions/entities.PalletRackEntity"
                         }
                     },
                     "422": {
@@ -573,7 +573,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.PalletRackEntity"
+                            "$ref": "#/definitions/entities.PalletRackEntity"
                         }
                     },
                     "404": {
@@ -669,7 +669,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UserRequest"
+                            "$ref": "#/definitions/user.UserRequest"
                         }
                     }
                 ],
@@ -677,7 +677,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/domain.UserEntity"
+                            "$ref": "#/definitions/entities.UserEntity"
                         }
                     },
                     "422": {
@@ -703,7 +703,55 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "domain.PalletEntity": {
+        "auth.AuthResponse": {
+            "type": "object",
+            "properties": {
+                "refreshToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                }
+            }
+        },
+        "auth.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "auth.RefreshResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                }
+            }
+        },
+        "auth.RefreshTokenRequest": {
+            "type": "object",
+            "required": [
+                "refreshToken"
+            ],
+            "properties": {
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "entities.PalletEntity": {
             "type": "object",
             "required": [
                 "name",
@@ -722,7 +770,7 @@ const docTemplate = `{
                 "palletizedProduct": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/domain.PalletizedProductEntity"
+                        "$ref": "#/definitions/entities.PalletizedProductEntity"
                     }
                 },
                 "qr_code": {
@@ -733,7 +781,7 @@ const docTemplate = `{
                 }
             }
         },
-        "domain.PalletRackEntity": {
+        "entities.PalletRackEntity": {
             "type": "object",
             "required": [
                 "location",
@@ -753,7 +801,7 @@ const docTemplate = `{
                 "pallets": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/domain.PalletEntity"
+                        "$ref": "#/definitions/entities.PalletEntity"
                     }
                 },
                 "total_capacity": {
@@ -761,7 +809,7 @@ const docTemplate = `{
                 }
             }
         },
-        "domain.PalletizedProductEntity": {
+        "entities.PalletizedProductEntity": {
             "type": "object",
             "required": [
                 "ean",
@@ -782,7 +830,7 @@ const docTemplate = `{
                 }
             }
         },
-        "domain.UserEntity": {
+        "entities.UserEntity": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -802,22 +850,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.LoginRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.PalletRackRequest": {
+        "paletrack.PalletRackRequest": {
             "type": "object",
             "required": [
                 "location",
@@ -837,7 +870,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.PalletRequest": {
+        "pallet.PalletRequest": {
             "type": "object",
             "required": [
                 "name",
@@ -852,7 +885,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.PalletizedProductRequest": {
+        "palletizedproduct.PalletizedProductRequest": {
             "type": "object",
             "required": [
                 "ean",
@@ -867,18 +900,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.RefreshTokenRequest": {
-            "type": "object",
-            "required": [
-                "refreshToken"
-            ],
-            "properties": {
-                "refreshToken": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.UserRequest": {
+        "user.UserRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -895,28 +917,6 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "minLength": 8
-                }
-            }
-        },
-        "responses.AuthResponse": {
-            "type": "object",
-            "properties": {
-                "refreshToken": {
-                    "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                },
-                "token": {
-                    "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                }
-            }
-        },
-        "responses.RefreshResponse": {
-            "type": "object",
-            "properties": {
-                "token": {
-                    "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 }
             }
         }

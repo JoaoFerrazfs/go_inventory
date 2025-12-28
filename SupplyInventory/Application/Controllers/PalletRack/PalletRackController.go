@@ -5,7 +5,7 @@ import (
 
 	development "go_inventory/Helpers/Development"
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
-	requests "go_inventory/SupplyInventory/Application/Requests"
+	palletRackRequests "go_inventory/SupplyInventory/Application/Requests/PalletRack"
 	palletrack "go_inventory/SupplyInventory/Application/Services/PalletRack"
 
 	"github.com/gin-gonic/gin"
@@ -30,12 +30,12 @@ func (controller *PalletRackController) RegisterPalletRack(group *gin.RouterGrou
 // @Tags Pallet Racks
 // @Accept json
 // @Produce json
-// @Param PalletRack body requests.PalletRackRequest true "Palletized Product"
+// @Param PalletRack body paletrack.PalletRackRequest true "Palletized Product"
 // @Success 200 {object} entities.PalletRackEntity
 // @Failure 422 {object} map[string]string
 // @Router /api/v1/racks [post]
 func (controller *PalletRackController) createPalletRack(c *gin.Context) {
-	var req requests.PalletRackRequest
+	var req palletRackRequests.PalletRackRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		development.Dump(req)
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": requestsHelper.FormatValidationErrors(err)})
@@ -56,7 +56,7 @@ func (controller *PalletRackController) createPalletRack(c *gin.Context) {
 // @Tags Pallet Racks
 // @Accept json
 // @Produce json
-// @Param PalletRack body requests.PalletRackRequest true "Palletized Product"
+// @Param PalletRack body paletrack.PalletRackRequest true "Palletized Product"
 // @Success 200 {array} entities.PalletRackEntity
 // @Failure 404 {object} map[string]string
 // @Router /api/v1/racks [get]

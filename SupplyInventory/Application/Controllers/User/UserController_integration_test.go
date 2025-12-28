@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	user "go_inventory/SupplyInventory/Application/Controllers/User"
-	requests "go_inventory/SupplyInventory/Application/Requests"
+	userRequests "go_inventory/SupplyInventory/Application/Requests/User"
 	userServicePkg "go_inventory/SupplyInventory/Application/Services/User"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 )
@@ -56,7 +56,7 @@ func TestIntegration_CreateUser(t *testing.T) {
 	api := r.Group("/api/v1/users")
 	controller.RegisterUserRoutes(api)
 
-	createReq := requests.UserRequest{
+	createReq := userRequests.UserRequest{
 		Name:     "Admin",
 		Email:    "admin@example.com",
 		Password: "admin123",

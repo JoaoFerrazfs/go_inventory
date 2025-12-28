@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
-	requests "go_inventory/SupplyInventory/Application/Requests"
+	userRequests "go_inventory/SupplyInventory/Application/Requests/User"
 	user "go_inventory/SupplyInventory/Application/Services/User"
 
 	"github.com/gin-gonic/gin"
@@ -26,13 +26,13 @@ func (controller *UserController) RegisterUserRoutes(group *gin.RouterGroup) {
 // @Tags Users
 // @Accept json
 // @Produce json
-// @Param user body requests.UserRequest true "User"
+// @Param user body user.UserRequest true "User"
 // @Success 201 {object} entities.UserEntity
 // @Failure 422 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /api/v1/users/create [post]
 func (controller *UserController) Create(c *gin.Context) {
-	var req requests.UserRequest
+	var req userRequests.UserRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": requestsHelper.FormatValidationErrors(err)})

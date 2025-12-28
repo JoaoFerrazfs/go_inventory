@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	auth "go_inventory/SupplyInventory/Application/Controllers/Auth"
-	requests "go_inventory/SupplyInventory/Application/Requests"
+	authRequests "go_inventory/SupplyInventory/Application/Requests/Auth"
 	jwtService "go_inventory/SupplyInventory/Application/Services/Jwt"
 	userService "go_inventory/SupplyInventory/Application/Services/User"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
@@ -61,7 +61,7 @@ func TestIntegration_Login(t *testing.T) {
 	api := r.Group("/api/v1/auth")
 	controller.RegisterLogin(api)
 
-	loginReq := requests.LoginRequest{
+	loginReq := authRequests.LoginRequest{
 		Email:    "admin@example.com",
 		Password: "admin123",
 	}

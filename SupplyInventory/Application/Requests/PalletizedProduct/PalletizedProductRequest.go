@@ -1,4 +1,4 @@
-package requests
+package palletizedproduct
 
 type PalletizedProductRequest struct {
 	EAN      int `json:"ean" binding:"required"`

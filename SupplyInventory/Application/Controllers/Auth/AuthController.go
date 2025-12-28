@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
-	requests "go_inventory/SupplyInventory/Application/Requests"
-	responses "go_inventory/SupplyInventory/Application/Responses"
+	authRequests "go_inventory/SupplyInventory/Application/Requests/Auth"
+	authResponses "go_inventory/SupplyInventory/Application/Responses/Auth"
 	jwt "go_inventory/SupplyInventory/Application/Services/Jwt"
 	user "go_inventory/SupplyInventory/Application/Services/User"
 
@@ -30,15 +30,15 @@ func (controller *AuthController) RegisterLogin(group *gin.RouterGroup) {
 // @Tags Authentication
 // @Accept json
 // @Produce json
-// @Param userData body requests.LoginRequest true "User Data"
-// @Success 200 {object} responses.AuthResponse
+// @Param userData body auth.LoginRequest true "User Data"
+// @Success 200 {object} auth.AuthResponse
 // @Failure 422 {object} map[string]string
 // @Failure 401 {object} map[string]string
 // @Failure 404 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /api/v1/auth/login [post]
 func (controller *AuthController) Login(context *gin.Context) {
-	var req requests.LoginRequest
+	var req authRequests.LoginRequest
 
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusUnprocessableEntity, gin.H{"error": requestsHelper.FormatValidationErrors(err)})
@@ -63,7 +63,7 @@ func (controller *AuthController) Login(context *gin.Context) {
 		return
 	}
 
-	response := responses.AuthResponse{
+	response := authResponses.AuthResponse{
 		Token:        token,
 		RefreshToken: refreshToken,
 	}
@@ -75,14 +75,14 @@ func (controller *AuthController) Login(context *gin.Context) {
 // @Tags Authentication
 // @Accept json
 // @Produce json
-// @Param refreshToken body requests.RefreshTokenRequest true "Refresh Token"
-// @Success 200 {object} responses.RefreshResponse
+// @Param refreshToken body auth.RefreshTokenRequest true "Refresh Token"
+// @Success 200 {object} auth.RefreshResponse
 // @Failure 401 {object} map[string]string
 // @Failure 422 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /api/v1/auth/refreshToken [post]
 func (controller *AuthController) RefreshToken(context *gin.Context) {
-	var req requests.RefreshTokenRequest
+	var req authRequests.RefreshTokenRequest
 
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusUnprocessableEntity, gin.H{"error": requestsHelper.FormatValidationErrors(err)})
@@ -95,7 +95,7 @@ func (controller *AuthController) RefreshToken(context *gin.Context) {
 		return
 	}
 
-	response := responses.RefreshResponse{
+	response := authResponses.RefreshResponse{
 		Token: token,
 	}
 

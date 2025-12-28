@@ -1,5 +1,37 @@
 definitions:
-  domain.PalletEntity:
+  auth.AuthResponse:
+    properties:
+      refreshToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  auth.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  auth.RefreshResponse:
+    properties:
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  auth.RefreshTokenRequest:
+    properties:
+      refreshToken:
+        type: string
+    required:
+    - refreshToken
+    type: object
+  entities.PalletEntity:
     properties:
       id:
         type: integer
@@ -9,7 +41,7 @@ definitions:
         type: integer
       palletizedProduct:
         items:
-          $ref: '#/definitions/domain.PalletizedProductEntity'
+          $ref: '#/definitions/entities.PalletizedProductEntity'
         type: array
       qr_code:
         type: string
@@ -19,7 +51,7 @@ definitions:
     - name
     - palletRackId
     type: object
-  domain.PalletRackEntity:
+  entities.PalletRackEntity:
     properties:
       id:
         type: integer
@@ -29,7 +61,7 @@ definitions:
         type: string
       pallets:
         items:
-          $ref: '#/definitions/domain.PalletEntity'
+          $ref: '#/definitions/entities.PalletEntity'
         type: array
       total_capacity:
         type: integer
@@ -38,7 +70,7 @@ definitions:
     - name
     - total_capacity
     type: object
-  domain.PalletizedProductEntity:
+  entities.PalletizedProductEntity:
     properties:
       ean:
         type: integer
@@ -52,7 +84,7 @@ definitions:
     - ean
     - quantity
     type: object
-  domain.UserEntity:
+  entities.UserEntity:
     properties:
       created_at:
         type: string
@@ -65,17 +97,7 @@ definitions:
       updated_at:
         type: string
     type: object
-  requests.LoginRequest:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - password
-    type: object
-  requests.PalletRackRequest:
+  paletrack.PalletRackRequest:
     properties:
       location:
         type: string
@@ -89,7 +111,7 @@ definitions:
     - name
     - totalCapacity
     type: object
-  requests.PalletRequest:
+  pallet.PalletRequest:
     properties:
       name:
         type: string
@@ -99,7 +121,7 @@ definitions:
     - name
     - palletRackId
     type: object
-  requests.PalletizedProductRequest:
+  palletizedproduct.PalletizedProductRequest:
     properties:
       ean:
         type: integer
@@ -109,14 +131,7 @@ definitions:
     - ean
     - quantity
     type: object
-  requests.RefreshTokenRequest:
-    properties:
-      refreshToken:
-        type: string
-    required:
-    - refreshToken
-    type: object
-  requests.UserRequest:
+  user.UserRequest:
     properties:
       email:
         type: string
@@ -129,21 +144,6 @@ definitions:
     - email
     - name
     - password
-    type: object
-  responses.AuthResponse:
-    properties:
-      refreshToken:
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-        type: string
-      token:
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-        type: string
-    type: object
-  responses.RefreshResponse:
-    properties:
-      token:
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-        type: string
     type: object
 host: localhost:3000
 info:
@@ -164,14 +164,14 @@ paths:
         name: userData
         required: true
         schema:
-          $ref: '#/definitions/requests.LoginRequest'
+          $ref: '#/definitions/auth.LoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.AuthResponse'
+            $ref: '#/definitions/auth.AuthResponse'
         "401":
           description: Unauthorized
           schema:
@@ -209,14 +209,14 @@ paths:
         name: refreshToken
         required: true
         schema:
-          $ref: '#/definitions/requests.RefreshTokenRequest'
+          $ref: '#/definitions/auth.RefreshTokenRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.RefreshResponse'
+            $ref: '#/definitions/auth.RefreshResponse'
         "401":
           description: Unauthorized
           schema:
@@ -253,14 +253,14 @@ paths:
         name: pallet
         required: true
         schema:
-          $ref: '#/definitions/requests.PalletizedProductRequest'
+          $ref: '#/definitions/palletizedproduct.PalletizedProductRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.PalletizedProductEntity'
+            $ref: '#/definitions/entities.PalletizedProductEntity'
         "422":
           description: Unprocessable Entity
           schema:
@@ -316,7 +316,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/domain.PalletEntity'
+              $ref: '#/definitions/entities.PalletEntity'
             type: array
         "404":
           description: Not Found
@@ -332,14 +332,14 @@ paths:
         name: pallet
         required: true
         schema:
-          $ref: '#/definitions/requests.PalletRequest'
+          $ref: '#/definitions/pallet.PalletRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.PalletEntity'
+            $ref: '#/definitions/entities.PalletEntity'
         "422":
           description: Unprocessable Entity
           schema:
@@ -359,7 +359,7 @@ paths:
         name: pallet
         required: true
         schema:
-          $ref: '#/definitions/requests.PalletRequest'
+          $ref: '#/definitions/pallet.PalletRequest'
       - description: ID do pallet
         in: path
         name: id
@@ -371,7 +371,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.PalletEntity'
+            $ref: '#/definitions/entities.PalletEntity'
         "404":
           description: Not Found
           schema:
@@ -408,7 +408,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.PalletEntity'
+            $ref: '#/definitions/entities.PalletEntity'
         "404":
           description: Not Found
       summary: Get pallet by ID
@@ -423,7 +423,7 @@ paths:
         name: pallet
         required: true
         schema:
-          $ref: '#/definitions/requests.PalletRequest'
+          $ref: '#/definitions/pallet.PalletRequest'
       - description: ID do pallet
         in: path
         name: id
@@ -435,7 +435,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.PalletEntity'
+            $ref: '#/definitions/entities.PalletEntity'
         "422":
           description: Unprocessable Entity
           schema:
@@ -455,7 +455,7 @@ paths:
         name: PalletRack
         required: true
         schema:
-          $ref: '#/definitions/requests.PalletRackRequest'
+          $ref: '#/definitions/paletrack.PalletRackRequest'
       produces:
       - application/json
       responses:
@@ -463,7 +463,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/domain.PalletRackEntity'
+              $ref: '#/definitions/entities.PalletRackEntity'
             type: array
         "404":
           description: Not Found
@@ -483,14 +483,14 @@ paths:
         name: PalletRack
         required: true
         schema:
-          $ref: '#/definitions/requests.PalletRackRequest'
+          $ref: '#/definitions/paletrack.PalletRackRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.PalletRackEntity'
+            $ref: '#/definitions/entities.PalletRackEntity'
         "422":
           description: Unprocessable Entity
           schema:
@@ -551,7 +551,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.PalletRackEntity'
+            $ref: '#/definitions/entities.PalletRackEntity'
         "404":
           description: Not Found
           schema:
@@ -577,14 +577,14 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/requests.UserRequest'
+          $ref: '#/definitions/user.UserRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/domain.UserEntity'
+            $ref: '#/definitions/entities.UserEntity'
         "422":
           description: Unprocessable Entity
           schema:

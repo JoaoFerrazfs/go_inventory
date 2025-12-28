@@ -1,4 +1,4 @@
-package requests
+package paletrack
 
 type PalletRackRequest struct {
 	Name          string `binding:"required"`

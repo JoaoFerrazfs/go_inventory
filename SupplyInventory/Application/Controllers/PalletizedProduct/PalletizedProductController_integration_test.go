@@ -13,7 +13,7 @@ import (
 
 	errors "go_inventory/Helpers/Errors"
 	palletizedproduct "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
-	requests "go_inventory/SupplyInventory/Application/Requests"
+	palletizedProductRequests "go_inventory/SupplyInventory/Application/Requests/PalletizedProduct"
 	palletizedProductService "go_inventory/SupplyInventory/Application/Services/PalletizedProduct"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 )
@@ -78,7 +78,7 @@ func TestIntegration_AddProductsToPallet(t *testing.T) {
 	api := r.Group("/api/v1/pallet/products")
 	controller.RegisterProductPallet(api)
 
-	addReq := requests.PalletizedProductRequest{
+	addReq := palletizedProductRequests.PalletizedProductRequest{
 		EAN:      123,
 		Quantity: 10,
 	}
