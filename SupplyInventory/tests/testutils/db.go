@@ -3,6 +3,8 @@ package testutils
 import (
 	"log"
 	"os"
+	"strconv"
+	"time"
 
 	dbInfra "go_inventory/SupplyInventory/Infrastructure/Db"
 
@@ -25,20 +27,41 @@ func SetupTestDB() *gorm.DB {
 	dbPass := os.Getenv("TEST_DB_PASSWORD")
 
 	if dbHost != "" && dbPort != "" && dbUser != "" {
-		// First, connect without DB to create it
-		dsnNoDB := dbUser + ":" + dbPass + "@tcp(" + dbHost + ":" + dbPort + ")/?charset=utf8mb4&parseTime=True&loc=Local"
-		dbTemp, err := gorm.Open(mysql.Open(dsnNoDB), &gorm.Config{})
-		if err != nil {
-			log.Fatal("Failed to connect to DB server:", err)
+		// Wait for DB server to be available (useful in CI where DB may start slowly)
+		waitSeconds := 30
+		if v := os.Getenv("TEST_DB_WAIT_SECONDS"); v != "" {
+			if n, err := strconv.Atoi(v); err == nil && n > 0 {
+				waitSeconds = n
+			}
 		}
-		sqlDBTemp, _ := dbTemp.DB()
-		defer sqlDBTemp.Close()
-		if err := sqlDBTemp.Ping(); err != nil {
-			log.Fatal("Error pinging DB server:", err)
+		retryIntervalMs := 500
+		if v := os.Getenv("TEST_DB_RETRY_INTERVAL_MS"); v != "" {
+			if n, err := strconv.Atoi(v); err == nil && n > 0 {
+				retryIntervalMs = n
+			}
 		}
-		// Create DB if not exists
-		dbTemp.Exec("CREATE DATABASE IF NOT EXISTS " + dbName)
-		dsn = dbUser + ":" + dbPass + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local"
+
+		deadline := time.Now().Add(time.Duration(waitSeconds) * time.Second)
+		var dbTemp *gorm.DB
+		var err error
+		for time.Now().Before(deadline) {
+			dsnNoDB := dbUser + ":" + dbPass + "@tcp(" + dbHost + ":" + dbPort + ")/?charset=utf8mb4&parseTime=True&loc=Local"
+			dbTemp, err = gorm.Open(mysql.Open(dsnNoDB), &gorm.Config{})
+			if err == nil {
+				sqlDBTemp, _ := dbTemp.DB()
+				if sqlDBTemp.Ping() == nil {
+					// Create DB if not exists
+					dbTemp.Exec("CREATE DATABASE IF NOT EXISTS " + dbName)
+					dsn = dbUser + ":" + dbPass + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local"
+					break
+				}
+				sqlDBTemp.Close()
+			}
+			time.Sleep(time.Duration(retryIntervalMs) * time.Millisecond)
+		}
+		if dsn == "" {
+			log.Fatalf("Failed to connect to DB server within %d seconds", waitSeconds)
+		}
 	} else {
 		// fallback for local tests
 		dsnNoDB := "root:root@tcp(db:3306)/?charset=utf8mb4&parseTime=True&loc=Local"
