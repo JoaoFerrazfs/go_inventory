@@ -67,7 +67,11 @@ func main() {
 
 	// Conectar e migrar DB
 	dbInstance := db.Connect()
-	db.Migrate(dbInstance)
+	log.Println("Iniciando migration do banco de dados...")
+	if err := db.Migrate(dbInstance); err != nil {
+		log.Fatalf("Erro ao rodar migration: %v", err)
+	}
+	log.Println("Migration concluída com sucesso.")
 
 	// Registrar rotas API
 	routes.RegisterRoutes(router, dbInstance)
