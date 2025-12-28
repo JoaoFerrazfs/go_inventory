@@ -8,7 +8,11 @@ import (
 	userController "go_inventory/SupplyInventory/Application/Controllers/User"
 	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
 	services "go_inventory/SupplyInventory/Application/Services"
-	infrastructure "go_inventory/SupplyInventory/Infrastructure"
+
+	repositoriesPallet "go_inventory/SupplyInventory/Infrastructure/repositories/Pallet"
+	repositoriesPalletRack "go_inventory/SupplyInventory/Infrastructure/repositories/PalletRack"
+	repositoriesPalletizedProduct "go_inventory/SupplyInventory/Infrastructure/repositories/PalletizedProduct"
+	repositoriesUser "go_inventory/SupplyInventory/Infrastructure/repositories/User"
 
 	"go.uber.org/dig"
 	"gorm.io/gorm"
@@ -21,10 +25,10 @@ func BuildContainer(db *gorm.DB) *dig.Container {
 	container.Provide(func() *gorm.DB { return db })
 
 	// Repositories
-	container.Provide(infrastructure.NewPalletRepository)
-	container.Provide(infrastructure.NewPalletRackRepository)
-	container.Provide(infrastructure.NewPalletizedProductRepository)
-	container.Provide(infrastructure.NewUserRepository)
+	container.Provide(repositoriesPallet.NewPalletRepository)
+	container.Provide(repositoriesPalletRack.NewPalletRackRepository)
+	container.Provide(repositoriesPalletizedProduct.NewPalletizedProductRepository)
+	container.Provide(repositoriesUser.NewUserRepository)
 
 	// Services
 	container.Provide(services.NewQRCodeService)

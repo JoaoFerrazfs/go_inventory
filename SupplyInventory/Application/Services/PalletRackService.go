@@ -4,7 +4,7 @@ import (
 	errors "go_inventory/Helpers/Errors"
 	apiContracts "go_inventory/SupplyInventory/Application/ApiContracts"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
-	infrastructure "go_inventory/SupplyInventory/Infrastructure"
+	repositoriesPalletRack "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletRack"
 )
 
 type PalletRackService interface {
@@ -15,20 +15,20 @@ type PalletRackService interface {
 }
 
 type palletRackService struct {
-	repository infrastructure.PalletRackRepository
+	repository repositoriesPalletRack.PalletRackRepository
 }
 
-func NewPalletRackService(repository infrastructure.PalletRackRepository) PalletRackService {
+func NewPalletRackService(repository repositoriesPalletRack.PalletRackRepository) PalletRackService {
 	return &palletRackService{repository: repository}
 }
 
 func (service *palletRackService) Create(name string, location string, totalCapacity int) (*entities.PalletRackEntity, error) {
-       newPalletRack, err := service.repository.Create(name, location, totalCapacity)
-       if err != nil {
-	       return nil, err
-       }
+	newPalletRack, err := service.repository.Create(name, location, totalCapacity)
+	if err != nil {
+		return nil, err
+	}
 
-       return newPalletRack, nil
+	return newPalletRack, nil
 }
 
 func (service *palletRackService) ListRacks() ([]apiContracts.TransformedRack, error) {
@@ -57,12 +57,12 @@ func (service *palletRackService) ListRacks() ([]apiContracts.TransformedRack, e
 }
 
 func (service *palletRackService) FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError) {
-       racks, appErr := service.repository.FindPalletById(id)
-       if appErr != nil {
-	       return nil, appErr
-       }
+	racks, appErr := service.repository.FindPalletById(id)
+	if appErr != nil {
+		return nil, appErr
+	}
 
-       return racks, nil
+	return racks, nil
 }
 
 func (service *palletRackService) DeleteRack(id uint) (bool, *errors.AppError) {
