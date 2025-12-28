@@ -55,7 +55,31 @@ func NewIntegrationTestHelper() *IntegrationTestHelper {
 	var deps TestDependencies
 	app := fx.New(
 		container.BuildOptions(db),
-		fx.Populate(&deps),
+		fx.Invoke(func(
+			userRepo User.UserRepository,
+			palletRepo Pallet.PalletRepository,
+			palletizedProductRepo PalletizedProduct.PalletizedProductRepository,
+			palletRackRepo PalletRack.PalletRackRepository,
+			userSrv userService.UserService,
+			palletSrv palletService.PalletService,
+			palletizedProductSrv palletizedProductService.PalletizedProductService,
+			palletRackSrv palletRackService.PalletRackService,
+			jwtSrv jwtService.JWTService,
+			qrSrv qrCodeService.QRCodeService,
+		) {
+			deps = TestDependencies{
+				UserRepo:                 userRepo,
+				PalletRepo:               palletRepo,
+				PalletizedProductRepo:    palletizedProductRepo,
+				PalletRackRepo:           palletRackRepo,
+				UserService:              userSrv,
+				PalletService:            palletSrv,
+				PalletizedProductService: palletizedProductSrv,
+				PalletRackService:        palletRackSrv,
+				JwtService:               jwtSrv,
+				QrCodeService:            qrSrv,
+			}
+		}),
 	)
 	// Start the fx app so constructors run and Populate is executed
 	if err := app.Start(context.Background()); err != nil {
