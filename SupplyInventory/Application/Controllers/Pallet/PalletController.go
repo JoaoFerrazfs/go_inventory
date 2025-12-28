@@ -5,16 +5,16 @@ import (
 
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
 	requests "go_inventory/SupplyInventory/Application/Requests"
-	services "go_inventory/SupplyInventory/Application/Services"
+	pallet "go_inventory/SupplyInventory/Application/Services/Pallet"
 
 	"github.com/gin-gonic/gin"
 )
 
 type PalletController struct {
-	service services.PalletService
+	service pallet.PalletService
 }
 
-func NewPalletController(service services.PalletService) *PalletController {
+func NewPalletController(service pallet.PalletService) *PalletController {
 	return &PalletController{service: service}
 }
 

@@ -5,16 +5,16 @@ import (
 
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
 	requests "go_inventory/SupplyInventory/Application/Requests"
-	services "go_inventory/SupplyInventory/Application/Services"
+	user "go_inventory/SupplyInventory/Application/Services/User"
 
 	"github.com/gin-gonic/gin"
 )
 
 type UserController struct {
-	userService services.UserService
+	userService user.UserService
 }
 
-func NewUserController(userService services.UserService) *UserController {
+func NewUserController(userService user.UserService) *UserController {
 	return &UserController{userService: userService}
 }
 

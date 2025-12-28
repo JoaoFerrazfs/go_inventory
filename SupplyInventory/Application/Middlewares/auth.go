@@ -5,17 +5,17 @@ import (
 	"strings"
 
 	errors "go_inventory/Helpers/Errors"
-	services "go_inventory/SupplyInventory/Application/Services"
+	jwt "go_inventory/SupplyInventory/Application/Services/Jwt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
+	jwtv5 "github.com/golang-jwt/jwt/v5"
 )
 
 type AuthMiddleware struct {
-	JWTService services.JWTService
+	JWTService jwt.JWTService
 }
 
-func NewAuthMiddleware(jwtService services.JWTService) *AuthMiddleware {
+func NewAuthMiddleware(jwtService jwt.JWTService) *AuthMiddleware {
 	return &AuthMiddleware{JWTService: jwtService}
 }
 
@@ -39,14 +39,16 @@ func (m *AuthMiddleware) Handler() gin.HandlerFunc {
 			return
 		}
 
-		claims, ok := token.Claims.(jwt.MapClaims)
+		claims, ok := token.Claims.(jwtv5.MapClaims)
 		if !ok || !token.Valid {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, errors.NewAppError("invalid token", 401))
+			return
 		}
 
 		tokenType, ok := claims["tokenType"].(string)
 		if !ok || tokenType != "access" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, errors.NewAppError("invalid token type", 403))
+			return
 		}
 
 		c.Set("userID", uint(claims["userID"].(float64)))

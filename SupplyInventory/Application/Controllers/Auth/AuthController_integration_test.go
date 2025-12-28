@@ -13,7 +13,8 @@ import (
 
 	auth "go_inventory/SupplyInventory/Application/Controllers/Auth"
 	requests "go_inventory/SupplyInventory/Application/Requests"
-	services "go_inventory/SupplyInventory/Application/Services"
+	jwtService "go_inventory/SupplyInventory/Application/Services/Jwt"
+	userService "go_inventory/SupplyInventory/Application/Services/User"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 )
 
@@ -36,10 +37,10 @@ func (m *mockUserRepository) FindByEmail(email string) (*entities.UserEntity, er
 }
 
 func setupRouter() *gin.Engine {
-	jwtService := services.NewJWTService()
+	jwtSrv := jwtService.NewJWTService()
 	mockRepo := new(mockUserRepository)
-	userService := services.NewUserService(mockRepo)
-	controller := auth.NewAuthController(jwtService, userService)
+	userSrv := userService.NewUserService(mockRepo)
+	controller := auth.NewAuthController(jwtSrv, userSrv)
 
 	r := gin.Default()
 	api := r.Group("/api/v1/auth")
@@ -51,11 +52,11 @@ func TestIntegration_Login(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	// Set
-	jwtService := services.NewJWTService()
+	jwtSrv := jwtService.NewJWTService()
 	mockRepo := new(mockUserRepository)
 	user := &entities.UserEntity{ID: 1, Email: "admin@example.com", Password: "$2a$10$hash"}
-	userService := services.NewUserService(mockRepo)
-	controller := auth.NewAuthController(jwtService, userService)
+	userSrv := userService.NewUserService(mockRepo)
+	controller := auth.NewAuthController(jwtSrv, userSrv)
 	r := gin.Default()
 	api := r.Group("/api/v1/auth")
 	controller.RegisterLogin(api)

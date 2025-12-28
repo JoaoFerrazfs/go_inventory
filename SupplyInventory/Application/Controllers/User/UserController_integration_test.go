@@ -13,7 +13,7 @@ import (
 
 	user "go_inventory/SupplyInventory/Application/Controllers/User"
 	requests "go_inventory/SupplyInventory/Application/Requests"
-	services "go_inventory/SupplyInventory/Application/Services"
+	userServicePkg "go_inventory/SupplyInventory/Application/Services/User"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 )
 
@@ -36,7 +36,7 @@ func (m *mockUserRepository) FindByEmail(email string) (*entities.UserEntity, er
 
 func setupUserRouter() *gin.Engine {
 	mockRepo := new(mockUserRepository)
-	userService := services.NewUserService(mockRepo)
+	userService := userServicePkg.NewUserService(mockRepo)
 	controller := user.NewUserController(userService)
 
 	r := gin.Default()
@@ -50,7 +50,7 @@ func TestIntegration_CreateUser(t *testing.T) {
 	// Set
 	mockRepo := new(mockUserRepository)
 	// testUser variable removed as it was unused
-	userService := services.NewUserService(mockRepo)
+	userService := userServicePkg.NewUserService(mockRepo)
 	controller := user.NewUserController(userService)
 	r := gin.Default()
 	api := r.Group("/api/v1/users")

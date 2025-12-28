@@ -6,17 +6,18 @@ import (
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
 	requests "go_inventory/SupplyInventory/Application/Requests"
 	responses "go_inventory/SupplyInventory/Application/Responses"
-	services "go_inventory/SupplyInventory/Application/Services"
+	jwt "go_inventory/SupplyInventory/Application/Services/Jwt"
+	user "go_inventory/SupplyInventory/Application/Services/User"
 
 	"github.com/gin-gonic/gin"
 )
 
 type AuthController struct {
-	jwtService  services.JWTService
-	userService services.UserService
+	jwtService  jwt.JWTService
+	userService user.UserService
 }
 
-func NewAuthController(jwtService services.JWTService, userService services.UserService) *AuthController {
+func NewAuthController(jwtService jwt.JWTService, userService user.UserService) *AuthController {
 	return &AuthController{jwtService: jwtService, userService: userService}
 }
 

@@ -14,7 +14,7 @@ import (
 	errors "go_inventory/Helpers/Errors"
 	pallet "go_inventory/SupplyInventory/Application/Controllers/Pallet"
 	requests "go_inventory/SupplyInventory/Application/Requests"
-	services "go_inventory/SupplyInventory/Application/Services"
+	palletService "go_inventory/SupplyInventory/Application/Services/Pallet"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 )
 
@@ -102,7 +102,7 @@ func (m *mockPalletRepository) UpdateSupply(pallet *entities.PalletEntity) (*ent
 func setupPalletRouter() *gin.Engine {
 	mockRepo := new(mockPalletRepository)
 	mockQR := new(mockQRCodeService)
-	service := services.NewPalletService(mockRepo, mockQR)
+	service := palletService.NewPalletService(mockRepo, mockQR)
 	controller := pallet.NewPalletController(service)
 
 	r := gin.Default()
@@ -116,7 +116,7 @@ func TestIntegration_CreatePallet(t *testing.T) {
 	// Set
 	mockRepo := new(mockPalletRepository)
 	mockQR := new(mockQRCodeService)
-	service := services.NewPalletService(mockRepo, mockQR)
+	service := palletService.NewPalletService(mockRepo, mockQR)
 	controller := pallet.NewPalletController(service)
 	r := gin.Default()
 	api := r.Group("/api/v1/pallets")

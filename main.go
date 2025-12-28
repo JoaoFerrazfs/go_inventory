@@ -49,8 +49,9 @@ func main() {
 	// Redirecionar qualquer rota que não seja API ou QR code para index.html
 	router.NoRoute(func(c *gin.Context) {
 		path := c.Request.URL.Path
+
 		if len(path) >= 4 && path[:4] == "/api" {
-			c.JSON(http.StatusNotFound, gin.H{"error": "rota não encontrada"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "rota não encontrada", "path": path})
 			return
 		}
 		if len(path) >= 7 && path[:7] == "/qrcodes" {

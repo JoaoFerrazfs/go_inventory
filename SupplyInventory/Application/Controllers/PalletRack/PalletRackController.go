@@ -6,16 +6,16 @@ import (
 	development "go_inventory/Helpers/Development"
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
 	requests "go_inventory/SupplyInventory/Application/Requests"
-	services "go_inventory/SupplyInventory/Application/Services"
+	palletrack "go_inventory/SupplyInventory/Application/Services/PalletRack"
 
 	"github.com/gin-gonic/gin"
 )
 
 type PalletRackController struct {
-	palletRackService services.PalletRackService
+	palletRackService palletrack.PalletRackService
 }
 
-func NewPalletRackController(palletRackService services.PalletRackService) *PalletRackController {
+func NewPalletRackController(palletRackService palletrack.PalletRackService) *PalletRackController {
 	return &PalletRackController{palletRackService: palletRackService}
 }
 

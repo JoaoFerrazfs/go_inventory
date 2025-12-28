@@ -4,23 +4,19 @@ import (
 	errors "go_inventory/Helpers/Errors"
 	domain "go_inventory/SupplyInventory/Domain/Entities"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
+	repositories "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletRack"
 	"strings"
 
 	"gorm.io/gorm"
 )
 
-type PalletRackRepository interface {
-	Create(name string, location string, totalCapacity int) (*entities.PalletRackEntity, error)
-	ListRacks() ([]entities.PalletRackEntity, error)
-	FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError)
-	DeleteRack(id uint) (bool, *errors.AppError)
-}
+// Implementa a interface repositories.PalletRackRepository
 
 type palletRackRepository struct {
 	db *gorm.DB
 }
 
-func NewPalletRackRepository(db *gorm.DB) PalletRackRepository {
+func NewPalletRackRepository(db *gorm.DB) repositories.PalletRackRepository {
 	return &palletRackRepository{db: db}
 }
 

@@ -2,6 +2,7 @@ package services
 
 import (
 	errors "go_inventory/Helpers/Errors"
+	qrCodeService "go_inventory/SupplyInventory/Application/Services/QrCode"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 	repositories "go_inventory/SupplyInventory/Domain/contracts/repositories/Pallet"
 	"strings"
@@ -17,10 +18,10 @@ type PalletService interface {
 
 type palletService struct {
 	repo      repositories.PalletRepository
-	qrService QRCodeService
+	qrService qrCodeService.QRCodeService
 }
 
-func NewPalletService(repo repositories.PalletRepository, qrService QRCodeService) PalletService {
+func NewPalletService(repo repositories.PalletRepository, qrService qrCodeService.QRCodeService) PalletService {
 	return &palletService{repo: repo, qrService: qrService}
 }
 
@@ -64,8 +65,8 @@ func (service *palletService) DeletePalletById(id uint) (bool, *errors.AppError)
 
 func (service *palletService) UpdatePallet(id uint, Name string, PalletRackId uint) (*entities.PalletEntity, *errors.AppError) {
 	pallet := &entities.PalletEntity{
-		ID: id,
-		Name: Name,
+		ID:           id,
+		Name:         Name,
 		PalletRackID: PalletRackId,
 	}
 	return service.repo.UpdateSupply(pallet)

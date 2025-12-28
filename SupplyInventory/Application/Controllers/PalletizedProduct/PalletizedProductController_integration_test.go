@@ -14,7 +14,7 @@ import (
 	errors "go_inventory/Helpers/Errors"
 	palletizedproduct "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
 	requests "go_inventory/SupplyInventory/Application/Requests"
-	services "go_inventory/SupplyInventory/Application/Services"
+	palletizedProductService "go_inventory/SupplyInventory/Application/Services/PalletizedProduct"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 )
 
@@ -58,7 +58,7 @@ func (m *mockPalletizedProductRepository) DeleteProductsFromPallet(palletId uint
 func setupPalletizedProductRouter() *gin.Engine {
 	mockPalletRepo := new(mockPalletRepository)
 	mockProductRepo := new(mockPalletizedProductRepository)
-	service := services.NewPalletizedProductService(mockPalletRepo, mockProductRepo)
+	service := palletizedProductService.NewPalletizedProductService(mockPalletRepo, mockProductRepo)
 	controller := palletizedproduct.NewPalletizedProductController(service)
 
 	r := gin.Default()
@@ -72,7 +72,7 @@ func TestIntegration_AddProductsToPallet(t *testing.T) {
 	// Set
 	mockPalletRepo := new(mockPalletRepository)
 	mockProductRepo := new(mockPalletizedProductRepository)
-	service := services.NewPalletizedProductService(mockPalletRepo, mockProductRepo)
+	service := palletizedProductService.NewPalletizedProductService(mockPalletRepo, mockProductRepo)
 	controller := palletizedproduct.NewPalletizedProductController(service)
 	r := gin.Default()
 	api := r.Group("/api/v1/pallet/products")

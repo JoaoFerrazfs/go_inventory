@@ -14,7 +14,7 @@ import (
 	errors "go_inventory/Helpers/Errors"
 	palletRack "go_inventory/SupplyInventory/Application/Controllers/PalletRack"
 	requests "go_inventory/SupplyInventory/Application/Requests"
-	services "go_inventory/SupplyInventory/Application/Services"
+	palletRackService "go_inventory/SupplyInventory/Application/Services/PalletRack"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 )
 
@@ -44,7 +44,7 @@ func (m *mockPalletRackRepository) DeleteRack(id uint) (bool, *errors.AppError) 
 
 func setupPalletRackRouter() *gin.Engine {
 	mockRepo := new(mockPalletRackRepository)
-	service := services.NewPalletRackService(mockRepo)
+	service := palletRackService.NewPalletRackService(mockRepo)
 	controller := palletRack.NewPalletRackController(service)
 
 	r := gin.Default()
@@ -57,15 +57,15 @@ func TestIntegration_CreatePalletRack(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	// Set
 	mockRepo := new(mockPalletRackRepository)
-	service := services.NewPalletRackService(mockRepo)
+	service := palletRackService.NewPalletRackService(mockRepo)
 	controller := palletRack.NewPalletRackController(service)
 	r := gin.Default()
 	api := r.Group("/api/v1/racks")
 	controller.RegisterPalletRack(api)
 
 	createReq := requests.PalletRackRequest{
-		Name:         "Rack1",
-		Location:     "A1",
+		Name:          "Rack1",
+		Location:      "A1",
 		TotalCapacity: 100,
 	}
 	body, _ := json.Marshal(createReq)

@@ -5,16 +5,16 @@ import (
 
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
 	requests "go_inventory/SupplyInventory/Application/Requests"
-	services "go_inventory/SupplyInventory/Application/Services"
+	palletizedproduct "go_inventory/SupplyInventory/Application/Services/PalletizedProduct"
 
 	"github.com/gin-gonic/gin"
 )
 
 type PalletizedProductController struct {
-	palletizedProductService services.PalletizedProductService
+	palletizedProductService palletizedproduct.PalletizedProductService
 }
 
-func NewPalletizedProductController(palletizedProductService services.PalletizedProductService) *PalletizedProductController {
+func NewPalletizedProductController(palletizedProductService palletizedproduct.PalletizedProductService) *PalletizedProductController {
 	return &PalletizedProductController{palletizedProductService: palletizedProductService}
 }
 
