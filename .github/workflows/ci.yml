@@ -12,11 +12,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Set up Go
         id: setup-go
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+
       - name: Cache Go modules
         uses: actions/cache@v4
         with:
@@ -26,8 +28,10 @@ jobs:
           key: ${{ runner.os }}-go-${{ steps.setup-go.outputs.go-version }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+
       - name: Build
         run: go build ./...
+
       - name: Run unit tests
         run: go test ./...  # Excludes integration due to build tags
 
@@ -45,19 +49,23 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Set up Go
+        id: setup-go
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+
       - name: Cache Go modules
         uses: actions/cache@v4
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ steps.setup-go.outputs.go-version }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+
       - name: Wait for MySQL
         run: |
           # Ensure mysql client is available on the runner
@@ -76,6 +84,7 @@ jobs:
             echo "Waiting for MySQL..."
             sleep $INTERVAL
           done
+
       - name: Run integration tests
         env:
           TEST_DB_HOST: 127.0.0.1
@@ -84,8 +93,38 @@ jobs:
           TEST_DB_PASSWORD: root
           TEST_DB_DSN: root:root@tcp(127.0.0.1:3306)/inventory_test?charset=utf8mb4&parseTime=True&loc=Local
         run: go test -tags integration ./...
-      - name: Run tests with coverage (including main code)
+
+      - name: Install gocovmerge
+        run: |
+          go install github.com/wadey/gocovmerge@latest
+
+      - name: Run unit tests with coverage
         run: |
           PKGS=$(go list ./... | grep -v /tests/ | tr '\n' ',')
-          go test -tags integration -coverpkg="$PKGS" -coverprofile=coverage.out ./...
+          go test -coverpkg="$PKGS" -coverprofile=unit.out ./...
+
+      - name: Run integration tests with coverage
+        env:
+          TEST_DB_HOST: 127.0.0.1
+          TEST_DB_PORT: "3306"
+          TEST_DB_USER: root
+          TEST_DB_PASSWORD: root
+          TEST_DB_DSN: root:root@tcp(127.0.0.1:3306)/inventory_test?charset=utf8mb4&parseTime=True&loc=Local
+        run: |
+          PKGS=$(go list ./... | grep -v /tests/ | tr '\n' ',')
+          go test -tags integration -coverpkg="$PKGS" -coverprofile=integration.out ./...
+
+      - name: Merge coverage profiles and publish
+        run: |
+          # merge unit + integration coverage
+          ${GOPATH:-$HOME/go}/bin/gocovmerge unit.out integration.out > coverage.out
           go tool cover -func=coverage.out
+          go tool cover -html=coverage.out -o coverage.html
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.out
+            coverage.html
