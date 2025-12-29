@@ -7,23 +7,23 @@ import (
 	repositories "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletRack"
 	"strings"
 
-	"gorm.io/gorm"
+	dbadapter "go_inventory/SupplyInventory/Infrastructure/repositories/db"
 )
 
 // Implementa a interface repositories.PalletRackRepository
 
 type palletRackRepository struct {
-	db *gorm.DB
+	db dbadapter.DBAdapter
 }
 
-func NewPalletRackRepository(db *gorm.DB) repositories.PalletRackRepository {
+func NewPalletRackRepository(db dbadapter.DBAdapter) repositories.PalletRackRepository {
 	return &palletRackRepository{db: db}
 }
 
 func (repository *palletRackRepository) Create(name string, location string, totalCapacity int) (*entities.PalletRackEntity, error) {
 	palletRack := entities.NewPalletRackEntity(name, location, totalCapacity)
 
-	if err := repository.db.Save(&palletRack).Error; err != nil {
+	if err := repository.db.Save(&palletRack); err != nil {
 		return nil, err
 	}
 
@@ -33,7 +33,7 @@ func (repository *palletRackRepository) Create(name string, location string, tot
 func (repository *palletRackRepository) ListRacks() ([]entities.PalletRackEntity, error) {
 	var racks []entities.PalletRackEntity
 
-	if err := repository.db.Preload("Pallets").Find(&racks).Error; err != nil {
+	if err := repository.db.PreloadFind(&racks, "Pallets"); err != nil {
 		return nil, err
 	}
 
@@ -43,8 +43,7 @@ func (repository *palletRackRepository) ListRacks() ([]entities.PalletRackEntity
 func (repository *palletRackRepository) FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError) {
 	var rack entities.PalletRackEntity
 
-	if err := repository.db.Preload("Pallets.PalletizedProduct").
-		Preload("Pallets").First(&rack, id).Error; err != nil {
+	if err := repository.db.PreloadFind(&rack, "Pallets.PalletizedProduct", id); err != nil {
 		return nil, errors.NewAppError("Rack not found", 404)
 	}
 
@@ -54,21 +53,21 @@ func (repository *palletRackRepository) FindPalletById(id uint) (*entities.Palle
 func (repository *palletRackRepository) DeleteRack(id uint) (bool, *errors.AppError) {
 	var rack domain.PalletRackEntity
 
-	result := repository.db.Delete(&rack, id)
+	rows, err := repository.db.DeleteByID(&rack, id)
 
-	if result.Error != nil {
+	if err != nil {
 
-		if strings.Contains(result.Error.Error(), "Error 1451") {
+		if strings.Contains(err.Error(), "Error 1451") {
 			return false, errors.NewAppError(
 				"Cannot delete rack: it has pallets associated",
 				422,
 			)
 		}
 
-		return false, errors.NewAppError(result.Error.Error(), 500)
+		return false, errors.NewAppError(err.Error(), 500)
 	}
 
-	if result.RowsAffected == 0 {
+	if rows == 0 {
 		return false, errors.NewAppError("Rack not found", 404)
 	}
 
