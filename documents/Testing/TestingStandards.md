@@ -1,7 +1,13 @@
 # Testing Standards
 
 ## Overview
-This document outlines the testing standards and practices for the go_inventory project. We maintain both unit tests (with mocks) and integration tests (with real database) to ensure code quality and reliability.
+This document outlines the testing standards and practices for the go_inventory project. We maintain both unit tests (with fakes/mocks) and integration tests (with a real database) to ensure code quality and reliability.
+
+This project follows a small set of patterns to keep unit tests fast and maintainable while keeping integration tests realistic:
+
+- Use a `DBAdapter` interface so repositories are not coupled to GORM types directly.
+- Use a shared `FakeDBAdapter` in unit tests with per-test hooks to control returned data and errors.
+- Use an `IntegrationTestHelper` that provides a real `*gorm.DB`, runs migrations, truncates tables, and exposes router setup helpers.
 
 ## Test Structure
 
@@ -9,7 +15,34 @@ This document outlines the testing standards and practices for the go_inventory 
 - **Location**: Same directory as the code being tested
 - **Naming**: `{FileName}_test.go`
 - **Purpose**: Test individual functions and methods in isolation
-- **Mocking**: Use testify mocks for external dependencies
+- **Mocking**: Use `testify` mocks or the shared `FakeDBAdapter` for repositories
+
+Recommended repository unit-test pattern:
+
+- Repositories must depend on `dbadapter.DBAdapter` (not `*gorm.DB`).
+- Use `SupplyInventory/tests/testutils.FakeDBAdapter` and set only the hooks needed for the test (e.g. `FirstByIDFn`, `WhereFirstFn`, `CreateFn`).
+- Follow structure:
+
+```go
+func TestSomething_Scenario(t *testing.T) {
+    // Set
+    fake := &testutils.FakeDBAdapter{}
+    repo := repositories.NewSomethingRepository(fake)
+
+    // Expectations
+    fake.FirstByIDFn = func(dest interface{}, id uint) error {
+        // populate dest
+        return nil
+    }
+
+    // Actions
+    got, err := repo.FindByID(1)
+
+    // Assertions
+    assert.NoError(t, err)
+    assert.Equal(t, expected, got)
+}
+```
 
 ### Integration Tests
 - **Location**: Same directory as the code being tested
@@ -18,58 +51,24 @@ This document outlines the testing standards and practices for the go_inventory 
 - **Purpose**: Test API endpoints and database interactions
 - **Database**: Real MySQL database with transactions
 
-## Running Tests
+Integration test pattern:
 
-### Commands
-```bash
-# Unit tests
-docker exec -it go_inventory_dev go test ./SupplyInventory/Application/Controllers/Auth/...
+- Mark files with `//go:build integration` and use `IntegrationTestHelper` (`SupplyInventory/tests/integration/helpers.go`).
+- Each test should call `h.TruncateTables(h.DB)` before executing and run test logic inside `h.DB.Transaction(...)` for isolation.
+- Use `SetupRouterFor{Controller}` to obtain a router wired with `dbadapter.NewGormAdapter(h.DB)`.
 
-# Integration tests
-docker exec -it go_inventory_dev go test -tags integration ./SupplyInventory/Application/Controllers/Auth/...
+Example:
 
-# All unit tests
-docker exec -it go_inventory_dev go test ./...
-
-# All integration tests
-docker exec -it go_inventory_dev go test -tags integration ./...
-```
-
-## Test Organization
-
-### Unit Test Structure
-```go
-func TestFunctionName_Scenario(t *testing.T) {
-    // Set
-    // Setup mocks and test data
-
-    // Expectations
-    // Define mock expectations
-
-    // Actions
-    // Execute the function
-
-    // Assertions
-    // Verify results
-}
-```
-
-### Integration Test Structure
 ```go
 //go:build integration
 
-func TestIntegration_FunctionName(t *testing.T) {
+func TestIntegration_CreateUser(t *testing.T) {
     h := integration.NewIntegrationTestHelper()
     h.TruncateTables(h.DB)
+
     h.DB.Transaction(func(tx *gorm.DB) error {
-        // Set
-        // Setup test data and router
-
-        // Actions
-        // Make HTTP request
-
-        // Assertions
-        // Verify response
+        r := h.SetupRouterForUser(tx)
+        // build request and call r.ServeHTTP
         return nil
     })
 }
@@ -89,27 +88,24 @@ Located in `SupplyInventory/tests/integration/helpers.go`
 - `CreateTest{Entity}(db *gorm.DB, ...)`: Creates test fixtures
 - `SetupTestRouter(db *gorm.DB)`: Creates complete router with all routes (for comprehensive testing)
 
-**Adding New Routes:**
-1. Add dependencies to `setupTestDependencies()` function
-2. Create `SetupRouterFor{NewController}()` method using the helper
-3. Update `SetupTestRouter()` if needed for full router testing
-4. **No changes needed to main.go** - dependencies are automatically handled
+### DBAdapter and FakeDBAdapter
 
-**Important**: When adding new controllers/routes, update the `setupTestDependencies()` function and create corresponding `SetupRouterFor{Controller}` method to maintain test consistency.
+- `SupplyInventory/Infrastructure/repositories/db/adapter.go` defines the `DBAdapter` interface and a small gorm-backed implementation `NewGormAdapter(db *gorm.DB)`.
+- `SupplyInventory/tests/testutils/fake_db_adapter.go` contains `FakeDBAdapter` with hook fields (e.g. `CreateFn`, `FirstByIDFn`, `WhereFirstFn`, `FindAllFn`, `DeleteByIDFn`, `SaveFn`, `PreloadFindFn`, `AppendAssociationFn`). Unit tests should set only the hooks they need.
 
-### Test Database
-- **Name**: `inventory_test`
-- **Setup**: Automatic via `testutils.SetupTestDB()`
-- **Migration**: AutoMigrate on test DB
-- **Isolation**: Each test uses transactions that rollback
+Benefits:
+- Tests are simpler (no sqlmock / complicated gorm expectations).
+- Tests run fast and avoid touching the network for unit tests.
 
-### Fixtures
-Located in `SupplyInventory/tests/testutils/fixtures.go`
+Example hook usage:
 
-**Available Fixtures:**
-- `CreateTestUser(db, name, email, password)`
-- `CreateTestPallet(db, name, palletRackID)`
-- `CreateTestPalletRack(db, name, location, totalCapacity)`
+```go
+fake := &testutils.FakeDBAdapter{}
+fake.WhereFirstFn = func(dest interface{}, query string, args ...interface{}) error {
+    // fill dest expected struct
+    return nil
+}
+```
 
 ## Best Practices
 
@@ -119,21 +115,11 @@ Located in `SupplyInventory/tests/testutils/fixtures.go`
 - Keep tests focused on one behavior
 - Avoid test interdependencies
 
-### Unit Tests
-- Mock all external dependencies
-- Test edge cases and error conditions
-- Verify mock expectations with `AssertExpectations(t)`
+Additional project rules to follow for all tests:
 
-### Integration Tests
-- Test complete API workflows
-- Use real database constraints and relationships
-- Clean up data between tests
-- Test both success and failure scenarios
-
-### CI/CD
-- Unit tests run on every push
-- Integration tests run in separate job with MySQL container
-- Coverage reports generated for integration tests
+- Branching & commits for tests: create a short-lived branch `test/<what>` for a group of tests (example: `test/repositories-add`). Commit each new test only after you run it and it passes locally. Use `test:` prefix in commit messages when adding tests (e.g. `test(repo): add unit tests for PalletRepository`).
+- Run unit tests frequently (`go test ./...`) and run integration tests (`go test -tags integration ./...`) before creating a PR.
+- Integration tests should run in CI as a separate job with a real MySQL container and the `inventory_test` database.
 
 ## Dependencies
 Ensure these packages are installed in the test container:
@@ -141,6 +127,20 @@ Ensure these packages are installed in the test container:
 - `github.com/davecgh/go-spew/spew`
 - `github.com/pmezard/go-difflib/difflib`
 - `github.com/stretchr/objx`
+
+## Quick Commands
+
+Run unit tests inside the dev container:
+
+```bash
+docker exec -it go_inventory_dev /usr/local/go/bin/go test ./... -v
+```
+
+Run integration tests inside the dev container (example using MySQL container IP):
+
+```bash
+docker exec -e TEST_DB_HOST=172.17.0.2 -e TEST_DB_PORT=3306 -e TEST_DB_USER=root -e TEST_DB_PASSWORD=root go_inventory_dev /usr/local/go/bin/go test -tags integration ./... -v
+```
 
 ## Coverage Goals
 - Unit tests: Focus on complex logic

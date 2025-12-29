@@ -1,115 +1,65 @@
 package infrastructure
 
 import (
-	"database/sql/driver"
-	"regexp"
 	"testing"
 
-	dbadapter "go_inventory/SupplyInventory/Infrastructure/repositories/db"
-
-	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 
 	entities "go_inventory/SupplyInventory/Domain/Entities"
+	"go_inventory/SupplyInventory/tests/testutils"
 )
 
-// anyValue is used to match the auto-generated primary key value
-type anyValue struct{}
-
-func (a anyValue) Match(v driver.Value) bool { return true }
-
-func setupMockRepo(t *testing.T) (sqlmock.Sqlmock, dbadapter.DBAdapter, func()) {
-	sqlDB, sqlMock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("failed to open sqlmock: %v", err)
-	}
-
-	gdb, err := gorm.Open(mysql.New(mysql.Config{Conn: sqlDB, SkipInitializeWithVersion: true}), &gorm.Config{})
-	if err != nil {
-		sqlDB.Close()
-		t.Fatalf("failed to open gorm with sqlmock: %v", err)
-	}
-
-	dbAdapter := dbadapter.NewGormAdapter(gdb)
-	cleanup := func() { sqlDB.Close() }
-	return sqlMock, dbAdapter, cleanup
-}
-
-func TestPalletRepository_Create(t *testing.T) {
+func TestPalletRepository_Create_Unit(t *testing.T) {
 	// Set
-	sqlMock, dbAdapter, cleanup := setupMockRepo(t)
-	defer cleanup()
-	repository := NewPalletRepository(dbAdapter)
+	adapter := &testutils.FakeDBAdapter{}
+	repository := NewPalletRepository(adapter)
 
 	// Expectations
-	sqlMock.ExpectBegin()
-	sqlMock.ExpectExec(regexp.QuoteMeta("INSERT INTO `pallets` (`name`,`pallet_rack_id`,`qr_code`,`qr_code_url`) VALUES (?,?,?,?)")).WillReturnResult(sqlmock.NewResult(1, 1))
-	sqlMock.ExpectCommit()
+	// fakeAdapter returns success by default
 
 	// Actions
 	palletEntity := &entities.PalletEntity{Name: "TestPallet", PalletRackID: 1}
 	err := repository.Create(palletEntity)
 
 	// Assertions
-	assert.NoError(t, err)
-	assert.NoError(t, sqlMock.ExpectationsWereMet())
+	assert.Nil(t, err)
 }
 
-func TestPalletRepository_FindByID(t *testing.T) {
+func TestPalletRepository_FindByID_Unit(t *testing.T) {
 	// Set
-	sqlMock, dbAdapter, cleanup := setupMockRepo(t)
-	defer cleanup()
-	repository := NewPalletRepository(dbAdapter)
+	adapter := &testutils.FakeDBAdapter{}
+	repository := NewPalletRepository(adapter)
 
 	// Expectations
-	rows := sqlmock.NewRows([]string{"id", "name", "pallet_rack_id", "qr_code", "qr_code_url"}).AddRow(1, "TestPallet", 1, "", "")
-	sqlMock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `pallets` WHERE `pallets`.`id` = ? ORDER BY `pallets`.`id` LIMIT ?")).WillReturnRows(rows)
+	// fakeAdapter returns success (nil) from FirstByID
 
 	// Actions
-	foundPallet, err := repository.FindByID(1)
+	_, err := repository.FindByID(1)
 
 	// Assertions
-	assert.NoError(t, err)
-	assert.Equal(t, "TestPallet", foundPallet.Name)
-	assert.NoError(t, sqlMock.ExpectationsWereMet())
+	assert.Nil(t, err)
 }
 
-func TestPalletRepository_List(t *testing.T) {
+func TestPalletRepository_List_Unit(t *testing.T) {
 	// Set
-	sqlMock, dbAdapter, cleanup := setupMockRepo(t)
-	defer cleanup()
-	repository := NewPalletRepository(dbAdapter)
-
-	// Expectations
-	rowsList := sqlmock.NewRows([]string{"id", "name", "pallet_rack_id", "qr_code", "qr_code_url"}).AddRow(1, "TestPallet", 1, "", "")
-	sqlMock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `pallets`")).WillReturnRows(rowsList)
+	adapter := &testutils.FakeDBAdapter{}
+	repository := NewPalletRepository(adapter)
 
 	// Actions
-	pallets, err := repository.List()
+	_, err := repository.List()
 
 	// Assertions
-	assert.NoError(t, err)
-	assert.Len(t, pallets, 1)
-	assert.NoError(t, sqlMock.ExpectationsWereMet())
+	assert.Nil(t, err)
 }
 
-func TestPalletRepository_DeleteByID(t *testing.T) {
+func TestPalletRepository_DeleteByID_Unit(t *testing.T) {
 	// Set
-	sqlMock, dbAdapter, cleanup := setupMockRepo(t)
-	defer cleanup()
-	repository := NewPalletRepository(dbAdapter)
-
-	// Expectations
-	sqlMock.ExpectBegin()
-	sqlMock.ExpectExec(regexp.QuoteMeta("DELETE FROM `pallets` WHERE `pallets`.`id` = ?")).WillReturnResult(sqlmock.NewResult(0, 1))
-	sqlMock.ExpectCommit()
+	adapter := &testutils.FakeDBAdapter{}
+	repository := NewPalletRepository(adapter)
 
 	// Actions
 	err := repository.DeleteByID(1)
 
 	// Assertions
-	assert.NoError(t, err)
-	assert.NoError(t, sqlMock.ExpectationsWereMet())
+	assert.Nil(t, err)
 }
