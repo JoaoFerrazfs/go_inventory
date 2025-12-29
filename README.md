@@ -47,3 +47,21 @@ O código segue uma arquitetura em camadas inspirada na Clean Architecture:
 - **Conteinerização**: Docker Compose para app e DB. 🐳
 - **Outras Bibliotecas**: `go-qrcode` para geração de QR, `dig` para DI, `gin-swagger` para docs, `godotenv` para vars de ambiente. 📚
 - **Ferramentas de Build/Dev**: `Makefile` para comandos como `make dev` para executar containers e monitorar Swagger. 🔧
+
+## 🔬 Testing
+
+We follow the project's testing standards (see `documents/Testing/TestingStandards.md`). Quick commands:
+
+Run unit tests inside the dev container:
+
+```bash
+docker exec -it go_inventory_dev /usr/local/go/bin/go test ./... -v
+```
+
+Run integration tests inside the dev container (example using MySQL container IP):
+
+```bash
+docker exec -e TEST_DB_HOST=172.17.0.2 -e TEST_DB_PORT=3306 -e TEST_DB_USER=root -e TEST_DB_PASSWORD=root go_inventory_dev /usr/local/go/bin/go test -tags integration ./... -v
+```
+
+Branch and commit policy for tests: create a focused branch named `test/<scope>` and commit test files only after verifying they pass locally. Use `test:` in the commit message prefix for test-only commits.

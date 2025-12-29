@@ -30,6 +30,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
+
+	dbadapter "go_inventory/SupplyInventory/Infrastructure/repositories/db"
 )
 
 // TestDependencies holds all dependencies for integration tests
@@ -112,7 +114,7 @@ func (h *IntegrationTestHelper) Stop() error {
 // to ensure integration tests use the same dependency injection as production
 func (h *IntegrationTestHelper) SetupRouterForAuth(db *gorm.DB) *gin.Engine {
 	// Build user service bound to provided DB/tx so it sees uncommitted data in the same transaction
-	userRepo := userInfra.NewUserRepository(db)
+	userRepo := userInfra.NewUserRepository(dbadapter.NewGormAdapter(db))
 	userSrv := userService.NewUserService(userRepo)
 	controller := auth.NewAuthController(h.JwtService, userSrv)
 	r := gin.Default()
@@ -122,7 +124,7 @@ func (h *IntegrationTestHelper) SetupRouterForAuth(db *gorm.DB) *gin.Engine {
 }
 
 func (h *IntegrationTestHelper) SetupRouterForPallet(db *gorm.DB) *gin.Engine {
-	palletRepo := palletInfra.NewPalletRepository(db)
+	palletRepo := palletInfra.NewPalletRepository(dbadapter.NewGormAdapter(db))
 	qrSrv := h.QrCodeService
 	palletSrv := palletService.NewPalletService(palletRepo, qrSrv)
 	controller := pallet.NewPalletController(palletSrv)
@@ -133,8 +135,8 @@ func (h *IntegrationTestHelper) SetupRouterForPallet(db *gorm.DB) *gin.Engine {
 }
 
 func (h *IntegrationTestHelper) SetupRouterForPalletizedProduct(db *gorm.DB) *gin.Engine {
-	palletRepo := palletInfra.NewPalletRepository(db)
-	palletizedProductRepo := palletizedProductInfra.NewPalletizedProductRepository(db, palletRepo)
+	palletRepo := palletInfra.NewPalletRepository(dbadapter.NewGormAdapter(db))
+	palletizedProductRepo := palletizedProductInfra.NewPalletizedProductRepository(dbadapter.NewGormAdapter(db), palletRepo)
 	palletizedProductSrv := palletizedProductService.NewPalletizedProductService(palletRepo, palletizedProductRepo)
 	controller := palletizedProduct.NewPalletizedProductController(palletizedProductSrv)
 	r := gin.Default()
@@ -144,7 +146,7 @@ func (h *IntegrationTestHelper) SetupRouterForPalletizedProduct(db *gorm.DB) *gi
 }
 
 func (h *IntegrationTestHelper) SetupRouterForPalletRack(db *gorm.DB) *gin.Engine {
-	palletRackRepo := palletRackInfra.NewPalletRackRepository(db)
+	palletRackRepo := palletRackInfra.NewPalletRackRepository(dbadapter.NewGormAdapter(db))
 	palletRackSrv := palletRackService.NewPalletRackService(palletRackRepo)
 	controller := palletRack.NewPalletRackController(palletRackSrv)
 	r := gin.Default()
@@ -154,7 +156,7 @@ func (h *IntegrationTestHelper) SetupRouterForPalletRack(db *gorm.DB) *gin.Engin
 }
 
 func (h *IntegrationTestHelper) SetupRouterForUser(db *gorm.DB) *gin.Engine {
-	userRepo := userInfra.NewUserRepository(db)
+	userRepo := userInfra.NewUserRepository(dbadapter.NewGormAdapter(db))
 	userSrv := userService.NewUserService(userRepo)
 	controller := user.NewUserController(userSrv)
 	r := gin.Default()

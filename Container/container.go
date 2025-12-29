@@ -25,6 +25,8 @@ import (
 	contractPalletized "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletizedProduct"
 	contractUser "go_inventory/SupplyInventory/Domain/contracts/repositories/User"
 
+	dbadapter "go_inventory/SupplyInventory/Infrastructure/repositories/db"
+
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
@@ -37,16 +39,16 @@ func BuildOptions(db *gorm.DB) fx.Option {
 		// Repositories Module
 		fx.Module("repositories",
 			fx.Provide(func(db *gorm.DB) contractPallet.PalletRepository {
-				return repositoriesPallet.NewPalletRepository(db)
+				return repositoriesPallet.NewPalletRepository(dbadapter.NewGormAdapter(db))
 			}),
 			fx.Provide(func(db *gorm.DB) contractPalletRack.PalletRackRepository {
-				return repositoriesPalletRack.NewPalletRackRepository(db)
+				return repositoriesPalletRack.NewPalletRackRepository(dbadapter.NewGormAdapter(db))
 			}),
 			fx.Provide(func(db *gorm.DB, palletRepo contractPallet.PalletRepository) contractPalletized.PalletizedProductRepository {
-				return repositoriesPalletizedProduct.NewPalletizedProductRepository(db, palletRepo)
+				return repositoriesPalletizedProduct.NewPalletizedProductRepository(dbadapter.NewGormAdapter(db), palletRepo)
 			}),
 			fx.Provide(func(db *gorm.DB) contractUser.UserRepository {
-				return repositoriesUser.NewUserRepository(db)
+				return repositoriesUser.NewUserRepository(dbadapter.NewGormAdapter(db))
 			}),
 		),
 

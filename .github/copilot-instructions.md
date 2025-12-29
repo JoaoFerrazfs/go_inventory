@@ -41,15 +41,22 @@
   - Provide troubleshooting guides for common issues.  
 ### Testing
   - Para rodar os testes Go, utilize sempre o container Docker da aplicação.
-  - Comandos principais:
+  - Comandos principais (use o binário `go` absoluto dentro do container para maior confiabilidade):
     - Testes unitários (com mocks):
-      - docker exec -it go_inventory_dev go test ./SupplyInventory/Application/Controllers/Auth/...
+      - docker exec -it go_inventory_dev /usr/local/go/bin/go test ./SupplyInventory/Application/Controllers/Auth/... -v
     - Testes de integração (com banco de dados real):
-      - docker exec -it go_inventory_dev go test -tags integration ./SupplyInventory/Application/Controllers/Auth/...
+      - docker exec -e TEST_DB_HOST=172.17.0.2 -e TEST_DB_PORT=3306 -e TEST_DB_USER=root -e TEST_DB_PASSWORD=root \
+        go_inventory_dev /usr/local/go/bin/go test -tags integration ./SupplyInventory/Application/Controllers/Auth/... -v
     - Todos os testes unitários:
-      - docker exec -it go_inventory_dev go test ./...
+      - docker exec -it go_inventory_dev /usr/local/go/bin/go test ./... -v
     - Todos os testes de integração:
-      - docker exec -it go_inventory_dev go test -tags integration ./...
+      - docker exec -e TEST_DB_HOST=172.17.0.2 -e TEST_DB_PORT=3306 -e TEST_DB_USER=root -e TEST_DB_PASSWORD=root \
+        go_inventory_dev /usr/local/go/bin/go test -tags integration ./... -v
+
+    - Run both (unit then integration) in sequence:
+      - docker exec -it go_inventory_dev /usr/local/go/bin/go test ./... -v && \
+        docker exec -e TEST_DB_HOST=172.17.0.2 -e TEST_DB_PORT=3306 -e TEST_DB_USER=root -e TEST_DB_PASSWORD=root \
+        go_inventory_dev /usr/local/go/bin/go test -tags integration ./... -v
   - Certifique-se de instalar as dependências de teste no ambiente do container:
     - github.com/stretchr/testify
     - github.com/davecgh/go-spew/spew
@@ -189,6 +196,16 @@
     - `setupTestDependencies(db)`: Função central que cria todas as dependências (repos, serviços) com DB de teste
     - `SetupRouterFor{Controller}(db)`: Métodos específicos que usam as dependências para configurar routers individuais
     - `SetupTestRouter(db)`: Router completo com todas as rotas para testes abrangentes
+    - **Project testing patterns (recommended)**:
+      - Repositories must accept a `dbadapter.DBAdapter` interface (see `SupplyInventory/Infrastructure/repositories/db/adapter.go`). This decouples business code from GORM and makes unit tests simpler.
+      - Use a shared fake adapter for unit tests: `SupplyInventory/tests/testutils/fake_db_adapter.go`. It provides hook functions (`CreateFn`, `FirstByIDFn`, `WhereFirstFn`, etc.) that tests can set to control repository behavior without touching the database.
+      - Integration tests should use `IntegrationTestHelper` (`SupplyInventory/tests/integration/helpers.go`) that sets up the test DB, runs migrations, truncates tables and provides router setup helpers that wire repositories using `dbadapter.NewGormAdapter(helper.DB)`.
+      - Follow the test structure blocks for unit tests: `// Set`, `// Expectations` (only when using mocks/hooks), `// Actions`, `// Assertions`.
+      - Branch and commit policy for test work: create focused branches named `test/<scope>` (for example `test/repositories-add`). Commit each test file only after verifying it passes locally. Use `test:` in the commit subject for test-only changes (e.g. `test(pallet): add unit tests for PalletRepository`).
+      - Example dev-container commands:
+        - Run unit tests: `docker exec -it go_inventory_dev /usr/local/go/bin/go test ./... -v`
+        - Run integration tests (example with MySQL container IP):
+          `docker exec -e TEST_DB_HOST=172.17.0.2 -e TEST_DB_PORT=3306 -e TEST_DB_USER=root -e TEST_DB_PASSWORD=root go_inventory_dev /usr/local/go/bin/go test -tags integration ./... -v`
 ### Commits
   - Use clear and descriptive commit messages that summarize the changes made.
   - Follow a consistent format for commit messages, such as:

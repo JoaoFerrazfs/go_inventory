@@ -5,16 +5,15 @@ import (
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 	palletRepo "go_inventory/SupplyInventory/Domain/contracts/repositories/Pallet"
 	productRepo "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletizedProduct"
-
-	"gorm.io/gorm"
+	dbadapter "go_inventory/SupplyInventory/Infrastructure/repositories/db"
 )
 
 type PalletizedProductRepositoryImpl struct {
-       db               *gorm.DB
-       palletRepository palletRepo.PalletRepository
+	db               dbadapter.DBAdapter
+	palletRepository palletRepo.PalletRepository
 }
 
-func NewPalletizedProductRepository(db *gorm.DB, palletRepository palletRepo.PalletRepository) productRepo.PalletizedProductRepository {
+func NewPalletizedProductRepository(db dbadapter.DBAdapter, palletRepository palletRepo.PalletRepository) productRepo.PalletizedProductRepository {
 	return &PalletizedProductRepositoryImpl{db: db, palletRepository: palletRepository}
 }
 
@@ -28,7 +27,7 @@ func (repository *PalletizedProductRepositoryImpl) AddProductsToPallet(product e
 		if pallet.PalletizedProduct[i].EAN == product.EAN {
 			pallet.PalletizedProduct[i].Quantity = product.Quantity
 
-			if err := repository.db.Save(&pallet.PalletizedProduct[i]).Error; err != nil {
+			if err := repository.db.Save(&pallet.PalletizedProduct[i]); err != nil {
 				return false, errors.NewAppError(err.Error(), 500)
 			}
 
@@ -36,7 +35,7 @@ func (repository *PalletizedProductRepositoryImpl) AddProductsToPallet(product e
 		}
 	}
 
-	if err := repository.db.Model(pallet).Association("PalletizedProduct").Append(&product); err != nil {
+	if err := repository.db.AppendAssociation(pallet, &product); err != nil {
 		return false, errors.NewAppError(err.Error(), 500)
 	}
 
@@ -51,12 +50,16 @@ func (repository *PalletizedProductRepositoryImpl) DeleteProductsFromPallet(pall
 
 	for i := range pallet.PalletizedProduct {
 		if pallet.PalletizedProduct[i].EAN == productsEan {
-			if err := repository.db.Delete(&pallet.PalletizedProduct[i]).Error; err != nil {
+			rows, err := repository.db.DeleteByID(&pallet.PalletizedProduct[i], pallet.PalletizedProduct[i].ID)
+			if err != nil {
 				return false, errors.NewAppError(err.Error(), 500)
+			}
+			if rows == 0 {
+				return false, errors.NewAppError("product not deleted", 500)
 			}
 			return true, nil
 		}
 	}
 
-	return false, errors.NewAppError("product is not in the pallet", 404)
+	return false, errors.NewAppError("product is not in the pallets", 404)
 }
