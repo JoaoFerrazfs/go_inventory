@@ -9,8 +9,8 @@ import (
 )
 
 type PalletizedProductRepositoryImpl struct {
-	   db               dbadapter.DBAdapter
-	   palletRepository palletRepo.PalletRepository
+	db               dbadapter.DBAdapter
+	palletRepository palletRepo.PalletRepository
 }
 
 func NewPalletizedProductRepository(db dbadapter.DBAdapter, palletRepository palletRepo.PalletRepository) productRepo.PalletizedProductRepository {
@@ -50,12 +50,16 @@ func (repository *PalletizedProductRepositoryImpl) DeleteProductsFromPallet(pall
 
 	for i := range pallet.PalletizedProduct {
 		if pallet.PalletizedProduct[i].EAN == productsEan {
-			if err := repository.db.DeleteByID(&pallet.PalletizedProduct[i], pallet.PalletizedProduct[i].ID); err != nil {
+			rows, err := repository.db.DeleteByID(&pallet.PalletizedProduct[i], pallet.PalletizedProduct[i].ID)
+			if err != nil {
 				return false, errors.NewAppError(err.Error(), 500)
+			}
+			if rows == 0 {
+				return false, errors.NewAppError("product not deleted", 500)
 			}
 			return true, nil
 		}
 	}
 
-	return false, errors.NewAppError("product is not in the pallet", 404)
+	return false, errors.NewAppError("product is not in the pallets", 404)
 }

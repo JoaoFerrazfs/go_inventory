@@ -37,13 +37,6 @@ func setupMockRepo(t *testing.T) (sqlmock.Sqlmock, dbadapter.DBAdapter, func()) 
 	return sqlMock, dbAdapter, cleanup
 }
 
-// TestPalletRepository_Create tests the Create method of PalletRepository.
-// It verifies that a new pallet entity is successfully inserted into the database
-// using a mocked SQL database adapter. The test sets up expectations for a transaction
-// (begin, insert, commit) and asserts that no errors occur during creation.
-// The cleanup function returned by setupMockRepo ensures that mock resources,
-// such as database connections or temporary states, are properly released after the test,
-// preventing resource leaks and ensuring test isolation.
 func TestPalletRepository_Create(t *testing.T) {
 	// Set
 	sqlMock, dbAdapter, cleanup := setupMockRepo(t)

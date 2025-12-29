@@ -1,12 +1,13 @@
 //go:build integration
 // +build integration
 
-package infrastructure
+package infrastructure_test
 
 import (
 	"testing"
 
 	entities "go_inventory/SupplyInventory/Domain/Entities"
+	palletInfra "go_inventory/SupplyInventory/Infrastructure/repositories/Pallet"
 	dbadapter "go_inventory/SupplyInventory/Infrastructure/repositories/db"
 	integration "go_inventory/SupplyInventory/tests/integration"
 
@@ -14,33 +15,64 @@ import (
 )
 
 func TestPalletRepository_AddAndGetIntegration(t *testing.T) {
-	h := integration.NewIntegrationTestHelper()
-	defer h.Stop()
+	t.Skip("deprecated combined test: replaced by focused tests")
+}
 
-	h.TruncateTables(h.DB)
+func TestPalletRepository_AddSupply_Integration(t *testing.T) {
+	// Set
+	helper := integration.NewIntegrationTestHelper()
+	defer helper.Stop()
+	helper.TruncateTables(helper.DB)
+	rack := helper.CreateTestPalletRack(helper.DB, "Rack_Add", "Loc", 5)
+	repo := palletInfra.NewPalletRepository(dbadapter.NewGormAdapter(helper.DB))
 
-	// create pallet rack fixture
-	rack := h.CreateTestPalletRack(h.DB, "Rack1", "Loc", 10)
+	// Actions
+	created, err := repo.AddSupply("Pallet_Add", rack.ID)
 
-	// add pallet using repository bound to the test DB
-	repo := NewPalletRepository(dbadapter.NewGormAdapter(h.DB))
-	pallet, appErr := repo.AddSupply("IntegrationPallet", rack.ID)
-	if appErr != nil {
-		t.Fatalf("failed to add supply: %v", appErr)
+	// Assertions
+	assert.Nil(t, err)
+	assert.Equal(t, "Pallet_Add", created.Name)
+	assert.NotZero(t, created.ID)
+}
+
+func TestPalletRepository_GetSupplyById_Integration(t *testing.T) {
+	// Set
+	helper := integration.NewIntegrationTestHelper()
+	defer helper.Stop()
+	helper.TruncateTables(helper.DB)
+	rack := helper.CreateTestPalletRack(helper.DB, "Rack_Get", "Loc", 5)
+	repo := palletInfra.NewPalletRepository(dbadapter.NewGormAdapter(helper.DB))
+	created, err := repo.AddSupply("Pallet_Get", rack.ID)
+	if err != nil {
+		t.Fatalf("setup AddSupply failed: %v", err)
 	}
 
-	got, appErr := repo.GetSupplyById(pallet.ID)
-	if appErr != nil {
-		t.Fatalf("failed to get supply: %v", appErr)
+	// Actions
+	got, getErr := repo.GetSupplyById(created.ID)
+
+	// Assertions
+	assert.Nil(t, getErr)
+	assert.Equal(t, "Pallet_Get", got.Name)
+}
+
+func TestPalletRepository_AddProductsToPallet_Integration(t *testing.T) {
+	// Set
+	helper := integration.NewIntegrationTestHelper()
+	defer helper.Stop()
+	helper.TruncateTables(helper.DB)
+	rack := helper.CreateTestPalletRack(helper.DB, "Rack_AddProd", "Loc", 5)
+	repo := palletInfra.NewPalletRepository(dbadapter.NewGormAdapter(helper.DB))
+	created, err := repo.AddSupply("Pallet_AddProd", rack.ID)
+	if err != nil {
+		t.Fatalf("setup AddSupply failed: %v", err)
 	}
 
-	assert.Equal(t, "IntegrationPallet", got.Name)
-	// create product and associate
-	product := entities.PalletizedProductEntity{ProductCode: "P1", PalletID: got.ID}
-	updated, appErr := repo.AddProductsToPallet(product)
-	if appErr != nil {
-		t.Fatalf("failed to add product: %v", appErr)
-	}
+	// Actions
+	product := entities.PalletizedProductEntity{EAN: 100, Quantity: 1, PalletID: created.ID}
+	updated, addErr := repo.AddProductsToPallet(product)
 
+	// Assertions
+	assert.Nil(t, addErr)
 	assert.NotNil(t, updated.PalletizedProduct)
+	assert.Greater(t, len(updated.PalletizedProduct), 0)
 }
