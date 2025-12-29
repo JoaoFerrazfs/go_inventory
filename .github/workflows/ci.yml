@@ -13,6 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Set up Go
+        id: setup-go
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -22,7 +23,7 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ steps.setup-go.outputs.go-version }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Build

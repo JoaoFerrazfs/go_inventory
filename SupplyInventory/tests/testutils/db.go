@@ -1,6 +1,7 @@
 package testutils
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -13,13 +14,18 @@ import (
 )
 
 var TestDB *gorm.DB
+var TestDBName string
 
 func SetupTestDB() *gorm.DB {
 	if TestDB != nil {
 		return TestDB
 	}
 	var dsn string
-	var dbName string = "inventory_test"
+	var dbName string = os.Getenv("TEST_DB_NAME")
+	if dbName == "" {
+		dbName = fmt.Sprintf("inventory_test_%d", time.Now().UnixNano())
+	}
+	TestDBName = dbName
 
 	dbHost := os.Getenv("TEST_DB_HOST")
 	dbPort := os.Getenv("TEST_DB_PORT")
@@ -63,8 +69,8 @@ func SetupTestDB() *gorm.DB {
 			log.Fatalf("Failed to connect to DB server within %d seconds", waitSeconds)
 		}
 	} else {
-		// fallback for local tests
-		dsnNoDB := "root:root@tcp(db:3306)/?charset=utf8mb4&parseTime=True&loc=Local"
+		// fallback for local tests (use 127.0.0.1 to match CI service binding)
+		dsnNoDB := "root:root@tcp(127.0.0.1:3306)/?charset=utf8mb4&parseTime=True&loc=Local"
 		dbTemp, err := gorm.Open(mysql.Open(dsnNoDB), &gorm.Config{})
 		if err != nil {
 			log.Fatal("Failed to connect to DB server:", err)
@@ -76,7 +82,7 @@ func SetupTestDB() *gorm.DB {
 		}
 		// Create DB if not exists
 		dbTemp.Exec("CREATE DATABASE IF NOT EXISTS " + dbName)
-		dsn = "root:root@tcp(db:3306)/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local"
+		dsn = "root:root@tcp(127.0.0.1:3306)/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local"
 	}
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -106,6 +112,11 @@ func SetupTestDB() *gorm.DB {
 
 func TeardownTestDB() {
 	if TestDB != nil {
+		// Drop the test database to keep environment clean
+		if TestDBName != "" {
+			// Execute drop using the current connection
+			TestDB.Exec("DROP DATABASE IF EXISTS " + TestDBName)
+		}
 		sqlDB, _ := TestDB.DB()
 		sqlDB.Close()
 	}
