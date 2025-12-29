@@ -77,7 +77,11 @@ jobs:
           done
       - name: Run integration tests
         env:
-          TEST_DB_DSN: root:root@tcp(localhost:3306)/inventory_test?charset=utf8mb4&parseTime=True&loc=Local
+          TEST_DB_HOST: 127.0.0.1
+          TEST_DB_PORT: "3306"
+          TEST_DB_USER: root
+          TEST_DB_PASSWORD: root
+          TEST_DB_DSN: root:root@tcp(127.0.0.1:3306)/inventory_test?charset=utf8mb4&parseTime=True&loc=Local
         run: go test -tags integration ./...
       - name: Run tests with coverage (including main code)
         run: |
