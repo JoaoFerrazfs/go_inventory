@@ -35,6 +35,21 @@ jobs:
       - name: Run unit tests
         run: go test ./...  # Excludes integration due to build tags
 
+      - name: Run unit tests with coverage
+        run: |
+          PKGS=$(go list ./... | grep -v /tests/ | tr '\n' ',')
+          go test -coverpkg="$PKGS" -coverprofile=unit.out ./...
+          go tool cover -func=unit.out
+          go tool cover -html=unit.out -o unit_coverage.html
+
+      - name: Upload unit coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-coverage
+          path: |
+            unit.out
+            unit_coverage.html
+
   integration-tests:
     runs-on: ubuntu-latest
     services:
@@ -85,24 +100,6 @@ jobs:
             sleep $INTERVAL
           done
 
-      - name: Run integration tests
-        env:
-          TEST_DB_HOST: 127.0.0.1
-          TEST_DB_PORT: "3306"
-          TEST_DB_USER: root
-          TEST_DB_PASSWORD: root
-          TEST_DB_DSN: root:root@tcp(127.0.0.1:3306)/inventory_test?charset=utf8mb4&parseTime=True&loc=Local
-        run: go test -tags integration ./...
-
-      - name: Install gocovmerge
-        run: |
-          go install github.com/wadey/gocovmerge@latest
-
-      - name: Run unit tests with coverage
-        run: |
-          PKGS=$(go list ./... | grep -v /tests/ | tr '\n' ',')
-          go test -coverpkg="$PKGS" -coverprofile=unit.out ./...
-
       - name: Run integration tests with coverage
         env:
           TEST_DB_HOST: 127.0.0.1
@@ -113,18 +110,13 @@ jobs:
         run: |
           PKGS=$(go list ./... | grep -v /tests/ | tr '\n' ',')
           go test -tags integration -coverpkg="$PKGS" -coverprofile=integration.out ./...
+          go tool cover -func=integration.out
+          go tool cover -html=integration.out -o integration_coverage.html
 
-      - name: Merge coverage profiles and publish
-        run: |
-          # merge unit + integration coverage
-          ${GOPATH:-$HOME/go}/bin/gocovmerge unit.out integration.out > coverage.out
-          go tool cover -func=coverage.out
-          go tool cover -html=coverage.out -o coverage.html
-
-      - name: Upload coverage artifact
+      - name: Upload integration coverage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
+          name: integration-coverage
           path: |
-            coverage.out
-            coverage.html
+            integration.out
+            integration_coverage.html
