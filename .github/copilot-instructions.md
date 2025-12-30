@@ -1,6 +1,8 @@
 # Main Rules to follow
 ---
 ### General
+  - When you are chatting, always respond in brasilian portuguese, unless I explicitly ask you to respond in another language.
+  - Comments in code must be written in English.
   - Write clean, readable, and maintainable code following established coding standards.
   - Use meaningful variable and function names that convey purpose.
   - Keep functions and methods small and focused on a single task.
@@ -40,6 +42,9 @@
       - /documents/domain/User
   - Provide troubleshooting guides for common issues.  
 ### Testing
+  - Os testes devem ser sempre faceis de entender com a leitura facilitada, estruturado e organizado.
+  - Não use siglas mas sim as palavras completas para nomes de variáveis, funções, métodos e arquivos de teste.
+   - Prefira leitura simples ao invés de complexa, mesmo que a complexa seja mais "elegante".
   - Para rodar os testes Go, utilize sempre o container Docker da aplicação.
   - Comandos principais (use o binário `go` absoluto dentro do container para maior confiabilidade):
     - Testes unitários (com mocks):
