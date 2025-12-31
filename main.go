@@ -63,9 +63,13 @@ func main() {
 func setupRouter() *gin.Engine {
 	router := gin.Default()
 
-	// Habilitar CORS para qualquer origem
+	// Enable CORS for any origin.
+	// When AllowCredentials is true, using "*" in AllowOrigins is not allowed,
+	// so use AllowOriginFunc that returns true for any origin.
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
+		AllowOriginFunc: func(origin string) bool {
+			return true
+		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
