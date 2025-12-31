@@ -26,7 +26,7 @@ func TestCreateQRCode_Success(t *testing.T) {
 	defer os.Chdir(old)
 
 	svc := NewQRCodeService()
-	path, err := svc.CreateQRCode(7)
+	path, _, err := svc.CreateQRCode(7)
 
 	// Assertions
 	assert.Nil(t, err)
@@ -50,7 +50,7 @@ func TestCreateQRCode_DirectoryError(t *testing.T) {
 	defer os.Remove("storage")
 
 	svc := NewQRCodeService()
-	_, err := svc.CreateQRCode(8)
+	_, _, err := svc.CreateQRCode(8)
 
 	// Assertions
 	assert.NotNil(t, err)

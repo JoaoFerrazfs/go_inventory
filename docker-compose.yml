@@ -6,11 +6,24 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     ports:
-      - "3000:3000"
+      - "8000:8000"
     working_dir: /app
     volumes:
       - .:/app
     command: air -c .air.toml
+    environment:
+      # Enable MinIO as storage provider and point to the compose service
+      - STORAGE_PROVIDER=minio
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_BUCKET=inventory
+      - MINIO_REGION=us-east-1
+      - MINIO_USE_SSL=false
+      # Public endpoint used to rewrite presigned URL host for external clients
+      - MINIO_PUBLIC_ENDPOINT=http://localhost:9000
+      # Make uploaded objects public (MINIO_PUBLIC_READ=true will set bucket policy)
+      - MINIO_PUBLIC_READ=true
     depends_on:
       - db
     
@@ -25,5 +38,18 @@ services:
     volumes:
       - db_data:/var/lib/mysql
 
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
 volumes:
   db_data:
+  minio_data:

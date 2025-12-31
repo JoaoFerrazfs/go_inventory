@@ -9,7 +9,7 @@ RUN go install github.com/air-verse/air@latest
 RUN go install github.com/swaggo/swag/cmd/swag@latest
 ENV PATH=$PATH:/go/bin
 
-EXPOSE 3000
+EXPOSE 8000
 
 # baixa dependências e roda Air
 CMD ["sh", "-c", "go mod download && air -c .air.toml", ]

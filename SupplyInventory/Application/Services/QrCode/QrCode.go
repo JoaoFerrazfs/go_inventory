@@ -3,35 +3,77 @@ package services
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+
+	storage "go_inventory/SupplyInventory/Application/Services/Storage"
 
 	"github.com/skip2/go-qrcode"
 )
 
 type QRCodeService interface {
-	CreateQRCode(palletId uint) (string, error)
+	// returns storage path and public URL
+	CreateQRCode(palletId uint) (string, string, error)
 }
 
-type qrCodeService struct{}
+type qrCodeService struct{
+	storage storage.Storage
+	qrcodeDir string // relative path inside storage, e.g. "qrcodes"
+}
 
-const DIRECTORY = "storage/qrcodes"
+const DEFAULT_DIRECTORY = "storage/qrcodes"
 
 func NewQRCodeService() QRCodeService {
-	return &qrCodeService{}
+	// default to local storage using filesystem
+	baseURL := os.Getenv("BASE_URL")
+	port := os.Getenv("PORT")
+	if baseURL == "" {
+		baseURL = "http://localhost:3000/"
+	}
+	if port != "" && baseURL[len(baseURL)-1] == '/' {
+		baseURL = baseURL[:len(baseURL)-1]
+	}
+	// Use local storage pointed at ./storage
+	local := storage.NewLocalStorage("storage", baseURL+"/")
+	return &qrCodeService{storage: local, qrcodeDir: "qrcodes"}
 }
 
-func (service *qrCodeService) CreateQRCode(palletId uint) (string, error) {
+func NewQRCodeServiceWithStorage(st storage.Storage) QRCodeService{
+	return &qrCodeService{storage: st, qrcodeDir: "qrcodes"}
+}
+
+func (service *qrCodeService) CreateQRCode(palletId uint) (string, string, error) {
 	baseUrl := os.Getenv("BASE_URL") + os.Getenv("PORT") + "/pallets/%d"
 	link := fmt.Sprintf(baseUrl, palletId)
 
-	if err := os.MkdirAll(DIRECTORY, os.ModePerm); err != nil {
-		return "", err
-	}
+	// generate png into a buffer
+	filename := fmt.Sprintf("pallet_%d.png", palletId)
+	relPath := filepath.Join(service.qrcodeDir, filename)
 
-	qrFile := fmt.Sprintf(DIRECTORY+"/pallet_%d.png", palletId)
-	err := qrcode.WriteFile(link, qrcode.Highest, 1024, qrFile)
+	// create temp file
+	tmpFile := filepath.Join(os.TempDir(), filename)
+	if err := qrcode.WriteFile(link, qrcode.Highest, 1024, tmpFile); err != nil {
+		return "", "", err
+	}
+	defer os.Remove(tmpFile)
+
+	f, err := os.Open(tmpFile)
 	if err != nil {
-		return "", err
+		return "", "", err
+	}
+	defer f.Close()
+
+	_, err = service.storage.Upload(relPath, f)
+	if err != nil {
+		return "", "", err
 	}
 
-	return qrFile, nil
+	publicURL, _ := service.storage.GetURL(relPath)
+
+	// For compatibility with previous behavior, if using local storage return the full fs path
+	if ls, ok := service.storage.(*storage.LocalStorage); ok {
+		full := filepath.Join(ls.BaseDir, relPath)
+		return full, publicURL, nil
+	}
+
+	return relPath, publicURL, nil
 }

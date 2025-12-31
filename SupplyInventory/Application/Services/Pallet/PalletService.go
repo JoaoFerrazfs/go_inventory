@@ -5,7 +5,6 @@ import (
 	qrCodeService "go_inventory/SupplyInventory/Application/Services/QrCode"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 	repositories "go_inventory/SupplyInventory/Domain/contracts/repositories/Pallet"
-	"strings"
 )
 
 type PalletService interface {
@@ -43,13 +42,13 @@ func (service *palletService) CreatePallet(PalletName string, PalletRackId uint)
 		return nil, appErr
 	}
 
-	qrcodeLink, err := service.qrService.CreateQRCode(newPallet.ID)
+	storagePath, publicURL, err := service.qrService.CreateQRCode(newPallet.ID)
 	if err != nil {
 		return nil, errors.NewAppError(err.Error(), 404)
 	}
 
-	newPallet.QrCode = qrcodeLink
-	newPallet.QrCodeUrl = "http://localhost:3000/" + strings.TrimPrefix(qrcodeLink, "storage/")
+	newPallet.QrCode = storagePath
+	newPallet.QrCodeUrl = publicURL
 
 	palletWithQrCode, appErr := service.repo.UpdateSupply(newPallet)
 	if appErr != nil {
@@ -64,10 +63,14 @@ func (service *palletService) DeletePalletById(id uint) (bool, *errors.AppError)
 }
 
 func (service *palletService) UpdatePallet(id uint, Name string, PalletRackId uint) (*entities.PalletEntity, *errors.AppError) {
-	pallet := &entities.PalletEntity{
-		ID:           id,
-		Name:         Name,
-		PalletRackID: PalletRackId,
+	// Load existing pallet to avoid overwriting other fields
+	existing, appErr := service.repo.GetSupplyById(id)
+	if appErr != nil {
+		return nil, appErr
 	}
-	return service.repo.UpdateSupply(pallet)
+
+	existing.Name = Name
+	existing.PalletRackID = PalletRackId
+
+	return service.repo.UpdateSupply(existing)
 }

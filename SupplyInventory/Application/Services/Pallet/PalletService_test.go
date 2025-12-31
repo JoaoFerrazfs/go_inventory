@@ -104,9 +104,9 @@ func (m *mockPalletRepo) AddProductsToPallet(product entities.PalletizedProductE
 
 type mockQRCodeService struct{ mock.Mock }
 
-func (m *mockQRCodeService) CreateQRCode(palletId uint) (string, error) {
+func (m *mockQRCodeService) CreateQRCode(palletId uint) (string, string, error) {
 	args := m.Called(palletId)
-	return args.String(0), args.Error(1)
+	return args.String(0), args.String(1), args.Error(2)
 }
 
 func TestCreatePallet_Success(t *testing.T) {
@@ -123,7 +123,7 @@ func TestCreatePallet_Success(t *testing.T) {
 	// Expectations
 	created := &entities.PalletEntity{ID: 1, Name: "P1", PalletRackID: 2}
 	repo.On("AddSupply", "P1", uint(2)).Return(created, nil)
-	qr.On("CreateQRCode", uint(1)).Return("storage/pallet_1.png", nil)
+	qr.On("CreateQRCode", uint(1)).Return("storage/pallet_1.png", "http://localhost:3000/pallets/1", nil)
 	updated := &entities.PalletEntity{ID: 1, Name: "P1", PalletRackID: 2, QrCode: "storage/pallet_1.png", QrCodeUrl: "http://localhost:3000/pallets/1"}
 	repo.On("UpdateSupply", mock.Anything).Return(updated, nil)
 
@@ -151,7 +151,7 @@ func TestCreatePallet_QRServiceError(t *testing.T) {
 	// Expectations
 	created := &entities.PalletEntity{ID: 2, Name: "P2", PalletRackID: 3}
 	repo.On("AddSupply", "P2", uint(3)).Return(created, nil)
-	qr.On("CreateQRCode", uint(2)).Return("", assert.AnError)
+	qr.On("CreateQRCode", uint(2)).Return("", "", assert.AnError)
 
 	// Actions
 	res, err := svc.CreatePallet("P2", 3)

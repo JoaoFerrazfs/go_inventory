@@ -35,7 +35,7 @@ import (
 // @contact.name   API Support
 // @contact.email  joaoferrazp@gmail.com
 
-// @host localhost:3000
+// @host localhost:8000
 
 func main() {
 	// Carregar variáveis de ambiente
