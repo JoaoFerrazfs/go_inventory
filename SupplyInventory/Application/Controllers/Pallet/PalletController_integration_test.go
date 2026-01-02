@@ -42,3 +42,32 @@ func TestIntegration_CreatePallet(t *testing.T) {
 		return nil
 	})
 }
+
+func TestIntegration_ExportPalletsCsv(t *testing.T) {
+	h := integration.NewIntegrationTestHelper()
+	h.TruncateTables(h.DB)
+	h.DB.Transaction(func(tx *gorm.DB) error {
+		// Set
+		rack := h.CreateTestPalletRack(tx, "Rack1_Export", "Location1", 10)
+		h.CreateTestPallet(tx, "Pallet1_Export", rack.ID)
+		r := h.SetupRouterForPallet(tx)
+
+		// Actions
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("GET", "/api/v1/pallets/export", nil)
+		r.ServeHTTP(w, req)
+
+		// Assertions
+		var response map[string]interface{}
+		json.Unmarshal(w.Body.Bytes(), &response)
+
+		data := response["data"].(map[string]interface{})
+		url := data["url"].(string)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Contains(t, url, "http://localhost:3000/reports/Pallets")
+		assert.Contains(t, url, ".csv")
+
+		return nil
+	})
+}

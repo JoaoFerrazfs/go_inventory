@@ -20,6 +20,7 @@ func NewPalletController(service pallet.PalletService) *PalletController {
 
 func (controller *PalletController) Register(group *gin.RouterGroup) {
 	group.GET("/", controller.ListPallets)
+	group.GET("/export", controller.ExportPalletsCsv)
 	group.GET("/:id", controller.FindPalletById)
 	group.PATCH("/:id", controller.UpdatePallet)
 	group.POST("/", controller.CreatePallet)
@@ -40,6 +41,23 @@ func (controller *PalletController) ListPallets(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, pallets)
+}
+
+// @Summary Export pallets to CSV file
+// @Tags Pallets
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Failure 404 "Not Found"
+// @Router /api/v1/pallets/export [get]
+func (controller *PalletController) ExportPalletsCsv(c *gin.Context) {
+	url, appErr := controller.service.GeneratePalletsCsvFile()
+	if appErr != nil {
+		c.JSON(appErr.ErrorCode(), appErr.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": gin.H{"url": url}})
 }
 
 // @Summary Get pallet by ID

@@ -1,15 +1,16 @@
 package controllers_test
 
 import (
-	errors "go_inventory/Helpers/Errors"
-	pallet "go_inventory/SupplyInventory/Application/Controllers/Pallet"
-	entities "go_inventory/SupplyInventory/Domain/Entities"
+	"bytes"
+	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"bytes"
-	"io"
+	errors "go_inventory/Helpers/Errors"
+	pallet "go_inventory/SupplyInventory/Application/Controllers/Pallet"
+	entities "go_inventory/SupplyInventory/Domain/Entities"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -139,6 +140,10 @@ func (m *mockPalletService) UpdatePallet(id uint, name string, rackID uint) (*en
 	}
 	return args.Get(0).(*entities.PalletEntity), args.Get(1).(*errors.AppError)
 }
+func (m *mockPalletService) GeneratePalletsCsvFile() (string, *errors.AppError) {
+	args := m.Called()
+	return args.String(0), args.Get(1).(*errors.AppError)
+}
 
 func TestListPallets_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -258,4 +263,45 @@ func TestUpdatePallet_Error(t *testing.T) {
 	c.Request.Body = io.NopCloser(bytes.NewReader([]byte(`{"Name":"Pallet1","PalletRackID":2}`)))
 	controller.UpdatePallet(c)
 	assert.Equal(t, 422, w.Code)
+}
+
+func TestExportPalletsCsv_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	// Set
+	mockService := new(mockPalletService)
+	controller := pallet.NewPalletController(mockService)
+	url := "http://localhost:3000/reports/Pallets/2023-01-01_12-00-00_123456789.csv"
+
+	// Expectations
+	mockService.On("GeneratePalletsCsvFile").Return(url, (*errors.AppError)(nil))
+
+	// Actions
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	controller.ExportPalletsCsv(c)
+
+	// Assertions
+	assert.Equal(t, http.StatusOK, w.Code)
+	var response map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &response)
+	data := response["data"].(map[string]interface{})
+	assert.Equal(t, url, data["url"])
+}
+
+func TestExportPalletsCsv_Error(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	// Set
+	mockService := new(mockPalletService)
+	controller := pallet.NewPalletController(mockService)
+
+	// Expectations
+	mockService.On("GeneratePalletsCsvFile").Return("", errors.NewAppError("fail", 404))
+
+	// Actions
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	controller.ExportPalletsCsv(c)
+
+	// Assertions
+	assert.Equal(t, 404, w.Code)
 }

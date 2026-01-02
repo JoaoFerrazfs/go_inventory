@@ -13,6 +13,7 @@ import (
 	palletRackService "go_inventory/SupplyInventory/Application/Services/PalletRack"
 	palletizedProductService "go_inventory/SupplyInventory/Application/Services/PalletizedProduct"
 	qrCodeService "go_inventory/SupplyInventory/Application/Services/QrCode"
+	storage "go_inventory/SupplyInventory/Application/Services/Storage"
 	userService "go_inventory/SupplyInventory/Application/Services/User"
 	entities "go_inventory/SupplyInventory/Domain/Entities" //nolint
 	Pallet "go_inventory/SupplyInventory/Domain/contracts/repositories/Pallet"
@@ -127,7 +128,10 @@ func (h *IntegrationTestHelper) SetupRouterForPallet(db *gorm.DB) *gin.Engine {
 	palletRepo := palletInfra.NewPalletRepository(dbadapter.NewGormAdapter(db))
 	palletRackRepo := palletRackInfra.NewPalletRackRepository(dbadapter.NewGormAdapter(db))
 	qrSrv := h.QrCodeService
-	palletSrv := palletService.NewPalletService(palletRepo, qrSrv, palletRackRepo)
+	// For tests, use local storage in tmp
+	testStorage := storage.NewLocalStorage("tmp", "http://localhost:3000/")
+	exportSrv := palletService.NewPalletExportService(testStorage)
+	palletSrv := palletService.NewPalletService(palletRepo, qrSrv, palletRackRepo, testStorage, exportSrv)
 	controller := pallet.NewPalletController(palletSrv)
 	r := gin.Default()
 	api := r.Group("/api/v1/pallets")

@@ -7,6 +7,7 @@ import (
 	palletizedProductController "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
 	userController "go_inventory/SupplyInventory/Application/Controllers/User"
 	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
+	"os"
 
 	jwt "go_inventory/SupplyInventory/Application/Services/Jwt"
 	pallet "go_inventory/SupplyInventory/Application/Services/Pallet"
@@ -27,8 +28,6 @@ import (
 
 	storage "go_inventory/SupplyInventory/Application/Services/Storage"
 	dbadapter "go_inventory/SupplyInventory/Infrastructure/repositories/db"
-
-	"os"
 
 	"go.uber.org/fx"
 	"gorm.io/gorm"
@@ -55,44 +54,20 @@ func BuildOptions(db *gorm.DB) fx.Option {
 			}),
 		),
 
+		// Storage
+		fx.Provide(getStorage),
+
 		// Services Module
 		fx.Module("services",
 			// Provide QRCodeService using environment-configured storage (local or minio)
-			fx.Provide(func() qrcode.QRCodeService {
-				// Decide provider via env var STORAGE_PROVIDER: "minio" or "local" (default)
-				provider := os.Getenv("STORAGE_PROVIDER")
-				if provider == "minio" {
-					endpoint := os.Getenv("MINIO_ENDPOINT")
-					accessKey := os.Getenv("MINIO_ACCESS_KEY")
-					secretKey := os.Getenv("MINIO_SECRET_KEY")
-					bucket := os.Getenv("MINIO_BUCKET")
-					region := os.Getenv("MINIO_REGION")
-					useSSL := os.Getenv("MINIO_USE_SSL") == "true"
-					if endpoint == "" || accessKey == "" || secretKey == "" || bucket == "" {
-						// fallback to local
-						return qrcode.NewQRCodeService()
-					}
-					s3, err := storage.NewS3Storage(endpoint, accessKey, secretKey, bucket, region, useSSL)
-					if err != nil {
-						return qrcode.NewQRCodeService()
-					}
-					return qrcode.NewQRCodeServiceWithStorage(s3)
-				}
-
-				// default local storage
-				baseDir := os.Getenv("STORAGE_BASE_DIR")
-				baseURL := os.Getenv("STORAGE_BASE_URL")
-				if baseDir == "" {
-					baseDir = "storage"
-				}
-				if baseURL == "" {
-					baseURL = "http://localhost:3000/"
-				}
-				local := storage.NewLocalStorage(baseDir, baseURL)
-				return qrcode.NewQRCodeServiceWithStorage(local)
+			fx.Provide(func(storage storage.Storage) qrcode.QRCodeService {
+				return qrcode.NewQRCodeServiceWithStorage(storage)
 			}),
-			fx.Provide(func(repo contractPallet.PalletRepository, qrService qrcode.QRCodeService, palletRackRepo contractPalletRack.PalletRackRepository) pallet.PalletService {
-				return pallet.NewPalletService(repo, qrService, palletRackRepo)
+			fx.Provide(func(storage storage.Storage) pallet.PalletExportService {
+				return pallet.NewPalletExportService(storage)
+			}),
+			fx.Provide(func(repo contractPallet.PalletRepository, qrService qrcode.QRCodeService, palletRackRepo contractPalletRack.PalletRackRepository, storage storage.Storage, exportService pallet.PalletExportService) pallet.PalletService {
+				return pallet.NewPalletService(repo, qrService, palletRackRepo, storage, exportService)
 			}),
 			fx.Provide(func(repo contractPalletRack.PalletRackRepository) palletrack.PalletRackService {
 				return palletrack.NewPalletRackService(repo)
@@ -120,4 +95,54 @@ func BuildOptions(db *gorm.DB) fx.Option {
 			fx.Provide(middlewares.NewAuthMiddleware),
 		),
 	)
+}
+
+func getStorage() storage.Storage {
+	// Decide provider via env var STORAGE_PROVIDER: "minio" or "local" (default)
+	provider := os.Getenv("STORAGE_PROVIDER")
+	if provider == "minio" {
+		endpoint := os.Getenv("MINIO_ENDPOINT")
+		accessKey := os.Getenv("MINIO_ACCESS_KEY")
+		secretKey := os.Getenv("MINIO_SECRET_KEY")
+		bucket := os.Getenv("MINIO_BUCKET")
+		region := os.Getenv("MINIO_REGION")
+		useSSL := os.Getenv("MINIO_USE_SSL") == "true"
+		if endpoint == "" || accessKey == "" || secretKey == "" || bucket == "" {
+			// fallback to local
+			baseDir := os.Getenv("STORAGE_BASE_DIR")
+			baseURL := os.Getenv("STORAGE_BASE_URL")
+			if baseDir == "" {
+				baseDir = "storage"
+			}
+			if baseURL == "" {
+				baseURL = "http://localhost:3000/"
+			}
+			return storage.NewLocalStorage(baseDir, baseURL)
+		}
+		s3, err := storage.NewS3Storage(endpoint, accessKey, secretKey, bucket, region, useSSL)
+		if err != nil {
+			// fallback to local
+			baseDir := os.Getenv("STORAGE_BASE_DIR")
+			baseURL := os.Getenv("STORAGE_BASE_URL")
+			if baseDir == "" {
+				baseDir = "storage"
+			}
+			if baseURL == "" {
+				baseURL = "http://localhost:3000/"
+			}
+			return storage.NewLocalStorage(baseDir, baseURL)
+		}
+		return s3
+	}
+
+	// default local storage
+	baseDir := os.Getenv("STORAGE_BASE_DIR")
+	baseURL := os.Getenv("STORAGE_BASE_URL")
+	if baseDir == "" {
+		baseDir = "storage"
+	}
+	if baseURL == "" {
+		baseURL = "http://localhost:3000/"
+	}
+	return storage.NewLocalStorage(baseDir, baseURL)
 }

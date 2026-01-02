@@ -3,6 +3,7 @@ package services
 import (
 	errors "go_inventory/Helpers/Errors"
 	qrCodeService "go_inventory/SupplyInventory/Application/Services/QrCode"
+	storage "go_inventory/SupplyInventory/Application/Services/Storage"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 	palletRepository "go_inventory/SupplyInventory/Domain/contracts/repositories/Pallet"
 	palletRackRepository "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletRack"
@@ -14,16 +15,19 @@ type PalletService interface {
 	CreatePallet(PalletName string, PalletRackId uint) (*entities.PalletEntity, *errors.AppError)
 	DeletePalletById(id uint) (bool, *errors.AppError)
 	UpdatePallet(id uint, Name string, PalletRackId uint) (*entities.PalletEntity, *errors.AppError)
+	GeneratePalletsCsvFile() (string, *errors.AppError)
 }
 
 type palletService struct {
 	palletRepository     palletRepository.PalletRepository
 	qrService            qrCodeService.QRCodeService
 	palletRackRepository palletRackRepository.PalletRackRepository
+	storage              storage.Storage
+	exportService        PalletExportService
 }
 
-func NewPalletService(palletRepository palletRepository.PalletRepository, qrService qrCodeService.QRCodeService, palletRackRepository palletRackRepository.PalletRackRepository) PalletService {
-	return &palletService{palletRepository: palletRepository, qrService: qrService, palletRackRepository: palletRackRepository}
+func NewPalletService(palletRepository palletRepository.PalletRepository, qrService qrCodeService.QRCodeService, palletRackRepository palletRackRepository.PalletRackRepository, storage storage.Storage, exportService PalletExportService) PalletService {
+	return &palletService{palletRepository: palletRepository, qrService: qrService, palletRackRepository: palletRackRepository, storage: storage, exportService: exportService}
 }
 
 func (service *palletService) ListPallets() ([]entities.PalletEntity, *errors.AppError) {
@@ -89,4 +93,13 @@ func (service *palletService) UpdatePallet(id uint, Name string, PalletRackId ui
 	existing.PalletRackName = palletRack.Name
 
 	return service.palletRepository.UpdateSupply(existing)
+}
+
+func (service *palletService) GeneratePalletsCsvFile() (string, *errors.AppError) {
+	pallets, appErr := service.ListPallets()
+	if appErr != nil {
+		return "", appErr
+	}
+
+	return service.exportService.ExportPalletsToCsv(pallets)
 }
