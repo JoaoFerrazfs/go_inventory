@@ -4,7 +4,8 @@ import (
 	errors "go_inventory/Helpers/Errors"
 	qrCodeService "go_inventory/SupplyInventory/Application/Services/QrCode"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
-	repositories "go_inventory/SupplyInventory/Domain/contracts/repositories/Pallet"
+	palletRepository "go_inventory/SupplyInventory/Domain/contracts/repositories/Pallet"
+	palletRackRepository "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletRack"
 )
 
 type PalletService interface {
@@ -16,16 +17,17 @@ type PalletService interface {
 }
 
 type palletService struct {
-	repo      repositories.PalletRepository
-	qrService qrCodeService.QRCodeService
+	palletRepository     palletRepository.PalletRepository
+	qrService            qrCodeService.QRCodeService
+	palletRackRepository palletRackRepository.PalletRackRepository
 }
 
-func NewPalletService(repo repositories.PalletRepository, qrService qrCodeService.QRCodeService) PalletService {
-	return &palletService{repo: repo, qrService: qrService}
+func NewPalletService(palletRepository palletRepository.PalletRepository, qrService qrCodeService.QRCodeService, palletRackRepository palletRackRepository.PalletRackRepository) PalletService {
+	return &palletService{palletRepository: palletRepository, qrService: qrService, palletRackRepository: palletRackRepository}
 }
 
 func (service *palletService) ListPallets() ([]entities.PalletEntity, *errors.AppError) {
-	pallets, appErr := service.repo.GetAllPallets()
+	pallets, appErr := service.palletRepository.GetAllPallets()
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -33,11 +35,17 @@ func (service *palletService) ListPallets() ([]entities.PalletEntity, *errors.Ap
 }
 
 func (service *palletService) FindPalletById(id uint) (*entities.PalletEntity, *errors.AppError) {
-	return service.repo.GetSupplyById(id)
+	return service.palletRepository.GetSupplyById(id)
 }
 
 func (service *palletService) CreatePallet(PalletName string, PalletRackId uint) (*entities.PalletEntity, *errors.AppError) {
-	newPallet, appErr := service.repo.AddSupply(PalletName, PalletRackId)
+
+	palletRack, apperr := service.palletRackRepository.FindPalletById(PalletRackId)
+	if apperr != nil {
+		return nil, apperr
+	}
+
+	newPallet, appErr := service.palletRepository.AddSupply(PalletName, PalletRackId)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -49,8 +57,10 @@ func (service *palletService) CreatePallet(PalletName string, PalletRackId uint)
 
 	newPallet.QrCode = storagePath
 	newPallet.QrCodeUrl = publicURL
+	newPallet.PalletRackName = palletRack.Name
+	newPallet.PalletRackID = palletRack.ID
 
-	palletWithQrCode, appErr := service.repo.UpdateSupply(newPallet)
+	palletWithQrCode, appErr := service.palletRepository.UpdateSupply(newPallet)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -59,18 +69,24 @@ func (service *palletService) CreatePallet(PalletName string, PalletRackId uint)
 }
 
 func (service *palletService) DeletePalletById(id uint) (bool, *errors.AppError) {
-	return service.repo.DeletePalletById(id)
+	return service.palletRepository.DeletePalletById(id)
 }
 
 func (service *palletService) UpdatePallet(id uint, Name string, PalletRackId uint) (*entities.PalletEntity, *errors.AppError) {
 	// Load existing pallet to avoid overwriting other fields
-	existing, appErr := service.repo.GetSupplyById(id)
+	existing, appErr := service.palletRepository.GetSupplyById(id)
 	if appErr != nil {
 		return nil, appErr
 	}
 
+	palletRack, apperr := service.palletRackRepository.FindPalletById(PalletRackId)
+	if apperr != nil {
+		return nil, apperr
+	}
+
 	existing.Name = Name
 	existing.PalletRackID = PalletRackId
+	existing.PalletRackName = palletRack.Name
 
-	return service.repo.UpdateSupply(existing)
+	return service.palletRepository.UpdateSupply(existing)
 }

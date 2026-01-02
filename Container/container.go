@@ -91,8 +91,8 @@ func BuildOptions(db *gorm.DB) fx.Option {
 				local := storage.NewLocalStorage(baseDir, baseURL)
 				return qrcode.NewQRCodeServiceWithStorage(local)
 			}),
-			fx.Provide(func(repo contractPallet.PalletRepository, qrService qrcode.QRCodeService) pallet.PalletService {
-				return pallet.NewPalletService(repo, qrService)
+			fx.Provide(func(repo contractPallet.PalletRepository, qrService qrcode.QRCodeService, palletRackRepo contractPalletRack.PalletRackRepository) pallet.PalletService {
+				return pallet.NewPalletService(repo, qrService, palletRackRepo)
 			}),
 			fx.Provide(func(repo contractPalletRack.PalletRackRepository) palletrack.PalletRackService {
 				return palletrack.NewPalletRackService(repo)

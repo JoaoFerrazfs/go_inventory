@@ -62,6 +62,9 @@ func main() {
 
 func setupRouter() *gin.Engine {
 	router := gin.Default()
+	// Disable automatic redirect for trailing slash mismatches to avoid 307
+	// redirects on OPTIONS preflight requests which can break CORS flows.
+	router.RedirectTrailingSlash = false
 
 	// Enable CORS for any origin.
 	// When AllowCredentials is true, using "*" in AllowOrigins is not allowed,

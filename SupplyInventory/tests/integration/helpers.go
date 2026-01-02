@@ -125,8 +125,9 @@ func (h *IntegrationTestHelper) SetupRouterForAuth(db *gorm.DB) *gin.Engine {
 
 func (h *IntegrationTestHelper) SetupRouterForPallet(db *gorm.DB) *gin.Engine {
 	palletRepo := palletInfra.NewPalletRepository(dbadapter.NewGormAdapter(db))
+	palletRackRepo := palletRackInfra.NewPalletRackRepository(dbadapter.NewGormAdapter(db))
 	qrSrv := h.QrCodeService
-	palletSrv := palletService.NewPalletService(palletRepo, qrSrv)
+	palletSrv := palletService.NewPalletService(palletRepo, qrSrv, palletRackRepo)
 	controller := pallet.NewPalletController(palletSrv)
 	r := gin.Default()
 	api := r.Group("/api/v1/pallets")
