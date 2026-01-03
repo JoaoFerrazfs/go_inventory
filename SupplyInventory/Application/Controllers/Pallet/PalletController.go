@@ -28,8 +28,9 @@ func (controller *PalletController) Register(group *gin.RouterGroup) {
 	group.DELETE("/:id", controller.DeletePalletById)
 }
 
-func (controller *PalletController) parseFilterParams(c *gin.Context) (*uint, *uint) {
-	var palletRackId, productId *uint
+func (controller *PalletController) parseFilterParams(c *gin.Context) (*uint, *int) {
+	var palletRackId *uint
+	var productEan *int
 
 	if rackIdStr := c.Query("palletRackId"); rackIdStr != "" {
 		if rackId, err := strconv.ParseUint(rackIdStr, 10, 32); err == nil {
@@ -38,14 +39,13 @@ func (controller *PalletController) parseFilterParams(c *gin.Context) (*uint, *u
 		}
 	}
 
-	if prodIdStr := c.Query("productId"); prodIdStr != "" {
-		if prodId, err := strconv.ParseUint(prodIdStr, 10, 32); err == nil {
-			prodIdUint := uint(prodId)
-			productId = &prodIdUint
+	if eanStr := c.Query("ean"); eanStr != "" {
+		if ean, err := strconv.Atoi(eanStr); err == nil {
+			productEan = &ean
 		}
 	}
 
-	return palletRackId, productId
+	return palletRackId, productEan
 }
 
 // @Summary List pallets
@@ -55,12 +55,12 @@ func (controller *PalletController) parseFilterParams(c *gin.Context) (*uint, *u
 // @Success 200 {array} entities.PalletEntity
 // @Failure 404 "Not Found"
 // @Param palletRackId query uint false "Filter by pallet rack ID"
-// @Param productId query uint false "Filter by product ID"
+// @Param ean query int false "Filter by product EAN"
 // @Router /api/v1/pallets [get]
 func (controller *PalletController) ListPallets(c *gin.Context) {
-	palletRackId, productId := controller.parseFilterParams(c)
+	palletRackId, productEan := controller.parseFilterParams(c)
 
-	pallets, appErr := controller.service.ListPallets(palletRackId, productId)
+	pallets, appErr := controller.service.ListPallets(palletRackId, productEan)
 	if appErr != nil {
 		c.JSON(appErr.ErrorCode(), appErr.Error())
 	}
@@ -75,12 +75,12 @@ func (controller *PalletController) ListPallets(c *gin.Context) {
 // @Success 200 {object} map[string]string
 // @Failure 404 "Not Found"
 // @Param palletRackId query uint false "Filter by pallet rack ID"
-// @Param productId query uint false "Filter by product ID"
+// @Param ean query int false "Filter by product EAN"
 // @Router /api/v1/pallets/export [get]
 func (controller *PalletController) ExportPalletsCsv(c *gin.Context) {
-	palletRackId, productId := controller.parseFilterParams(c)
+	palletRackId, productEan := controller.parseFilterParams(c)
 
-	url, appErr := controller.service.GeneratePalletsCsvFile(palletRackId, productId)
+	url, appErr := controller.service.GeneratePalletsCsvFile(palletRackId, productEan)
 	if appErr != nil {
 		c.JSON(appErr.ErrorCode(), appErr.Error())
 		return

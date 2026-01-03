@@ -45,7 +45,7 @@ func NewPalletRepository(db dbadapter.DBAdapter) repositories.PalletRepository {
 	return &palletRepository{db: db}
 }
 
-func (repository *palletRepository) GetAllPallets(palletRackId *uint, productId *uint) ([]entities.PalletEntity, *errors.AppError) {
+func (repository *palletRepository) GetAllPallets(palletRackId *uint, productEan *int) ([]entities.PalletEntity, *errors.AppError) {
 	var pallets []entities.PalletEntity
 	query := repository.db.GetDB().Preload("PalletizedProduct")
 	
@@ -53,8 +53,8 @@ func (repository *palletRepository) GetAllPallets(palletRackId *uint, productId 
 		query = query.Where("pallet_rack_id = ?", *palletRackId)
 	}
 	
-	if productId != nil {
-		query = query.Joins("JOIN palletized_products pp ON pp.pallet_id = pallets.id").Where("pp.id = ?", *productId)
+	if productEan != nil {
+		query = query.Joins("JOIN palletized_products pp ON pp.pallet_id = pallets.id").Where("pp.ean = ?", *productEan)
 	}
 	
 	if err := query.Find(&pallets).Error; err != nil {

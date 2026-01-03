@@ -12,7 +12,7 @@ type PalletRepository interface {
     DeleteByID(id uint) error
     Update(pallet *entities.PalletEntity) error
     AddProductsToPallet(product entities.PalletizedProductEntity) (*entities.PalletEntity, *errors.AppError)
-    GetAllPallets(palletRackId *uint, productId *uint) ([]entities.PalletEntity, *errors.AppError)
+    GetAllPallets(palletRackId *uint, productEan *int) ([]entities.PalletEntity, *errors.AppError)
     GetSupplyById(id uint) (*entities.PalletEntity, *errors.AppError)
     AddSupply(name string, rackId uint) (*entities.PalletEntity, *errors.AppError)
     UpdateSupply(pallet *entities.PalletEntity) (*entities.PalletEntity, *errors.AppError)
