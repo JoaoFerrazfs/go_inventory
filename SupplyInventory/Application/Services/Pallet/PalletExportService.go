@@ -27,17 +27,25 @@ func NewPalletExportService(storage storage.Storage) PalletExportService {
 func (s *palletExportService) ExportPalletsToCsv(pallets []entities.PalletEntity) (string, *errors.AppError) {
 	var csvBuilder strings.Builder
 	writer := csv.NewWriter(&csvBuilder)
-	
+
 	// Write header
-	writer.Write([]string{"ID", "Nome", "Id do Rack", "Nome do Rack", "QrCodeUrl"})
+	writer.Write([]string{"ID", "Nome", "Id do Rack", "Nome do Rack", "Produtos", "QrCodeUrl"})
 
 	// Write data
 	for _, p := range pallets {
+		// Build products string from EANs
+		var products []string
+		for _, pp := range p.PalletizedProduct {
+			products = append(products, strconv.Itoa(pp.EAN))
+		}
+		productsStr := strings.Join(products, ", ")
+
 		writer.Write([]string{
 			strconv.Itoa(int(p.ID)),
 			p.Name,
 			strconv.Itoa(int(p.PalletRackID)),
 			p.PalletRackName,
+			productsStr,
 			p.QrCodeUrl,
 		})
 	}
