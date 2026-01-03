@@ -1,11 +1,11 @@
 package services
 
 import (
-	"io"
 	"testing"
 
 	errors "go_inventory/Helpers/Errors"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
+	"go_inventory/SupplyInventory/tests/mocks"
 	testutils "go_inventory/SupplyInventory/tests/testutils"
 
 	"github.com/stretchr/testify/assert"
@@ -154,23 +154,6 @@ func (m *mockPalletExportService) ExportPalletsToCsv(pallets []entities.PalletEn
 	return args.String(0), args.Get(1).(*errors.AppError)
 }
 
-type mockStorage struct{ mock.Mock }
-
-func (m *mockStorage) Upload(path string, content io.Reader) (string, error) {
-	args := m.Called(path, content)
-	return args.String(0), args.Error(1)
-}
-
-func (m *mockStorage) GetURL(path string) (string, error) {
-	args := m.Called(path)
-	return args.String(0), args.Error(1)
-}
-
-func (m *mockStorage) Delete(path string) error {
-	args := m.Called(path)
-	return args.Error(0)
-}
-
 func TestCreatePallet_Success(t *testing.T) {
 	// Set
 	restore := testutils.SetEnvAndRestore("BASE_URL", "http://localhost:")
@@ -181,7 +164,7 @@ func TestCreatePallet_Success(t *testing.T) {
 	repo := &mockPalletRepo{}
 	qr := &mockQRCodeService{}
 	rackRepo := &mockPalletRackRepo{}
-	storage := &mockStorage{}
+	storage := &mocks.MockStorage{}
 	exportSvc := &mockPalletExportService{}
 	svc := NewPalletService(repo, qr, rackRepo, storage, exportSvc)
 
@@ -215,7 +198,7 @@ func TestCreatePallet_QRServiceError(t *testing.T) {
 	repo := &mockPalletRepo{}
 	qr := &mockQRCodeService{}
 	rackRepo := &mockPalletRackRepo{}
-	storage := &mockStorage{}
+	storage := &mocks.MockStorage{}
 	exportSvc := &mockPalletExportService{}
 	svc := NewPalletService(repo, qr, rackRepo, storage, exportSvc)
 
@@ -242,7 +225,7 @@ func TestListPallets_RepoError(t *testing.T) {
 	repo := &mockPalletRepo{}
 	qr := &mockQRCodeService{}
 	rackRepo := &mockPalletRackRepo{}
-	storage := &mockStorage{}
+	storage := &mocks.MockStorage{}
 	exportSvc := &mockPalletExportService{}
 	svc := NewPalletService(repo, qr, rackRepo, storage, exportSvc)
 
@@ -264,7 +247,7 @@ func TestFindPalletById_NotFound(t *testing.T) {
 	repo := &mockPalletRepo{}
 	qr := &mockQRCodeService{}
 	rackRepo := &mockPalletRackRepo{}
-	storage := &mockStorage{}
+	storage := &mocks.MockStorage{}
 	exportSvc := &mockPalletExportService{}
 	svc := NewPalletService(repo, qr, rackRepo, storage, exportSvc)
 
