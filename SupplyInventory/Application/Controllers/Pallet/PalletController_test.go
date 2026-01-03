@@ -25,7 +25,7 @@ func TestListPallets_Error(t *testing.T) {
 	controller := pallet.NewPalletController(mockService)
 
 	// Expectations
-	mockService.On("ListPallets").Return([]entities.PalletEntity{}, errors.NewAppError("fail", 404))
+	mockService.On("ListPallets", mock.AnythingOfType("*uint"), mock.AnythingOfType("*uint")).Return([]entities.PalletEntity{}, errors.NewAppError("fail", 404))
 
 	// Actions
 	w := httptest.NewRecorder()
@@ -111,8 +111,8 @@ type mockPalletService struct {
 	mock.Mock
 }
 
-func (m *mockPalletService) ListPallets() ([]entities.PalletEntity, *errors.AppError) {
-	args := m.Called()
+func (m *mockPalletService) ListPallets(palletRackId *uint, productId *uint) ([]entities.PalletEntity, *errors.AppError) {
+	args := m.Called(palletRackId, productId)
 	return args.Get(0).([]entities.PalletEntity), args.Get(1).(*errors.AppError)
 }
 func (m *mockPalletService) FindPalletById(id uint) (*entities.PalletEntity, *errors.AppError) {
@@ -140,8 +140,8 @@ func (m *mockPalletService) UpdatePallet(id uint, name string, rackID uint) (*en
 	}
 	return args.Get(0).(*entities.PalletEntity), args.Get(1).(*errors.AppError)
 }
-func (m *mockPalletService) GeneratePalletsCsvFile() (string, *errors.AppError) {
-	args := m.Called()
+func (m *mockPalletService) GeneratePalletsCsvFile(palletRackId *uint, productId *uint) (string, *errors.AppError) {
+	args := m.Called(palletRackId, productId)
 	return args.String(0), args.Get(1).(*errors.AppError)
 }
 
@@ -153,7 +153,7 @@ func TestListPallets_Success(t *testing.T) {
 	pallets := []entities.PalletEntity{{ID: 1, Name: "Pallet1"}}
 
 	// Expectations
-	mockService.On("ListPallets").Return(pallets, (*errors.AppError)(nil))
+	mockService.On("ListPallets", mock.AnythingOfType("*uint"), mock.AnythingOfType("*uint")).Return(pallets, (*errors.AppError)(nil))
 
 	// Actions
 	w := httptest.NewRecorder()
@@ -273,7 +273,7 @@ func TestExportPalletsCsv_Success(t *testing.T) {
 	url := "http://localhost:3000/reports/Pallets/2023-01-01_12-00-00_123456789.csv"
 
 	// Expectations
-	mockService.On("GeneratePalletsCsvFile").Return(url, (*errors.AppError)(nil))
+	mockService.On("GeneratePalletsCsvFile", mock.AnythingOfType("*uint"), mock.AnythingOfType("*uint")).Return(url, (*errors.AppError)(nil))
 
 	// Actions
 	w := httptest.NewRecorder()
@@ -295,7 +295,7 @@ func TestExportPalletsCsv_Error(t *testing.T) {
 	controller := pallet.NewPalletController(mockService)
 
 	// Expectations
-	mockService.On("GeneratePalletsCsvFile").Return("", errors.NewAppError("fail", 404))
+	mockService.On("GeneratePalletsCsvFile", mock.AnythingOfType("*uint"), mock.AnythingOfType("*uint")).Return("", errors.NewAppError("fail", 404))
 
 	// Actions
 	w := httptest.NewRecorder()

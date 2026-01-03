@@ -15,6 +15,8 @@ type DBAdapter interface {
     DeleteByID(model interface{}, id uint) (int64, error)
     Save(value interface{}) error
     PreloadFind(out interface{}, preload string, id ...uint) error
+    WherePreloadFind(out interface{}, preload string, where string, args ...interface{}) error
+    GetDB() *gorm.DB
     AppendAssociation(pallet *entities.PalletEntity, product *entities.PalletizedProductEntity) error
 }
 
@@ -58,6 +60,14 @@ func (g *gormAdapter) PreloadFind(out interface{}, preload string, id ...uint) e
         return g.db.Preload(preload).First(out, id[0]).Error
     }
     return g.db.Preload(preload).Find(out).Error
+}
+
+func (g *gormAdapter) WherePreloadFind(out interface{}, preload string, where string, args ...interface{}) error {
+    return g.db.Where(where, args...).Preload(preload).Find(out).Error
+}
+
+func (g *gormAdapter) GetDB() *gorm.DB {
+    return g.db
 }
 
 func (g *gormAdapter) AppendAssociation(pallet *entities.PalletEntity, product *entities.PalletizedProductEntity) error {

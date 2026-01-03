@@ -10,12 +10,12 @@ import (
 )
 
 type PalletService interface {
-	ListPallets() ([]entities.PalletEntity, *errors.AppError)
+	ListPallets(palletRackId *uint, productId *uint) ([]entities.PalletEntity, *errors.AppError)
 	FindPalletById(id uint) (*entities.PalletEntity, *errors.AppError)
 	CreatePallet(PalletName string, PalletRackId uint) (*entities.PalletEntity, *errors.AppError)
 	DeletePalletById(id uint) (bool, *errors.AppError)
 	UpdatePallet(id uint, Name string, PalletRackId uint) (*entities.PalletEntity, *errors.AppError)
-	GeneratePalletsCsvFile() (string, *errors.AppError)
+	GeneratePalletsCsvFile(palletRackId *uint, productId *uint) (string, *errors.AppError)
 }
 
 type palletService struct {
@@ -30,8 +30,8 @@ func NewPalletService(palletRepository palletRepository.PalletRepository, qrServ
 	return &palletService{palletRepository: palletRepository, qrService: qrService, palletRackRepository: palletRackRepository, storage: storage, exportService: exportService}
 }
 
-func (service *palletService) ListPallets() ([]entities.PalletEntity, *errors.AppError) {
-	pallets, appErr := service.palletRepository.GetAllPallets()
+func (service *palletService) ListPallets(palletRackId *uint, productId *uint) ([]entities.PalletEntity, *errors.AppError) {
+	pallets, appErr := service.palletRepository.GetAllPallets(palletRackId, productId)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -95,8 +95,8 @@ func (service *palletService) UpdatePallet(id uint, Name string, PalletRackId ui
 	return service.palletRepository.UpdateSupply(existing)
 }
 
-func (service *palletService) GeneratePalletsCsvFile() (string, *errors.AppError) {
-	pallets, appErr := service.ListPallets()
+func (service *palletService) GeneratePalletsCsvFile(palletRackId *uint, productId *uint) (string, *errors.AppError) {
+	pallets, appErr := service.ListPallets(palletRackId, productId)
 	if appErr != nil {
 		return "", appErr
 	}

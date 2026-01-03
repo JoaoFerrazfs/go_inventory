@@ -1,6 +1,8 @@
 SHELL := /bin/bash
 CONTAINER := go_inventory_dev
 
+file ?= ./...
+
 # Start containers normalmente
 up:
 	docker compose up
@@ -17,12 +19,10 @@ dev:
 
 # Run unit tests inside the dev container (fast)
 test:
-	file ?= ./...
 	docker exec -it $(CONTAINER) /usr/local/go/bin/go test $(file) -v
 
 # Run integration tests inside the dev container (requires test DB)
 test-integration:
-	file ?= ./...
 	docker exec -e TEST_DB_HOST=db -e TEST_DB_PORT=3306 -e TEST_DB_USER=root -e TEST_DB_PASSWORD=root \
 		$(CONTAINER) /usr/local/go/bin/go test -tags integration -p 1 $(file) -v
 

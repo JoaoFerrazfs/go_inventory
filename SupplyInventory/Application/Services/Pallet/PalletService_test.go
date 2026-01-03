@@ -14,8 +14,8 @@ import (
 
 type mockPalletRepo struct{ mock.Mock }
 
-func (m *mockPalletRepo) GetAllPallets() ([]entities.PalletEntity, *errors.AppError) {
-	args := m.Called()
+func (m *mockPalletRepo) GetAllPallets(palletRackId *uint, productId *uint) ([]entities.PalletEntity, *errors.AppError) {
+	args := m.Called(palletRackId, productId)
 	if args.Get(0) == nil {
 		return nil, args.Get(1).(*errors.AppError)
 	}
@@ -231,10 +231,10 @@ func TestListPallets_RepoError(t *testing.T) {
 
 	// Expectations
 	appErr := errors.NewAppError("db error", 500)
-	repo.On("GetAllPallets").Return(nil, appErr)
+	repo.On("GetAllPallets", (*uint)(nil), (*uint)(nil)).Return(nil, appErr)
 
 	// Actions
-	res, err := svc.ListPallets()
+	res, err := svc.ListPallets(nil, nil)
 
 	// Assertions
 	assert.Nil(t, res)

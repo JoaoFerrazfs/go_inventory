@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
 	palletRequests "go_inventory/SupplyInventory/Application/Requests/Pallet"
@@ -27,15 +28,39 @@ func (controller *PalletController) Register(group *gin.RouterGroup) {
 	group.DELETE("/:id", controller.DeletePalletById)
 }
 
+func (controller *PalletController) parseFilterParams(c *gin.Context) (*uint, *uint) {
+	var palletRackId, productId *uint
+
+	if rackIdStr := c.Query("palletRackId"); rackIdStr != "" {
+		if rackId, err := strconv.ParseUint(rackIdStr, 10, 32); err == nil {
+			rackIdUint := uint(rackId)
+			palletRackId = &rackIdUint
+		}
+	}
+
+	if prodIdStr := c.Query("productId"); prodIdStr != "" {
+		if prodId, err := strconv.ParseUint(prodIdStr, 10, 32); err == nil {
+			prodIdUint := uint(prodId)
+			productId = &prodIdUint
+		}
+	}
+
+	return palletRackId, productId
+}
+
 // @Summary List pallets
 // @Tags Pallets
 // @Accept json
 // @Produce json
 // @Success 200 {array} entities.PalletEntity
 // @Failure 404 "Not Found"
+// @Param palletRackId query uint false "Filter by pallet rack ID"
+// @Param productId query uint false "Filter by product ID"
 // @Router /api/v1/pallets [get]
 func (controller *PalletController) ListPallets(c *gin.Context) {
-	pallets, appErr := controller.service.ListPallets()
+	palletRackId, productId := controller.parseFilterParams(c)
+
+	pallets, appErr := controller.service.ListPallets(palletRackId, productId)
 	if appErr != nil {
 		c.JSON(appErr.ErrorCode(), appErr.Error())
 	}
@@ -49,9 +74,13 @@ func (controller *PalletController) ListPallets(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} map[string]string
 // @Failure 404 "Not Found"
+// @Param palletRackId query uint false "Filter by pallet rack ID"
+// @Param productId query uint false "Filter by product ID"
 // @Router /api/v1/pallets/export [get]
 func (controller *PalletController) ExportPalletsCsv(c *gin.Context) {
-	url, appErr := controller.service.GeneratePalletsCsvFile()
+	palletRackId, productId := controller.parseFilterParams(c)
+
+	url, appErr := controller.service.GeneratePalletsCsvFile(palletRackId, productId)
 	if appErr != nil {
 		c.JSON(appErr.ErrorCode(), appErr.Error())
 		return

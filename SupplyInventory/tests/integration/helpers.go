@@ -13,7 +13,6 @@ import (
 	palletRackService "go_inventory/SupplyInventory/Application/Services/PalletRack"
 	palletizedProductService "go_inventory/SupplyInventory/Application/Services/PalletizedProduct"
 	qrCodeService "go_inventory/SupplyInventory/Application/Services/QrCode"
-	storage "go_inventory/SupplyInventory/Application/Services/Storage"
 	userService "go_inventory/SupplyInventory/Application/Services/User"
 	entities "go_inventory/SupplyInventory/Domain/Entities" //nolint
 	Pallet "go_inventory/SupplyInventory/Domain/contracts/repositories/Pallet"
@@ -29,10 +28,12 @@ import (
 	userInfra "go_inventory/SupplyInventory/Infrastructure/repositories/User"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/mock"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 
 	dbadapter "go_inventory/SupplyInventory/Infrastructure/repositories/db"
+	mocks "go_inventory/SupplyInventory/tests/mocks"
 )
 
 // TestDependencies holds all dependencies for integration tests
@@ -128,10 +129,12 @@ func (h *IntegrationTestHelper) SetupRouterForPallet(db *gorm.DB) *gin.Engine {
 	palletRepo := palletInfra.NewPalletRepository(dbadapter.NewGormAdapter(db))
 	palletRackRepo := palletRackInfra.NewPalletRackRepository(dbadapter.NewGormAdapter(db))
 	qrSrv := h.QrCodeService
-	// For tests, use local storage in tmp
-	testStorage := storage.NewLocalStorage("tmp", "http://localhost:3000/")
-	exportSrv := palletService.NewPalletExportService(testStorage)
-	palletSrv := palletService.NewPalletService(palletRepo, qrSrv, palletRackRepo, testStorage, exportSrv)
+	// For tests, use mock storage to avoid creating real files
+	mockStorage := &mocks.MockStorage{}
+	mockStorage.On("Upload", mock.Anything, mock.Anything).Return("http://localhost:3000/reports/Pallets/test.csv", nil)
+	mockStorage.On("GetURL", mock.Anything).Return("http://localhost:3000/reports/Pallets/test.csv", nil)
+	exportSrv := palletService.NewPalletExportService(mockStorage)
+	palletSrv := palletService.NewPalletService(palletRepo, qrSrv, palletRackRepo, mockStorage, exportSrv)
 	controller := pallet.NewPalletController(palletSrv)
 	r := gin.Default()
 	api := r.Group("/api/v1/pallets")

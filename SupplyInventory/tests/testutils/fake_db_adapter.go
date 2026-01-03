@@ -2,6 +2,8 @@ package testutils
 
 import (
 	entities "go_inventory/SupplyInventory/Domain/Entities"
+
+	"gorm.io/gorm"
 )
 
 // FakeDBAdapter is a minimal test double implementing the DBAdapter interface used by repositories.
@@ -13,6 +15,8 @@ type FakeDBAdapter struct {
 	DeleteByIDFn        func(model interface{}, id uint) (int64, error)
 	SaveFn              func(value interface{}) error
 	PreloadFindFn       func(out interface{}, preload string, id ...uint) error
+	WherePreloadFindFn  func(out interface{}, preload string, where string, args ...interface{}) error
+	GetDBFn             func() *gorm.DB
 	AppendAssociationFn func(pallet *entities.PalletEntity, product *entities.PalletizedProductEntity) error
 }
 
@@ -62,6 +66,20 @@ func (f *FakeDBAdapter) Save(value interface{}) error {
 func (f *FakeDBAdapter) PreloadFind(out interface{}, preload string, id ...uint) error {
 	if f.PreloadFindFn != nil {
 		return f.PreloadFindFn(out, preload, id...)
+	}
+	return nil
+}
+
+func (f *FakeDBAdapter) WherePreloadFind(out interface{}, preload string, where string, args ...interface{}) error {
+	if f.WherePreloadFindFn != nil {
+		return f.WherePreloadFindFn(out, preload, where, args...)
+	}
+	return nil
+}
+
+func (f *FakeDBAdapter) GetDB() *gorm.DB {
+	if f.GetDBFn != nil {
+		return f.GetDBFn()
 	}
 	return nil
 }
