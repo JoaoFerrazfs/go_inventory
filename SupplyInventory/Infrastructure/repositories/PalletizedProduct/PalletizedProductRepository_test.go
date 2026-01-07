@@ -52,7 +52,7 @@ func (s *stubPalletRepoShim) FindByID(id uint) (*entities.PalletEntity, error) {
 func (s *stubPalletRepoShim) List() ([]*entities.PalletEntity, error)          { return nil, nil }
 func (s *stubPalletRepoShim) DeleteByID(id uint) error                         { return nil }
 func (s *stubPalletRepoShim) Update(p *entities.PalletEntity) error            { return nil }
-func (s *stubPalletRepoShim) GetAllPallets(palletRackId *uint, productId *uint) ([]entities.PalletEntity, *errors.AppError) {
+func (s *stubPalletRepoShim) GetAllPallets(palletRackId *uint, productEan *int) ([]entities.PalletEntity, *errors.AppError) {
 	return nil, nil
 }
 func (s *stubPalletRepoShim) GetSupplyById(id uint) (*entities.PalletEntity, *errors.AppError) {

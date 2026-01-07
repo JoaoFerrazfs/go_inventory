@@ -28,7 +28,7 @@ func (m *mockPalletRepoPP) AddProductsToPallet(product entities.PalletizedProduc
 	}
 	return args.Get(0).(*entities.PalletEntity), nil
 }
-func (m *mockPalletRepoPP) GetAllPallets(palletRackId *uint, productId *uint) ([]entities.PalletEntity, *errors.AppError) {
+func (m *mockPalletRepoPP) GetAllPallets(palletRackId *uint, productEan *int) ([]entities.PalletEntity, *errors.AppError) {
 	return nil, nil
 }
 func (m *mockPalletRepoPP) AddSupply(name string, rackId uint) (*entities.PalletEntity, *errors.AppError) {
