@@ -21,8 +21,8 @@ type mockPalletRackService struct {
 	mock.Mock
 }
 
-func (m *mockPalletRackService) Create(name, location string, totalCapacity int) (*entities.PalletRackEntity, error) {
-	args := m.Called(name, location, totalCapacity)
+func (m *mockPalletRackService) Create(name, location string, totalCapacity int, inventoryID uint) (*entities.PalletRackEntity, error) {
+	args := m.Called(name, location, totalCapacity, inventoryID)
 	return args.Get(0).(*entities.PalletRackEntity), nil
 }
 func (m *mockPalletRackService) ListRacks() ([]apiContracts.TransformedRack, error) {
@@ -49,7 +49,7 @@ func TestCreatePalletRack_Success(t *testing.T) {
 	rack := &entities.PalletRackEntity{ID: 1, Name: "Rack1"}
 
 	// Expectations
-	mockService.On("Create", "Rack1", "A1", 100).Return(rack, nil)
+	mockService.On("Create", "Rack1", "A1", 100, mock.Anything).Return(rack, nil)
 
 	// Actions
 	r := gin.Default()

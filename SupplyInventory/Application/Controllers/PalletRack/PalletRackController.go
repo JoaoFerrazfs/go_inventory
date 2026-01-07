@@ -5,6 +5,7 @@ import (
 
 	development "go_inventory/Helpers/Development"
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
+	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
 	palletRackRequests "go_inventory/SupplyInventory/Application/Requests/PalletRack"
 	palletrack "go_inventory/SupplyInventory/Application/Services/PalletRack"
 
@@ -42,7 +43,8 @@ func (controller *PalletRackController) createPalletRack(c *gin.Context) {
 		return
 	}
 
-	newPalletRack, err := controller.palletRackService.Create(req.Name, req.Location, req.TotalCapacity)
+	inventoryID := middlewares.GetInventoryID(c)
+	newPalletRack, err := controller.palletRackService.Create(req.Name, req.Location, req.TotalCapacity, inventoryID)
 
 	if newPalletRack == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})

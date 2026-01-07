@@ -4,6 +4,7 @@ import "time"
 
 type PalletEntity struct {
 	ID                uint                      `gorm:"primaryKey" json:"id"`
+	InventoryID       uint                      `gorm:"index;not null" json:"inventory_id" binding:"required"`
 	Name              string                    `gorm:"unique;not null" json:"name" binding:"required"`
 	PalletizedProduct []PalletizedProductEntity `gorm:"constraint:OnDelete:CASCADE;foreignKey:PalletID" json:"palletizedProduct"`
 	PalletRackID      uint                      `gorm:"not null" json:"palletRackId" binding:"required"`

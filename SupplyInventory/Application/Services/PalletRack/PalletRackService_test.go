@@ -13,8 +13,8 @@ import (
 
 type mockPalletRackRepo struct{ mock.Mock }
 
-func (m *mockPalletRackRepo) Create(name string, location string, totalCapacity int) (*entities.PalletRackEntity, error) {
-	args := m.Called(name, location, totalCapacity)
+func (m *mockPalletRackRepo) Create(name string, location string, totalCapacity int, inventoryID uint) (*entities.PalletRackEntity, error) {
+	args := m.Called(name, location, totalCapacity, inventoryID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -55,10 +55,10 @@ func TestCreate_Success(t *testing.T) {
 
 	// Expectations
 	created := &entities.PalletRackEntity{ID: 1, Name: "R1", Location: "L1", TotalCapacity: 10}
-	repo.On("Create", "R1", "L1", 10).Return(created, nil)
+	repo.On("Create", "R1", "L1", 10, uint(0)).Return(created, nil)
 
 	// Actions
-	res, err := svc.Create("R1", "L1", 10)
+	res, err := svc.Create("R1", "L1", 10, uint(0))
 
 	// Assertions
 	assert.Nil(t, err)

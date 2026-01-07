@@ -124,9 +124,10 @@ func TeardownTestDB() {
 
 func TruncateTables(db *gorm.DB) {
 	db.Exec("SET FOREIGN_KEY_CHECKS = 0")
-	db.Exec("TRUNCATE TABLE user_entities")
-	db.Exec("TRUNCATE TABLE pallet_racks")
-	db.Exec("TRUNCATE TABLE pallets")
 	db.Exec("TRUNCATE TABLE palletized_products")
+	db.Exec("TRUNCATE TABLE pallets")
+	db.Exec("TRUNCATE TABLE pallet_racks")
+	db.Exec("TRUNCATE TABLE inventories")
+	db.Exec("TRUNCATE TABLE user_entities")
 	db.Exec("SET FOREIGN_KEY_CHECKS = 1")
 }

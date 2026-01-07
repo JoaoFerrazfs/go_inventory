@@ -8,6 +8,7 @@ import (
 	palletRack "go_inventory/SupplyInventory/Application/Controllers/PalletRack"
 	palletizedProduct "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
 	user "go_inventory/SupplyInventory/Application/Controllers/User"
+	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
 	jwtService "go_inventory/SupplyInventory/Application/Services/Jwt"
 	palletService "go_inventory/SupplyInventory/Application/Services/Pallet"
 	palletRackService "go_inventory/SupplyInventory/Application/Services/PalletRack"
@@ -22,6 +23,7 @@ import (
 	testutils "go_inventory/SupplyInventory/tests/testutils"
 
 	// infra repos for building services bound to provided DB
+	inventoryInfra "go_inventory/SupplyInventory/Infrastructure/repositories/Inventory"
 	palletInfra "go_inventory/SupplyInventory/Infrastructure/repositories/Pallet"
 	palletRackInfra "go_inventory/SupplyInventory/Infrastructure/repositories/PalletRack"
 	palletizedProductInfra "go_inventory/SupplyInventory/Infrastructure/repositories/PalletizedProduct"
@@ -138,6 +140,10 @@ func (h *IntegrationTestHelper) SetupRouterForPallet(db *gorm.DB) *gin.Engine {
 	controller := pallet.NewPalletController(palletSrv)
 	r := gin.Default()
 	api := r.Group("/api/v1/pallets")
+	// inventory middleware
+	invRepo := inventoryInfra.NewInventoryRepository(dbadapter.NewGormAdapter(db))
+	invMiddleware := middlewares.NewInventoryMiddleware(invRepo)
+	api.Use(invMiddleware.Handler())
 	controller.Register(api)
 	return r
 }
@@ -149,6 +155,9 @@ func (h *IntegrationTestHelper) SetupRouterForPalletizedProduct(db *gorm.DB) *gi
 	controller := palletizedProduct.NewPalletizedProductController(palletizedProductSrv)
 	r := gin.Default()
 	api := r.Group("/api/v1/palletized-products")
+	invRepo := inventoryInfra.NewInventoryRepository(dbadapter.NewGormAdapter(db))
+	invMiddleware := middlewares.NewInventoryMiddleware(invRepo)
+	api.Use(invMiddleware.Handler())
 	controller.RegisterProductPallet(api)
 	return r
 }
@@ -159,6 +168,9 @@ func (h *IntegrationTestHelper) SetupRouterForPalletRack(db *gorm.DB) *gin.Engin
 	controller := palletRack.NewPalletRackController(palletRackSrv)
 	r := gin.Default()
 	api := r.Group("/api/v1/pallet-racks")
+	invRepo := inventoryInfra.NewInventoryRepository(dbadapter.NewGormAdapter(db))
+	invMiddleware := middlewares.NewInventoryMiddleware(invRepo)
+	api.Use(invMiddleware.Handler())
 	controller.RegisterPalletRack(api)
 	return r
 }

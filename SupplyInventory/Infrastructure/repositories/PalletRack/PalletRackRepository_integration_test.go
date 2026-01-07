@@ -21,7 +21,9 @@ func TestPalletRack_Create_Integration(t *testing.T) {
 	repo := palletRackInfra.NewPalletRackRepository(dbadapter.NewGormAdapter(helper.DB))
 
 	// Actions
-	rack, err := repo.Create("RackIntegration", "Loc", 10)
+	// ensure inventory exists
+	inv := integration.CreateTestInventory(helper.DB)
+	rack, err := repo.Create("RackIntegration", "Loc", 10, inv.ID)
 
 	// Assertions
 	assert.Nil(t, err)
