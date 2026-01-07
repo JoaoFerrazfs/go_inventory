@@ -31,6 +31,9 @@ import (
 
 	"go.uber.org/fx"
 	"gorm.io/gorm"
+
+	contractInventory "go_inventory/SupplyInventory/Domain/contracts/repositories/Inventory"
+	repositoriesInventory "go_inventory/SupplyInventory/Infrastructure/repositories/Inventory"
 )
 
 func BuildOptions(db *gorm.DB) fx.Option {
@@ -92,7 +95,13 @@ func BuildOptions(db *gorm.DB) fx.Option {
 
 		// Middleware Module
 		fx.Module("middleware",
-			fx.Provide(middlewares.NewAuthMiddleware),
+	 		fx.Provide(middlewares.NewAuthMiddleware),
+	 		fx.Provide(func(db *gorm.DB) contractInventory.InventoryRepository {
+	 			return repositoriesInventory.NewInventoryRepository(dbadapter.NewGormAdapter(db))
+	 		}),
+	 		fx.Provide(func(repo contractInventory.InventoryRepository) *middlewares.InventoryMiddleware {
+	 			return middlewares.NewInventoryMiddleware(repo)
+	 		}),
 		),
 	)
 }
