@@ -7,6 +7,7 @@ import (
 
 type InventoryRepository interface {
 	Exists(id uint) (bool, *errors.AppError)
+	List() ([]entities.InventoryEntity, *errors.AppError)
 	Where(conditions map[string]interface{}) ([]entities.InventoryEntity, *errors.AppError)
 	FindById(id uint) (*entities.InventoryEntity, *errors.AppError)
 	Create(inventory *entities.InventoryEntity) *errors.AppError

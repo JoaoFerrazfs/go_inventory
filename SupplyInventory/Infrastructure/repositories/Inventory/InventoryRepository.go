@@ -24,6 +24,14 @@ func (r *inventoryRepository) Exists(id uint) (bool, *errors.AppError) {
 	return true, nil
 }
 
+func (r *inventoryRepository) List() ([]entities.InventoryEntity, *errors.AppError) {
+	var inventories []entities.InventoryEntity
+	if err := r.db.FindAll(&inventories); err != nil {
+		return nil, errors.NewAppError("Failed to list inventories", 500)
+	}
+	return inventories, nil
+}
+
 func (r *inventoryRepository) Create(inv *entities.InventoryEntity) *errors.AppError {
 	if err := r.db.Create(inv); err != nil {
 		return errors.NewAppError("Failed to create inventory", 500)

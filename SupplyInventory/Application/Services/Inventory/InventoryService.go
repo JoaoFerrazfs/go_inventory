@@ -17,8 +17,11 @@ type inventoryService struct {
 }
 
 func (s *inventoryService) ListInventories() ([]entities.InventoryEntity, error) {
-	// TODO: Implement logic to list inventories
-	return nil, nil
+	inventories, appErr := s.inventoryRepository.List()
+	if appErr != nil {
+		return nil, appErr
+	}
+	return inventories, nil
 }
 
 func (s *inventoryService) GetInventoryByID(id uint) (entities.InventoryEntity, error) {
