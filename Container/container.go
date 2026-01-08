@@ -2,6 +2,7 @@ package container
 
 import (
 	authController "go_inventory/SupplyInventory/Application/Controllers/Auth"
+	inventoryController "go_inventory/SupplyInventory/Application/Controllers/Inventory"
 	palletController "go_inventory/SupplyInventory/Application/Controllers/Pallet"
 	palletRackController "go_inventory/SupplyInventory/Application/Controllers/PalletRack"
 	palletizedProductController "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
@@ -87,6 +88,7 @@ func BuildOptions(db *gorm.DB) fx.Option {
 		fx.Provide(palletRackController.NewPalletRackController),
 		fx.Provide(authController.NewAuthController),
 		fx.Provide(userController.NewUserController),
+		fx.Provide(inventoryController.NewInventoryController),
 
 		// Middlewares
 		fx.Provide(middlewares.NewAuthMiddleware),
