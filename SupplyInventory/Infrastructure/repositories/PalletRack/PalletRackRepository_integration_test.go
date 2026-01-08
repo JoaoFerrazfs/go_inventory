@@ -9,6 +9,7 @@ import (
 	palletRackInfra "go_inventory/SupplyInventory/Infrastructure/repositories/PalletRack"
 	dbadapter "go_inventory/SupplyInventory/Infrastructure/repositories/db"
 	integration "go_inventory/SupplyInventory/tests/integration"
+	testutils "go_inventory/SupplyInventory/tests/testutils"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -22,7 +23,7 @@ func TestPalletRack_Create_Integration(t *testing.T) {
 
 	// Actions
 	// ensure inventory exists
-	inv := integration.CreateTestInventory(helper.DB)
+	inv := testutils.CreateTestInventory(helper.DB)
 	rack, err := repo.Create("RackIntegration", "Loc", 10, inv.ID)
 
 	// Assertions
