@@ -17,7 +17,10 @@ func CreateTestUser(db *gorm.DB, name, email, password string) *entities.UserEnt
 func CreateTestPallet(db *gorm.DB, name string, palletRackID uint) *entities.PalletEntity {
 	// derive inventory id from pallet rack
 	var rack entities.PalletRackEntity
-	db.First(&rack, palletRackID)
+	result := db.First(&rack, palletRackID)
+	if result.Error != nil {
+		panic(result.Error)
+	}
 	pallet := &entities.PalletEntity{
 		Name:         name,
 		PalletRackID: palletRackID,
