@@ -46,7 +46,7 @@ func CreateTestPalletRack(db *gorm.DB, name, location string, totalCapacity int)
 // where the inventory itself is not the focus of the test scenario.
 func CreateTestInventory(db *gorm.DB, status ...string) *entities.InventoryEntity {
 	inv := &entities.InventoryEntity{}
-	// allow optional status parameter
+	// Set status if provided and non-empty
 	if len(status) > 0 && status[0] != "" {
 		inv.Status = status[0]
 	}
