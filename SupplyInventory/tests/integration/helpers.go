@@ -241,3 +241,7 @@ func (h *IntegrationTestHelper) CreateTestPallet(db *gorm.DB, name string, palle
 func (h *IntegrationTestHelper) CreateTestPalletRack(db *gorm.DB, name, location string, totalCapacity int) *entities.PalletRackEntity {
 	return testutils.CreateTestPalletRack(db, name, location, totalCapacity)
 }
+
+func (h *IntegrationTestHelper) CreateTestInventory(db *gorm.DB, status ...string) *entities.InventoryEntity {
+	return testutils.CreateTestInventory(db, status...)
+}

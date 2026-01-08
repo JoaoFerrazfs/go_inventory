@@ -22,7 +22,7 @@ func TestPalletRack_Create_Integration(t *testing.T) {
 
 	// Actions
 	// ensure inventory exists
-	inv := integration.CreateTestInventory(helper.DB)
+	inv := helper.CreateTestInventory(helper.DB)
 	rack, err := repo.Create("RackIntegration", "Loc", 10, inv.ID)
 
 	// Assertions
