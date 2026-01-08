@@ -82,10 +82,10 @@ func TestInventory_NotFound(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	// Assertions
-	assert.Equal(t, 422, w.Code)
+	assert.Equal(t, 404, w.Code)
 	var body map[string]interface{}
 	_ = json.Unmarshal(w.Body.Bytes(), &body)
-	assert.Equal(t, float64(422), body["code"])
+	assert.Equal(t, float64(404), body["code"])
 }
 
 func TestInventory_Success(t *testing.T) {
