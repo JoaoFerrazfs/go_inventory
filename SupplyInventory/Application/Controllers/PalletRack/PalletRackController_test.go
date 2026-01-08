@@ -49,10 +49,14 @@ func TestCreatePalletRack_Success(t *testing.T) {
 	rack := &entities.PalletRackEntity{ID: 1, Name: "Rack1"}
 
 	// Expectations
-	mockService.On("Create", "Rack1", "A1", 100, mock.Anything).Return(rack, nil)
+	mockService.On("Create", "Rack1", "A1", 100, uint(123)).Return(rack, nil)
 
 	// Actions
 	r := gin.Default()
+	r.Use(func(c *gin.Context) {
+		c.Set("inventoryID", uint(123))
+		c.Next()
+	})
 	group := r.Group("/")
 	controller.RegisterPalletRack(group)
 	body, _ := json.Marshal(map[string]interface{}{"Name": "Rack1", "Location": "A1", "TotalCapacity": 100})
