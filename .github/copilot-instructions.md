@@ -52,17 +52,17 @@
   - Testes unitários (com mocks):
     - docker exec -it go_inventory_dev /usr/local/go/bin/go test ./SupplyInventory/Application/Controllers/Auth/... -v
   - Testes de integração (com banco real):
-    - docker exec -e TEST_DB_HOST=172.17.0.2 -e TEST_DB_PORT=3306 -e TEST_DB_USER=root -e TEST_DB_PASSWORD=root \
+    - docker exec -e TEST_DB_HOST=db -e TEST_DB_PORT=3306 -e TEST_DB_USER=root -e TEST_DB_PASSWORD=root \
       go_inventory_dev /usr/local/go/bin/go test -tags integration ./SupplyInventory/Application/Controllers/Auth/... -v
   - Todos os testes unitários:
     - docker exec -it go_inventory_dev /usr/local/go/bin/go test ./... -v
   - Todos os testes de integração:
-    - docker exec -e TEST_DB_HOST=172.17.0.2 -e TEST_DB_PORT=3306 -e TEST_DB_USER=root -e TEST_DB_PASSWORD=root \
+    - docker exec -e TEST_DB_HOST=db -e TEST_DB_PORT=3306 -e TEST_DB_USER=root -e TEST_DB_PASSWORD=root \
       go_inventory_dev /usr/local/go/bin/go test -tags integration ./... -v
 
   - Executar ambos (unitários e integração) em sequência:
     - docker exec -it go_inventory_dev /usr/local/go/bin/go test ./... -v && \
-      docker exec -e TEST_DB_HOST=172.17.0.2 -e TEST_DB_PORT=3306 -e TEST_DB_USER=root -e TEST_DB_PASSWORD=root \
+      docker exec -e TEST_DB_HOST=db -e TEST_DB_PORT=3306 -e TEST_DB_USER=root -e TEST_DB_PASSWORD=root \
       go_inventory_dev /usr/local/go/bin/go test -tags integration ./... -v
 
 - Certifique-se de instalar as dependências de teste no ambiente do container quando necessário:

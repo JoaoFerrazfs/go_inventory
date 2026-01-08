@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -35,6 +36,7 @@ func TestIntegration_CreatePallet(t *testing.T) {
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", "/api/v1/pallets/", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Inventory-ID", strconv.Itoa(int(rack.InventoryID)))
 		r.ServeHTTP(w, req)
 
 		// Assertions
@@ -55,6 +57,7 @@ func TestIntegration_ExportPalletsCsv(t *testing.T) {
 		// Actions
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/api/v1/pallets/export", nil)
+		req.Header.Set("X-Inventory-ID", strconv.Itoa(int(rack.InventoryID)))
 		r.ServeHTTP(w, req)
 
 		// Assertions

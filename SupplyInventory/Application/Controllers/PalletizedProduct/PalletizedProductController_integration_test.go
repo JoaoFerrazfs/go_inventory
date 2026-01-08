@@ -37,6 +37,7 @@ func TestIntegration_AddProductsToPallet(t *testing.T) {
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("PATCH", "/api/v1/palletized-products/"+strconv.Itoa(int(pallet.ID)), bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Inventory-ID", strconv.Itoa(int(pallet.InventoryID)))
 		r.ServeHTTP(w, req)
 
 		// Assertions

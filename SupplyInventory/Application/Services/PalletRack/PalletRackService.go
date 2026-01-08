@@ -8,7 +8,7 @@ import (
 )
 
 type PalletRackService interface {
-	Create(name string, location string, totalCapacity int) (*entities.PalletRackEntity, error)
+	Create(name string, location string, totalCapacity int, inventoryID uint) (*entities.PalletRackEntity, error)
 	ListRacks() ([]apiContracts.TransformedRack, error)
 	FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError)
 	DeleteRack(id uint) (bool, *errors.AppError)
@@ -22,8 +22,8 @@ func NewPalletRackService(repository repositoriesPalletRack.PalletRackRepository
 	return &palletRackService{repository: repository}
 }
 
-func (service *palletRackService) Create(name string, location string, totalCapacity int) (*entities.PalletRackEntity, error) {
-	newPalletRack, err := service.repository.Create(name, location, totalCapacity)
+func (service *palletRackService) Create(name string, location string, totalCapacity int, inventoryID uint) (*entities.PalletRackEntity, error) {
+	newPalletRack, err := service.repository.Create(name, location, totalCapacity, inventoryID)
 	if err != nil {
 		return nil, err
 	}

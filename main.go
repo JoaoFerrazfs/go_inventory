@@ -123,19 +123,23 @@ func registerRoutes(
 	authController *authControllerPkg.AuthController,
 	userController *userControllerPkg.UserController,
 	authMiddleware *middlewares.AuthMiddleware,
+	inventoryMiddleware *middlewares.InventoryMiddleware,
 ) {
 	apiV1 := router.Group("/api/v1")
 
 	palletsGroup := apiV1.Group("/pallets")
 	palletsGroup.Use(authMiddleware.Handler())
+	palletsGroup.Use(inventoryMiddleware.Handler())
 	palletController.Register(palletsGroup)
 
 	palletProductsGroup := apiV1.Group("/pallet/products")
 	palletProductsGroup.Use(authMiddleware.Handler())
+	palletProductsGroup.Use(inventoryMiddleware.Handler())
 	palletizedProductController.RegisterProductPallet(palletProductsGroup)
 
 	racksGroup := apiV1.Group("/racks")
 	racksGroup.Use(authMiddleware.Handler())
+	racksGroup.Use(inventoryMiddleware.Handler())
 	palletRackController.RegisterPalletRack(racksGroup)
 
 	authController.RegisterLogin(apiV1.Group("/auth"))

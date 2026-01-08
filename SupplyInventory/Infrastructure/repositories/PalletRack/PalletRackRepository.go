@@ -20,8 +20,8 @@ func NewPalletRackRepository(db dbadapter.DBAdapter) repositories.PalletRackRepo
 	return &palletRackRepository{db: db}
 }
 
-func (repository *palletRackRepository) Create(name string, location string, totalCapacity int) (*entities.PalletRackEntity, error) {
-	palletRack := entities.NewPalletRackEntity(name, location, totalCapacity)
+func (repository *palletRackRepository) Create(name string, location string, totalCapacity int, inventoryID uint) (*entities.PalletRackEntity, error) {
+	palletRack := entities.NewPalletRackEntity(inventoryID, name, location, totalCapacity)
 
 	if err := repository.db.Save(&palletRack); err != nil {
 		return nil, err

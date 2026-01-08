@@ -14,7 +14,7 @@ func TestPalletRack_Create_Unit(t *testing.T) {
 	repo := NewPalletRackRepository(adapter)
 
 	// Actions
-	rack, err := repo.Create("Rack1", "Loc", 10)
+	rack, err := repo.Create("Rack1", "Loc", 10, uint(0))
 
 	// Assertions
 	assert.NoError(t, err)

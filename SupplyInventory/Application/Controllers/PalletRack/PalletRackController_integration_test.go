@@ -6,6 +6,7 @@ package controllers_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -35,6 +36,9 @@ func TestIntegration_CreatePalletRack(t *testing.T) {
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", "/api/v1/pallet-racks/", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
+		// create and set inventory header for the request
+		inv := h.CreateTestPalletRack(tx, "tmp", "loc", 1)
+		req.Header.Set("X-Inventory-ID", fmt.Sprintf("%d", inv.InventoryID))
 		r.ServeHTTP(w, req)
 
 		// Assertions
