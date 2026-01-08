@@ -149,7 +149,9 @@ func main() {
 		os.Exit(0)
 	}
 
-	fmt.Println("\n==== Failing tests summary ====\n")
+	fmt.Println()
+	fmt.Println("==== Failing tests summary ====")
+	fmt.Println()
 	for _, f := range failures {
 		pkg := f[0]
 		test := f[1]
@@ -158,7 +160,9 @@ func main() {
 		for _, out := range outputs[key] {
 			fmt.Print(out)
 		}
-		fmt.Println("\n----\n")
+		fmt.Println()
+		fmt.Println("----")
+		fmt.Println()
 	}
 
 	os.Exit(1)

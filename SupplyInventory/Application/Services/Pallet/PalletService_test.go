@@ -112,8 +112,8 @@ func (m *mockQRCodeService) CreateQRCode(palletId uint) (string, string, error) 
 
 type mockPalletRackRepo struct{ mock.Mock }
 
-func (m *mockPalletRackRepo) Create(name string, location string, totalCapacity int) (*entities.PalletRackEntity, error) {
-	args := m.Called(name, location, totalCapacity)
+func (m *mockPalletRackRepo) Create(name string, location string, totalCapacity int, inventoryID uint) (*entities.PalletRackEntity, error) {
+	args := m.Called(name, location, totalCapacity, inventoryID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -161,104 +161,104 @@ func TestCreatePallet_Success(t *testing.T) {
 	restore2 := testutils.SetEnvAndRestore("PORT", "3000")
 	defer restore2()
 
-	repo := &mockPalletRepo{}
-	qr := &mockQRCodeService{}
-	rackRepo := &mockPalletRackRepo{}
-	storage := &mocks.MockStorage{}
-	exportSvc := &mockPalletExportService{}
-	svc := NewPalletService(repo, qr, rackRepo, storage, exportSvc)
+	palletRepository := &mockPalletRepo{}
+	qrCodeService := &mockQRCodeService{}
+	palletRackRepository := &mockPalletRackRepo{}
+	storageService := &mocks.MockStorage{}
+	palletExportService := &mockPalletExportService{}
+	palletService := NewPalletService(palletRepository, qrCodeService, palletRackRepository, storageService, palletExportService)
 
 	// Expectations
 	rack := &entities.PalletRackEntity{ID: 2, Name: "Rack1"}
-	rackRepo.On("FindPalletById", uint(2)).Return(rack, nil)
-	created := &entities.PalletEntity{ID: 1, Name: "P1", PalletRackID: 2}
-	repo.On("AddSupply", "P1", uint(2)).Return(created, nil)
-	qr.On("CreateQRCode", uint(1)).Return("storage/pallet_1.png", "http://localhost:3000/pallets/1", nil)
+	palletRackRepository.On("FindPalletById", uint(2)).Return(rack, nil)
+	newPallet := &entities.PalletEntity{ID: 1, Name: "P1", PalletRackID: 2}
+	palletRepository.On("AddSupply", "P1", uint(2)).Return(newPallet, nil)
+	qrCodeService.On("CreateQRCode", uint(1)).Return("storage/pallet_1.png", "http://localhost:3000/pallets/1", nil)
 	updated := &entities.PalletEntity{ID: 1, Name: "P1", PalletRackID: 2, PalletRackName: "Rack1", QrCode: "storage/pallet_1.png", QrCodeUrl: "http://localhost:3000/pallets/1"}
-	repo.On("UpdateSupply", mock.Anything).Return(updated, nil)
+	palletRepository.On("UpdateSupply", mock.Anything).Return(updated, nil)
 
 	// Actions
-	res, err := svc.CreatePallet("P1", 2)
+	res, err := palletService.CreatePallet("P1", 2)
 
 	// Assertions
 	assert.Nil(t, err)
 	assert.Equal(t, updated, res)
-	repo.AssertExpectations(t)
-	qr.AssertExpectations(t)
-	rackRepo.AssertExpectations(t)
+	palletRepository.AssertExpectations(t)
+	qrCodeService.AssertExpectations(t)
+	palletRackRepository.AssertExpectations(t)
 }
 
 func TestCreatePallet_QRServiceError(t *testing.T) {
 	// Set
 	restore := testutils.SetEnvAndRestore("BASE_URL", "http://localhost:")
 	defer restore()
-	restore2 := testutils.SetEnvAndRestore("PORT", "3000")
-	defer restore2()
+	restorePort := testutils.SetEnvAndRestore("PORT", "3000")
+	defer restorePort()
 
-	repo := &mockPalletRepo{}
-	qr := &mockQRCodeService{}
-	rackRepo := &mockPalletRackRepo{}
-	storage := &mocks.MockStorage{}
-	exportSvc := &mockPalletExportService{}
-	svc := NewPalletService(repo, qr, rackRepo, storage, exportSvc)
+	palletRepository := &mockPalletRepo{}
+	qrCodeService := &mockQRCodeService{}
+	palletRackRepository := &mockPalletRackRepo{}
+	storageService := &mocks.MockStorage{}
+	palletExportService := &mockPalletExportService{}
+	palletService := NewPalletService(palletRepository, qrCodeService, palletRackRepository, storageService, palletExportService)
 
 	// Expectations
-	rack := &entities.PalletRackEntity{ID: 3, Name: "Rack3"}
-	rackRepo.On("FindPalletById", uint(3)).Return(rack, nil)
-	created := &entities.PalletEntity{ID: 2, Name: "P2", PalletRackID: 3}
-	repo.On("AddSupply", "P2", uint(3)).Return(created, nil)
-	qr.On("CreateQRCode", uint(2)).Return("", "", assert.AnError)
+	palletRack := &entities.PalletRackEntity{ID: 3, Name: "Rack3"}
+	palletRackRepository.On("FindPalletById", uint(3)).Return(palletRack, nil)
+	newPallet := &entities.PalletEntity{ID: 2, Name: "P2", PalletRackID: 3}
+	palletRepository.On("AddSupply", "P2", uint(3)).Return(newPallet, nil)
+	qrCodeService.On("CreateQRCode", uint(2)).Return("", "", assert.AnError)
 
 	// Actions
-	res, err := svc.CreatePallet("P2", 3)
+	res, err := palletService.CreatePallet("P2", 3)
 
 	// Assertions
 	assert.Nil(t, res)
 	assert.NotNil(t, err)
-	repo.AssertExpectations(t)
-	qr.AssertExpectations(t)
-	rackRepo.AssertExpectations(t)
+	palletRepository.AssertExpectations(t)
+	qrCodeService.AssertExpectations(t)
+	palletRackRepository.AssertExpectations(t)
 }
 
 func TestListPallets_RepoError(t *testing.T) {
 	// Set
-	repo := &mockPalletRepo{}
-	qr := &mockQRCodeService{}
-	rackRepo := &mockPalletRackRepo{}
-	storage := &mocks.MockStorage{}
-	exportSvc := &mockPalletExportService{}
-	svc := NewPalletService(repo, qr, rackRepo, storage, exportSvc)
+	palletRepository := &mockPalletRepo{}
+	qrCodeService := &mockQRCodeService{}
+	palletRackRepository := &mockPalletRackRepo{}
+	storageService := &mocks.MockStorage{}
+	palletExportService := &mockPalletExportService{}
+	palletService := NewPalletService(palletRepository, qrCodeService, palletRackRepository, storageService, palletExportService)
 
 	// Expectations
 	appErr := errors.NewAppError("db error", 500)
-	repo.On("GetAllPallets", (*uint)(nil), (*int)(nil)).Return(nil, appErr)
+	palletRepository.On("GetAllPallets", (*uint)(nil), (*int)(nil)).Return(nil, appErr)
 
 	// Actions
-	res, err := svc.ListPallets(nil, nil)
+	res, err := palletService.ListPallets(nil, nil)
 
 	// Assertions
 	assert.Nil(t, res)
 	assert.Equal(t, appErr, err)
-	repo.AssertExpectations(t)
+	palletRepository.AssertExpectations(t)
 }
 
 func TestFindPalletById_NotFound(t *testing.T) {
 	// Set
-	repo := &mockPalletRepo{}
-	qr := &mockQRCodeService{}
-	rackRepo := &mockPalletRackRepo{}
-	storage := &mocks.MockStorage{}
-	exportSvc := &mockPalletExportService{}
-	svc := NewPalletService(repo, qr, rackRepo, storage, exportSvc)
+	palletRepository := &mockPalletRepo{}
+	qrCodeService := &mockQRCodeService{}
+	palletRackRepository := &mockPalletRackRepo{}
+	storageService := &mocks.MockStorage{}
+	palletExportService := &mockPalletExportService{}
+	palletService := NewPalletService(palletRepository, qrCodeService, palletRackRepository, storageService, palletExportService)
 
 	// Expectations
-	repo.On("GetSupplyById", uint(99)).Return(nil, nil)
+	palletRepository.On("GetSupplyById", uint(99)).Return(nil, nil)
 
 	// Actions
-	res, err := svc.FindPalletById(99)
+	res, err := palletService.FindPalletById(99)
 
 	// Assertions
 	assert.Nil(t, res)
 	assert.Nil(t, err)
-	repo.AssertExpectations(t)
+	palletRepository.AssertExpectations(t)
 }
