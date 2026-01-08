@@ -241,3 +241,13 @@ func (h *IntegrationTestHelper) CreateTestPallet(db *gorm.DB, name string, palle
 func (h *IntegrationTestHelper) CreateTestPalletRack(db *gorm.DB, name, location string, totalCapacity int) *entities.PalletRackEntity {
 	return testutils.CreateTestPalletRack(db, name, location, totalCapacity)
 }
+
+func (h *IntegrationTestHelper) CreateTestInventory(db *gorm.DB, status ...string) *entities.InventoryEntity {
+	return testutils.CreateTestInventory(db, status...)
+}
+
+// CreateTestInventory creates a test inventory entity with the given status.
+// This is a convenience function exported from integration package for use in integration tests.
+func CreateTestInventory(db *gorm.DB, status ...string) *entities.InventoryEntity {
+	return testutils.CreateTestInventory(db, status...)
+}
