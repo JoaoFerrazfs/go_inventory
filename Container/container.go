@@ -9,6 +9,7 @@ import (
 	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
 	"os"
 
+	inventory "go_inventory/SupplyInventory/Application/Services/Inventory"
 	jwt "go_inventory/SupplyInventory/Application/Services/Jwt"
 	pallet "go_inventory/SupplyInventory/Application/Services/Pallet"
 	palletrack "go_inventory/SupplyInventory/Application/Services/PalletRack"
@@ -21,6 +22,7 @@ import (
 	repositoriesPalletizedProduct "go_inventory/SupplyInventory/Infrastructure/repositories/PalletizedProduct"
 	repositoriesUser "go_inventory/SupplyInventory/Infrastructure/repositories/User"
 
+	contractInventory "go_inventory/SupplyInventory/Domain/contracts/repositories/Inventory"
 	contractPallet "go_inventory/SupplyInventory/Domain/contracts/repositories/Pallet"
 	contractPalletRack "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletRack"
 	contractPalletized "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletizedProduct"
@@ -32,7 +34,6 @@ import (
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 
-	contractInventory "go_inventory/SupplyInventory/Domain/contracts/repositories/Inventory"
 	repositoriesInventory "go_inventory/SupplyInventory/Infrastructure/repositories/Inventory"
 )
 
@@ -79,6 +80,10 @@ func BuildOptions(db *gorm.DB) fx.Option {
 		fx.Provide(jwt.NewJWTService),
 		fx.Provide(func(repo contractUser.UserRepository) user.UserService {
 			return user.NewUserService(repo)
+		}),
+
+		fx.Provide(func(repo contractInventory.InventoryRepository) inventory.InventoryService {
+			return inventory.NewInventoryService(repo)
 		}),
 
 		// Controllers

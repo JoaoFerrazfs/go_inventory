@@ -26,3 +26,11 @@ func (repository *userRepository) FindByEmail(email string) (*entities.UserEntit
 	   }
 	   return &user, nil
 }
+
+func (repository *userRepository) FindByID(id uint) (*entities.UserEntity, error) {
+	var user entities.UserEntity
+	if err := repository.db.FirstByID(&user, id); err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

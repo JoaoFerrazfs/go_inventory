@@ -17,9 +17,51 @@ func NewInventoryRepository(db dbadapter.DBAdapter) repositories.InventoryReposi
 }
 
 func (r *inventoryRepository) Exists(id uint) (bool, *errors.AppError) {
+<<<<<<< Updated upstream
     var inv entities.InventoryEntity
     if err := r.db.FirstByID(&inv, id); err != nil {
         return false, errors.NewAppError("Inventory not found", 404)
     }
     return true, nil
+=======
+	var inv entities.InventoryEntity
+	if err := r.db.FirstByID(&inv, id); err != nil {
+		return false, errors.NewAppError("Inventory not found", 404)
+	}
+	return true, nil
+}
+
+func (r *inventoryRepository) Create(inventory *entities.InventoryEntity) *errors.AppError {
+	if err := r.db.Create(inventory); err != nil {
+		return errors.NewAppError("Failed to create inventory: "+err.Error(), 500)
+	}
+	return nil
+}
+
+func (r *inventoryRepository) FindById(id uint) (*entities.InventoryEntity, *errors.AppError) {
+	var inv entities.InventoryEntity
+	if err := r.db.FirstByID(&inv, id); err != nil {
+		return nil, errors.NewAppError("Inventory not found", 404)
+	}
+	return &inv, nil
+}
+
+func (r *inventoryRepository) Where(conditions ...map[string]any) ([]entities.InventoryEntity, *errors.AppError) {
+	var inventories []entities.InventoryEntity
+	query := r.db.GetDB().Model(&entities.InventoryEntity{})
+	for _, condition := range conditions {
+		query = query.Where(condition)
+	}
+	if err := query.Find(&inventories).Error; err != nil {
+		return nil, errors.NewAppError("Failed to find inventories: "+err.Error(), 404)
+	}
+	return inventories, nil
+}
+
+func (r *inventoryRepository) Update(inv *entities.InventoryEntity) *errors.AppError {
+	if err := r.db.Save(inv); err != nil {
+		return errors.NewAppError("Failed to update inventory", 500)
+	}
+	return nil
+>>>>>>> Stashed changes
 }

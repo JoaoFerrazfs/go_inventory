@@ -12,6 +12,7 @@ import (
 type UserService interface {
 	CreateUser(name string, email string, password string) (*entities.UserEntity, *errors.AppError)
 	Login(email string, password string) (*entities.UserEntity, *errors.AppError)
+	GetUserByID(id uint) (*entities.UserEntity, *errors.AppError)
 }
 
 type userService struct {
@@ -56,5 +57,13 @@ func (service *userService) Login(email string, password string) (*entities.User
 		return nil, errors.NewAppError("invalid credentials", 401)
 	}
 
+	return user, nil
+}
+
+func (service *userService) GetUserByID(id uint) (*entities.UserEntity, *errors.AppError) {
+	user, err := service.Repository.FindByID(id)
+	if err != nil {
+		return nil, errors.NewAppError("user not found", 404)
+	}
 	return user, nil
 }

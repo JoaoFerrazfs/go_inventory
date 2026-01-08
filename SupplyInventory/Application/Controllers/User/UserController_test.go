@@ -36,6 +36,18 @@ func (m *mockUserService) Login(email, password string) (*entities.UserEntity, *
 	return nil, nil
 }
 
+func (m *mockUserService) GetUserByID(id uint) (*entities.UserEntity, *errors.AppError) {
+	args := m.Called(id)
+	var appErr *errors.AppError
+	if args.Get(1) != nil {
+		appErr = args.Get(1).(*errors.AppError)
+	}
+	if args.Get(0) == nil {
+		return nil, appErr
+	}
+	return args.Get(0).(*entities.UserEntity), appErr
+}
+
 func TestCreateUser_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	// Set

@@ -18,8 +18,6 @@ import (
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 )
 
-
-
 type mockJWTService struct {
 	mock.Mock
 }
@@ -65,6 +63,18 @@ func (m *mockUserService) CreateUser(name, email, password string) (*entities.Us
 
 func (m *mockUserService) Login(email, password string) (*entities.UserEntity, *errors.AppError) {
 	args := m.Called(email, password)
+	var appErr *errors.AppError
+	if args.Get(1) != nil {
+		appErr = args.Get(1).(*errors.AppError)
+	}
+	if args.Get(0) == nil {
+		return nil, appErr
+	}
+	return args.Get(0).(*entities.UserEntity), appErr
+}
+
+func (m *mockUserService) GetUserByID(id uint) (*entities.UserEntity, *errors.AppError) {
+	args := m.Called(id)
 	var appErr *errors.AppError
 	if args.Get(1) != nil {
 		appErr = args.Get(1).(*errors.AppError)

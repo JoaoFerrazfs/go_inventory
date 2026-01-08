@@ -3,7 +3,6 @@ package controllers
 import (
 	"net/http"
 
-	development "go_inventory/Helpers/Development"
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
 	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
 	palletRackRequests "go_inventory/SupplyInventory/Application/Requests/PalletRack"
@@ -38,7 +37,6 @@ func (controller *PalletRackController) RegisterPalletRack(group *gin.RouterGrou
 func (controller *PalletRackController) createPalletRack(c *gin.Context) {
 	var req palletRackRequests.PalletRackRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		development.Dump(req)
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": requestsHelper.FormatValidationErrors(err)})
 		return
 	}
