@@ -38,71 +38,59 @@ import (
 
 func BuildOptions(db *gorm.DB) fx.Option {
 	return fx.Options(
-		// Database
 		fx.Supply(db),
 
-		// Repositories Module
-		fx.Module("repositories",
-			fx.Provide(func(db *gorm.DB) contractPallet.PalletRepository {
-				return repositoriesPallet.NewPalletRepository(dbadapter.NewGormAdapter(db))
-			}),
-			fx.Provide(func(db *gorm.DB) contractPalletRack.PalletRackRepository {
-				return repositoriesPalletRack.NewPalletRackRepository(dbadapter.NewGormAdapter(db))
-			}),
-			fx.Provide(func(db *gorm.DB, palletRepo contractPallet.PalletRepository) contractPalletized.PalletizedProductRepository {
-				return repositoriesPalletizedProduct.NewPalletizedProductRepository(dbadapter.NewGormAdapter(db), palletRepo)
-			}),
-			fx.Provide(func(db *gorm.DB) contractUser.UserRepository {
-				return repositoriesUser.NewUserRepository(dbadapter.NewGormAdapter(db))
-			}),
-		),
+		// Repositories
+		fx.Provide(func(db *gorm.DB) contractPallet.PalletRepository {
+			return repositoriesPallet.NewPalletRepository(dbadapter.NewGormAdapter(db))
+		}),
+		fx.Provide(func(db *gorm.DB) contractPalletRack.PalletRackRepository {
+			return repositoriesPalletRack.NewPalletRackRepository(dbadapter.NewGormAdapter(db))
+		}),
+		fx.Provide(func(db *gorm.DB, palletRepo contractPallet.PalletRepository) contractPalletized.PalletizedProductRepository {
+			return repositoriesPalletizedProduct.NewPalletizedProductRepository(dbadapter.NewGormAdapter(db), palletRepo)
+		}),
+		fx.Provide(func(db *gorm.DB) contractUser.UserRepository {
+			return repositoriesUser.NewUserRepository(dbadapter.NewGormAdapter(db))
+		}),
+		fx.Provide(func(db *gorm.DB) contractInventory.InventoryRepository {
+			return repositoriesInventory.NewInventoryRepository(dbadapter.NewGormAdapter(db))
+		}),
 
 		// Storage
 		fx.Provide(getStorage),
 
-		// Services Module
-		fx.Module("services",
-			// Provide QRCodeService using environment-configured storage (local or minio)
-			fx.Provide(func(storage storage.Storage) qrcode.QRCodeService {
-				return qrcode.NewQRCodeServiceWithStorage(storage)
-			}),
-			fx.Provide(func(storage storage.Storage) pallet.PalletExportService {
-				return pallet.NewPalletExportService(storage)
-			}),
-			fx.Provide(func(repo contractPallet.PalletRepository, qrService qrcode.QRCodeService, palletRackRepo contractPalletRack.PalletRackRepository, storage storage.Storage, exportService pallet.PalletExportService) pallet.PalletService {
-				return pallet.NewPalletService(repo, qrService, palletRackRepo, storage, exportService)
-			}),
-			fx.Provide(func(repo contractPalletRack.PalletRackRepository) palletrack.PalletRackService {
-				return palletrack.NewPalletRackService(repo)
-			}),
-			fx.Provide(func(palletRepo contractPallet.PalletRepository, palletizedRepo contractPalletized.PalletizedProductRepository) palletizedproduct.PalletizedProductService {
-				return palletizedproduct.NewPalletizedProductService(palletRepo, palletizedRepo)
-			}),
-			fx.Provide(jwt.NewJWTService),
-			fx.Provide(func(repo contractUser.UserRepository) user.UserService {
-				return user.NewUserService(repo)
-			}),
-		),
+		// Services
+		fx.Provide(func(storage storage.Storage) qrcode.QRCodeService {
+			return qrcode.NewQRCodeServiceWithStorage(storage)
+		}),
+		fx.Provide(func(storage storage.Storage) pallet.PalletExportService {
+			return pallet.NewPalletExportService(storage)
+		}),
+		fx.Provide(func(repo contractPallet.PalletRepository, qrService qrcode.QRCodeService, palletRackRepo contractPalletRack.PalletRackRepository, storage storage.Storage, exportService pallet.PalletExportService) pallet.PalletService {
+			return pallet.NewPalletService(repo, qrService, palletRackRepo, storage, exportService)
+		}),
+		fx.Provide(func(repo contractPalletRack.PalletRackRepository) palletrack.PalletRackService {
+			return palletrack.NewPalletRackService(repo)
+		}),
+		fx.Provide(func(palletRepo contractPallet.PalletRepository, palletizedRepo contractPalletized.PalletizedProductRepository) palletizedproduct.PalletizedProductService {
+			return palletizedproduct.NewPalletizedProductService(palletRepo, palletizedRepo)
+		}),
+		fx.Provide(jwt.NewJWTService),
+		fx.Provide(func(repo contractUser.UserRepository) user.UserService {
+			return user.NewUserService(repo)
+		}),
 
-		// Controllers Module
-		fx.Module("controllers",
-			fx.Provide(palletController.NewPalletController),
-			fx.Provide(palletizedProductController.NewPalletizedProductController),
-			fx.Provide(palletRackController.NewPalletRackController),
-			fx.Provide(authController.NewAuthController),
-			fx.Provide(userController.NewUserController),
-		),
+		// Controllers
+		fx.Provide(palletController.NewPalletController),
+		fx.Provide(palletizedProductController.NewPalletizedProductController),
+		fx.Provide(palletRackController.NewPalletRackController),
+		fx.Provide(authController.NewAuthController),
+		fx.Provide(userController.NewUserController),
 
-		// Middleware Module
-		fx.Module("middleware",
-	 		fx.Provide(middlewares.NewAuthMiddleware),
-	 		fx.Provide(func(db *gorm.DB) contractInventory.InventoryRepository {
-	 			return repositoriesInventory.NewInventoryRepository(dbadapter.NewGormAdapter(db))
-	 		}),
-	 		fx.Provide(func(repo contractInventory.InventoryRepository) *middlewares.InventoryMiddleware {
-	 			return middlewares.NewInventoryMiddleware(repo)
-	 		}),
-		),
+		// Middlewares
+		fx.Provide(middlewares.NewAuthMiddleware),
+		fx.Provide(middlewares.NewInventoryMiddleware),
 	)
 }
 
