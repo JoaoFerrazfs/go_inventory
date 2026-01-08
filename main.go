@@ -11,6 +11,7 @@ import (
 	db "go_inventory/SupplyInventory/Infrastructure/Db"
 
 	authControllerPkg "go_inventory/SupplyInventory/Application/Controllers/Auth"
+	inventoryControllerPkg "go_inventory/SupplyInventory/Application/Controllers/Inventory"
 	palletControllerPkg "go_inventory/SupplyInventory/Application/Controllers/Pallet"
 	palletRackControllerPkg "go_inventory/SupplyInventory/Application/Controllers/PalletRack"
 	palletizedProductControllerPkg "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
@@ -122,6 +123,7 @@ func registerRoutes(
 	palletRackController *palletRackControllerPkg.PalletRackController,
 	authController *authControllerPkg.AuthController,
 	userController *userControllerPkg.UserController,
+	inventoryController *inventoryControllerPkg.InventoryController,
 	authMiddleware *middlewares.AuthMiddleware,
 	inventoryMiddleware *middlewares.InventoryMiddleware,
 ) {
@@ -141,6 +143,10 @@ func registerRoutes(
 	racksGroup.Use(authMiddleware.Handler())
 	racksGroup.Use(inventoryMiddleware.Handler())
 	palletRackController.RegisterPalletRack(racksGroup)
+
+	inventoryGroup := apiV1.Group("/inventory")
+	inventoryGroup.Use(authMiddleware.Handler())
+	inventoryController.Register(inventoryGroup)
 
 	authController.RegisterLogin(apiV1.Group("/auth"))
 
