@@ -2,6 +2,7 @@ package container
 
 import (
 	authController "go_inventory/SupplyInventory/Application/Controllers/Auth"
+	inventoryController "go_inventory/SupplyInventory/Application/Controllers/Inventory"
 	palletController "go_inventory/SupplyInventory/Application/Controllers/Pallet"
 	palletRackController "go_inventory/SupplyInventory/Application/Controllers/PalletRack"
 	palletizedProductController "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
@@ -32,6 +33,7 @@ import (
 	dbadapter "go_inventory/SupplyInventory/Infrastructure/repositories/db"
 
 	"go.uber.org/fx"
+	"go.uber.org/fx/fxevent"
 	"gorm.io/gorm"
 
 	repositoriesInventory "go_inventory/SupplyInventory/Infrastructure/repositories/Inventory"
@@ -39,6 +41,8 @@ import (
 
 func BuildOptions(db *gorm.DB) fx.Option {
 	return fx.Options(
+
+		fx.WithLogger(func() fxevent.Logger { return fxevent.NopLogger }),
 		fx.Supply(db),
 
 		// Repositories
@@ -92,6 +96,7 @@ func BuildOptions(db *gorm.DB) fx.Option {
 		fx.Provide(palletRackController.NewPalletRackController),
 		fx.Provide(authController.NewAuthController),
 		fx.Provide(userController.NewUserController),
+		fx.Provide(inventoryController.NewInventoryController),
 
 		// Middlewares
 		fx.Provide(middlewares.NewAuthMiddleware),

@@ -11,6 +11,7 @@ import (
 	db "go_inventory/SupplyInventory/Infrastructure/Db"
 
 	authControllerPkg "go_inventory/SupplyInventory/Application/Controllers/Auth"
+	inventoryControllerPkg "go_inventory/SupplyInventory/Application/Controllers/Inventory"
 	palletControllerPkg "go_inventory/SupplyInventory/Application/Controllers/Pallet"
 	palletRackControllerPkg "go_inventory/SupplyInventory/Application/Controllers/PalletRack"
 	palletizedProductControllerPkg "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
@@ -61,6 +62,9 @@ func main() {
 }
 
 func setupRouter() *gin.Engine {
+
+	gin.SetMode(gin.ReleaseMode)
+
 	router := gin.Default()
 	// Disable automatic redirect for trailing slash mismatches to avoid 307
 	// redirects on OPTIONS preflight requests which can break CORS flows.
@@ -123,6 +127,7 @@ func registerRoutes(
 	authController *authControllerPkg.AuthController,
 	userController *userControllerPkg.UserController,
 	authMiddleware *middlewares.AuthMiddleware,
+	inventoryController *inventoryControllerPkg.InventoryController,
 	inventoryMiddleware *middlewares.InventoryMiddleware,
 ) {
 	apiV1 := router.Group("/api/v1")
@@ -145,6 +150,10 @@ func registerRoutes(
 	authController.RegisterLogin(apiV1.Group("/auth"))
 
 	userController.RegisterUserRoutes(apiV1.Group("/users"))
+
+	inventoryGroup := apiV1.Group("/inventories")
+	inventoryGroup.Use(authMiddleware.Handler())
+	inventoryController.Register(inventoryGroup)
 }
 
 func startServer(lc fx.Lifecycle, router *gin.Engine) {

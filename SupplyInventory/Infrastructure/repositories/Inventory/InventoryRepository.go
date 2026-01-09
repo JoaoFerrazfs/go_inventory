@@ -4,26 +4,18 @@ import (
 	errors "go_inventory/Helpers/Errors"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 	repositories "go_inventory/SupplyInventory/Domain/contracts/repositories/Inventory"
-
 	dbadapter "go_inventory/SupplyInventory/Infrastructure/repositories/db"
 )
 
 type inventoryRepository struct {
-    db dbadapter.DBAdapter
+	db dbadapter.DBAdapter
 }
 
 func NewInventoryRepository(db dbadapter.DBAdapter) repositories.InventoryRepository {
-    return &inventoryRepository{db: db}
+	return &inventoryRepository{db: db}
 }
 
 func (r *inventoryRepository) Exists(id uint) (bool, *errors.AppError) {
-<<<<<<< Updated upstream
-    var inv entities.InventoryEntity
-    if err := r.db.FirstByID(&inv, id); err != nil {
-        return false, errors.NewAppError("Inventory not found", 404)
-    }
-    return true, nil
-=======
 	var inv entities.InventoryEntity
 	if err := r.db.FirstByID(&inv, id); err != nil {
 		return false, errors.NewAppError("Inventory not found", 404)
@@ -40,7 +32,7 @@ func (r *inventoryRepository) Create(inventory *entities.InventoryEntity) *error
 
 func (r *inventoryRepository) FindById(id uint) (*entities.InventoryEntity, *errors.AppError) {
 	var inv entities.InventoryEntity
-	if err := r.db.FirstByID(&inv, id); err != nil {
+	if err := r.db.PreloadFind(&inv, "User", id); err != nil {
 		return nil, errors.NewAppError("Inventory not found", 404)
 	}
 	return &inv, nil
@@ -48,7 +40,7 @@ func (r *inventoryRepository) FindById(id uint) (*entities.InventoryEntity, *err
 
 func (r *inventoryRepository) Where(conditions ...map[string]any) ([]entities.InventoryEntity, *errors.AppError) {
 	var inventories []entities.InventoryEntity
-	query := r.db.GetDB().Model(&entities.InventoryEntity{})
+	query := r.db.GetDB().Model(&entities.InventoryEntity{}).Preload("User")
 	for _, condition := range conditions {
 		query = query.Where(condition)
 	}
@@ -63,5 +55,4 @@ func (r *inventoryRepository) Update(inv *entities.InventoryEntity) *errors.AppE
 		return errors.NewAppError("Failed to update inventory", 500)
 	}
 	return nil
->>>>>>> Stashed changes
 }

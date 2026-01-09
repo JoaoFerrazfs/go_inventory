@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	errors "go_inventory/Helpers/Errors"
+	entities "go_inventory/SupplyInventory/Domain/Entities"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -23,8 +24,6 @@ func (s *stubInventoryRepo) Exists(id uint) (bool, *errors.AppError) {
 	return false, errors.NewAppError("Inventory not found", 404)
 }
 
-<<<<<<< Updated upstream
-=======
 func (s *stubInventoryRepo) Where(conditions ...map[string]any) ([]entities.InventoryEntity, *errors.AppError) {
 	return []entities.InventoryEntity{}, nil
 }
@@ -33,7 +32,7 @@ func (s *stubInventoryRepo) FindById(id uint) (*entities.InventoryEntity, *error
 	return &entities.InventoryEntity{ID: id}, nil
 }
 
-func (s *stubInventoryRepo) Create(inventory *entities.InventoryEntity, user *entities.UserEntity) *errors.AppError {
+func (s *stubInventoryRepo) Create(inventory *entities.InventoryEntity) *errors.AppError {
 	return nil
 }
 
@@ -41,7 +40,6 @@ func (s *stubInventoryRepo) Update(inventory *entities.InventoryEntity) *errors.
 	return nil
 }
 
->>>>>>> Stashed changes
 func TestInventory_MissingHeader(t *testing.T) {
 	// Set
 	gin.SetMode(gin.TestMode)

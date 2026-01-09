@@ -8,16 +8,16 @@ import (
 	dbadapter "go_inventory/SupplyInventory/Infrastructure/repositories/db"
 )
 
-type PalletizedProductRepositoryImpl struct {
+type PalletizedProductRepository struct {
 	db               dbadapter.DBAdapter
 	palletRepository palletRepo.PalletRepository
 }
 
 func NewPalletizedProductRepository(db dbadapter.DBAdapter, palletRepository palletRepo.PalletRepository) productRepo.PalletizedProductRepository {
-	return &PalletizedProductRepositoryImpl{db: db, palletRepository: palletRepository}
+	return &PalletizedProductRepository{db: db, palletRepository: palletRepository}
 }
 
-func (repository *PalletizedProductRepositoryImpl) AddProductsToPallet(product entities.PalletizedProductEntity) (bool, *errors.AppError) {
+func (repository *PalletizedProductRepository) AddProductsToPallet(product entities.PalletizedProductEntity) (bool, *errors.AppError) {
 	pallet, err := repository.palletRepository.GetSupplyById(product.PalletID)
 	if err != nil || pallet == nil {
 		return false, err
@@ -42,7 +42,7 @@ func (repository *PalletizedProductRepositoryImpl) AddProductsToPallet(product e
 	return true, nil
 }
 
-func (repository *PalletizedProductRepositoryImpl) DeleteProductsFromPallet(palletId uint, productsEan int) (bool, *errors.AppError) {
+func (repository *PalletizedProductRepository) DeleteProductsFromPallet(palletId uint, productsEan int) (bool, *errors.AppError) {
 	pallet, err := repository.palletRepository.GetSupplyById(palletId)
 	if err != nil || pallet == nil {
 		return false, err

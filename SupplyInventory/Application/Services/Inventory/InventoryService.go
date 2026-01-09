@@ -37,8 +37,8 @@ func (service *inventoryService) GetInventoryByID(id uint) (entities.InventoryEn
 func (service *inventoryService) CreateInventory(name string, description string, user entities.UserEntity) (entities.InventoryEntity, *errors.AppError) {
 	inventory := entities.InventoryEntity{}
 	inventory.User = user
+	inventory.UserID = user.ID
 	inventory.StartedAt = time.Now()
-	inventory.User.ID = user.ID
 	inventory.Name = name
 	inventory.Description = description
 
