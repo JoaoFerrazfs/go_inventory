@@ -1,9 +1,10 @@
-package services
+package services_test
 
 import (
 	"testing"
 
 	errors "go_inventory/Helpers/Errors"
+	palletService "go_inventory/SupplyInventory/Application/Services/Pallet"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 	"go_inventory/SupplyInventory/tests/mocks"
 	testutils "go_inventory/SupplyInventory/tests/testutils"
@@ -166,7 +167,7 @@ func TestCreatePallet_Success(t *testing.T) {
 	palletRackRepository := &mockPalletRackRepo{}
 	storageService := &mocks.MockStorage{}
 	palletExportService := &mockPalletExportService{}
-	palletService := NewPalletService(palletRepository, qrCodeService, palletRackRepository, storageService, palletExportService)
+	palletService := palletService.NewPalletService(palletRepository, qrCodeService, palletRackRepository, storageService, palletExportService)
 
 	// Expectations
 	rack := &entities.PalletRackEntity{ID: 2, Name: "Rack1"}
@@ -200,7 +201,7 @@ func TestCreatePallet_QRServiceError(t *testing.T) {
 	palletRackRepository := &mockPalletRackRepo{}
 	storageService := &mocks.MockStorage{}
 	palletExportService := &mockPalletExportService{}
-	palletService := NewPalletService(palletRepository, qrCodeService, palletRackRepository, storageService, palletExportService)
+	palletService := palletService.NewPalletService(palletRepository, qrCodeService, palletRackRepository, storageService, palletExportService)
 
 	// Expectations
 	palletRack := &entities.PalletRackEntity{ID: 3, Name: "Rack3"}
@@ -227,7 +228,7 @@ func TestListPallets_RepoError(t *testing.T) {
 	palletRackRepository := &mockPalletRackRepo{}
 	storageService := &mocks.MockStorage{}
 	palletExportService := &mockPalletExportService{}
-	palletService := NewPalletService(palletRepository, qrCodeService, palletRackRepository, storageService, palletExportService)
+	palletService := palletService.NewPalletService(palletRepository, qrCodeService, palletRackRepository, storageService, palletExportService)
 
 	// Expectations
 	appErr := errors.NewAppError("db error", 500)
@@ -249,7 +250,7 @@ func TestFindPalletById_NotFound(t *testing.T) {
 	palletRackRepository := &mockPalletRackRepo{}
 	storageService := &mocks.MockStorage{}
 	palletExportService := &mockPalletExportService{}
-	palletService := NewPalletService(palletRepository, qrCodeService, palletRackRepository, storageService, palletExportService)
+	palletService := palletService.NewPalletService(palletRepository, qrCodeService, palletRackRepository, storageService, palletExportService)
 
 	// Expectations
 	palletRepository.On("GetSupplyById", uint(99)).Return(nil, nil)

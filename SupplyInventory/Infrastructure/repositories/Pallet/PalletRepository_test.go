@@ -1,7 +1,9 @@
-package infrastructure
+package infrastructure_test
 
 import (
 	"testing"
+
+	repository "go_inventory/SupplyInventory/Infrastructure/repositories/Pallet"
 
 	"github.com/stretchr/testify/assert"
 
@@ -12,7 +14,7 @@ import (
 func TestPalletRepository_Create_Unit(t *testing.T) {
 	// Set
 	adapter := &testutils.FakeDBAdapter{}
-	repository := NewPalletRepository(adapter)
+	repository := repository.NewPalletRepository(adapter)
 
 	// Expectations
 	// fakeAdapter returns success by default
@@ -28,7 +30,7 @@ func TestPalletRepository_Create_Unit(t *testing.T) {
 func TestPalletRepository_FindByID_Unit(t *testing.T) {
 	// Set
 	adapter := &testutils.FakeDBAdapter{}
-	repository := NewPalletRepository(adapter)
+	repository := repository.NewPalletRepository(adapter)
 
 	// Expectations
 	// fakeAdapter returns success (nil) from FirstByID
@@ -43,7 +45,7 @@ func TestPalletRepository_FindByID_Unit(t *testing.T) {
 func TestPalletRepository_List_Unit(t *testing.T) {
 	// Set
 	adapter := &testutils.FakeDBAdapter{}
-	repository := NewPalletRepository(adapter)
+	repository := repository.NewPalletRepository(adapter)
 
 	// Actions
 	_, err := repository.List()
@@ -55,7 +57,7 @@ func TestPalletRepository_List_Unit(t *testing.T) {
 func TestPalletRepository_DeleteByID_Unit(t *testing.T) {
 	// Set
 	adapter := &testutils.FakeDBAdapter{}
-	repository := NewPalletRepository(adapter)
+	repository := repository.NewPalletRepository(adapter)
 
 	// Actions
 	err := repository.DeleteByID(1)

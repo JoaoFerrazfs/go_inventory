@@ -1,10 +1,11 @@
-package services
+package services_test
 
 import (
 	"testing"
 
 	errors "go_inventory/Helpers/Errors"
 	apiContracts "go_inventory/SupplyInventory/Application/ApiContracts"
+	palletRackService "go_inventory/SupplyInventory/Application/Services/PalletRack"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 
 	"github.com/stretchr/testify/assert"
@@ -51,7 +52,7 @@ func (m *mockPalletRackRepo) DeleteRack(id uint) (bool, *errors.AppError) {
 func TestCreate_Success(t *testing.T) {
 	// Set
 	repo := &mockPalletRackRepo{}
-	svc := NewPalletRackService(repo)
+	svc := palletRackService.NewPalletRackService(repo)
 
 	// Expectations
 	created := &entities.PalletRackEntity{ID: 1, Name: "R1", Location: "L1", TotalCapacity: 10}
@@ -69,7 +70,7 @@ func TestCreate_Success(t *testing.T) {
 func TestListRacks_TransformsPercentage(t *testing.T) {
 	// Set
 	repo := &mockPalletRackRepo{}
-	svc := NewPalletRackService(repo)
+	svc := palletRackService.NewPalletRackService(repo)
 
 	// Expectations
 	racks := []entities.PalletRackEntity{
@@ -92,7 +93,7 @@ func TestListRacks_TransformsPercentage(t *testing.T) {
 func TestFindPalletById_RepoError(t *testing.T) {
 	// Set
 	repo := &mockPalletRackRepo{}
-	svc := NewPalletRackService(repo)
+	svc := palletRackService.NewPalletRackService(repo)
 
 	// Expectations
 	appErr := errors.NewAppError("not found", 404)
@@ -110,7 +111,7 @@ func TestFindPalletById_RepoError(t *testing.T) {
 func TestDeleteRack_Success(t *testing.T) {
 	// Set
 	repo := &mockPalletRackRepo{}
-	svc := NewPalletRackService(repo)
+	svc := palletRackService.NewPalletRackService(repo)
 
 	// Expectations
 	repo.On("DeleteRack", uint(5)).Return(true, nil)

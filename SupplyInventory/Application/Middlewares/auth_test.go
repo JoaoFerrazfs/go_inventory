@@ -1,4 +1,4 @@
-package middlewares
+package middlewares_test
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	errors "go_inventory/Helpers/Errors"
+	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
 
 	"github.com/gin-gonic/gin"
 	jwtv5 "github.com/golang-jwt/jwt/v5"
@@ -65,7 +66,7 @@ func newRequestWithAuthHeader(method, path, headerValue string) *http.Request {
 func TestAuth_MissingHeader(t *testing.T) {
 	// Set
 	gin.SetMode(gin.TestMode)
-	m := &AuthMiddleware{JWTService: &stubJWTService{}}
+	m := &middlewares.AuthMiddleware{JWTService: &stubJWTService{}}
 	r := gin.New()
 	r.Use(m.Handler())
 	r.GET("/", func(c *gin.Context) { c.JSON(200, gin.H{"ok": true}) })
@@ -86,7 +87,7 @@ func TestAuth_MissingHeader(t *testing.T) {
 func TestAuth_InvalidFormat(t *testing.T) {
 	// Set
 	gin.SetMode(gin.TestMode)
-	m := &AuthMiddleware{JWTService: &stubJWTService{}}
+	m := &middlewares.AuthMiddleware{JWTService: &stubJWTService{}}
 	r := gin.New()
 	r.Use(m.Handler())
 	r.GET("/", func(c *gin.Context) { c.JSON(200, gin.H{"ok": true}) })
@@ -108,7 +109,7 @@ func TestAuth_ValidateError(t *testing.T) {
 	// Set
 	gin.SetMode(gin.TestMode)
 	stub := &stubJWTService{token: nil, appErr: errors.NewAppError("some", 401)}
-	m := &AuthMiddleware{JWTService: stub}
+	m := &middlewares.AuthMiddleware{JWTService: stub}
 	r := gin.New()
 	r.Use(m.Handler())
 	r.GET("/", func(c *gin.Context) { c.JSON(200, gin.H{"ok": true}) })
@@ -131,7 +132,7 @@ func TestAuth_InvalidTokenType(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	token := &jwtv5.Token{Valid: true, Claims: jwtv5.MapClaims{"userID": float64(1), "username": "u", "tokenType": "refresh"}}
 	stub := &stubJWTService{token: token, appErr: nil}
-	m := &AuthMiddleware{JWTService: stub}
+	m := &middlewares.AuthMiddleware{JWTService: stub}
 	r := gin.New()
 	r.Use(m.Handler())
 	r.GET("/", func(c *gin.Context) { c.JSON(200, gin.H{"ok": true}) })
@@ -155,7 +156,7 @@ func TestAuth_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	token := &jwtv5.Token{Valid: true, Claims: jwtv5.MapClaims{"userID": float64(42), "username": "alice", "tokenType": "access"}}
 	stub := &stubJWTService{token: token, appErr: nil}
-	m := &AuthMiddleware{JWTService: stub}
+	m := &middlewares.AuthMiddleware{JWTService: stub}
 	r := gin.New()
 	r.Use(m.Handler())
 	r.GET("/", func(c *gin.Context) {

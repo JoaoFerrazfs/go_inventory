@@ -1,10 +1,11 @@
-package services
+package services_test
 
 import (
 	"io"
 	"strings"
 	"testing"
 
+	palletExportService "go_inventory/SupplyInventory/Application/Services/Pallet"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 	"go_inventory/SupplyInventory/tests/mocks"
 
@@ -15,7 +16,7 @@ import (
 func TestExportPalletsToCsv_Success(t *testing.T) {
 	// Set
 	storage := &mocks.MockStorage{}
-	svc := NewPalletExportService(storage)
+	svc := palletExportService.NewPalletExportService(storage)
 
 	pallets := []entities.PalletEntity{
 		{
@@ -52,7 +53,7 @@ func TestExportPalletsToCsv_Success(t *testing.T) {
 func TestExportPalletsToCsv_UploadError(t *testing.T) {
 	// Set
 	storage := &mocks.MockStorage{}
-	svc := NewPalletExportService(storage)
+	svc := palletExportService.NewPalletExportService(storage)
 
 	pallets := []entities.PalletEntity{
 		{
@@ -81,7 +82,7 @@ func TestExportPalletsToCsv_UploadError(t *testing.T) {
 func TestExportPalletsToCsv_GetURLError(t *testing.T) {
 	// Set
 	storage := &mocks.MockStorage{}
-	svc := NewPalletExportService(storage)
+	svc := palletExportService.NewPalletExportService(storage)
 
 	pallets := []entities.PalletEntity{
 		{
@@ -111,7 +112,7 @@ func TestExportPalletsToCsv_GetURLError(t *testing.T) {
 func TestExportPalletsToCsv_EmptyPallets(t *testing.T) {
 	// Set
 	storage := &mocks.MockStorage{}
-	svc := NewPalletExportService(storage)
+	svc := palletExportService.NewPalletExportService(storage)
 
 	pallets := []entities.PalletEntity{}
 	expectedURL := "http://storage.example.com/reports/Pallets/empty_file.csv"
@@ -131,7 +132,7 @@ func TestExportPalletsToCsv_EmptyPallets(t *testing.T) {
 func TestExportPalletsToCsv_WithProducts(t *testing.T) {
 	// Set
 	storage := &mocks.MockStorage{}
-	svc := NewPalletExportService(storage)
+	svc := palletExportService.NewPalletExportService(storage)
 
 	pallets := []entities.PalletEntity{
 		{
@@ -156,11 +157,11 @@ func TestExportPalletsToCsv_WithProducts(t *testing.T) {
 			},
 		},
 		{
-			ID:             3,
-			Name:           "Pallet 3",
-			PalletRackID:   30,
-			PalletRackName: "Rack C",
-			QrCodeUrl:      "http://example.com/qr3",
+			ID:                3,
+			Name:              "Pallet 3",
+			PalletRackID:      30,
+			PalletRackName:    "Rack C",
+			QrCodeUrl:         "http://example.com/qr3",
 			PalletizedProduct: []entities.PalletizedProductEntity{}, // Pallet sem produtos
 		},
 	}
@@ -182,18 +183,18 @@ func TestExportPalletsToCsv_WithProducts(t *testing.T) {
 	// Assertions
 	assert.Nil(t, err)
 	assert.Equal(t, expectedURL, url)
-	
+
 	// Validate CSV content
 	lines := strings.Split(strings.TrimSpace(uploadedContent), "\n")
 	assert.Equal(t, 4, len(lines)) // Header + 3 data lines
-	
+
 	// Check header
 	assert.Equal(t, "ID,Nome,Id do Rack,Nome do Rack,Produtos,QrCodeUrl", lines[0])
-	
+
 	// Check data lines
 	assert.Equal(t, "1,Pallet 1,10,Rack A,\"123456789, 987654321\",http://example.com/qr1", lines[1])
 	assert.Equal(t, "2,Pallet 2,20,Rack B,111111111,http://example.com/qr2", lines[2])
 	assert.Equal(t, "3,Pallet 3,30,Rack C,,http://example.com/qr3", lines[3]) // Pallet sem produtos
-	
+
 	storage.AssertExpectations(t)
 }

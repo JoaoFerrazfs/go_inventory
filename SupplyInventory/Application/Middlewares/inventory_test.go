@@ -1,4 +1,4 @@
-package middlewares
+package middlewares_test
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	errors "go_inventory/Helpers/Errors"
+	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 
 	"github.com/gin-gonic/gin"
@@ -44,7 +45,7 @@ func TestInventory_MissingHeader(t *testing.T) {
 	// Set
 	gin.SetMode(gin.TestMode)
 	repo := &stubInventoryRepo{exists: false}
-	m := NewInventoryMiddleware(repo)
+	m := middlewares.NewInventoryMiddleware(repo)
 	r := gin.New()
 	r.Use(m.Handler())
 	r.GET("/", func(c *gin.Context) { c.JSON(200, gin.H{"ok": true}) })
@@ -65,7 +66,7 @@ func TestInventory_InvalidHeader(t *testing.T) {
 	// Set
 	gin.SetMode(gin.TestMode)
 	repo := &stubInventoryRepo{exists: false}
-	m := NewInventoryMiddleware(repo)
+	m := middlewares.NewInventoryMiddleware(repo)
 	r := gin.New()
 	r.Use(m.Handler())
 	r.GET("/", func(c *gin.Context) { c.JSON(200, gin.H{"ok": true}) })
@@ -87,7 +88,7 @@ func TestInventory_NotFound(t *testing.T) {
 	// Set
 	gin.SetMode(gin.TestMode)
 	repo := &stubInventoryRepo{exists: false}
-	m := NewInventoryMiddleware(repo)
+	m := middlewares.NewInventoryMiddleware(repo)
 	r := gin.New()
 	r.Use(m.Handler())
 	r.GET("/", func(c *gin.Context) { c.JSON(200, gin.H{"ok": true}) })
@@ -109,10 +110,10 @@ func TestInventory_Success(t *testing.T) {
 	// Set
 	gin.SetMode(gin.TestMode)
 	repo := &stubInventoryRepo{exists: true}
-	m := NewInventoryMiddleware(repo)
+	m := middlewares.NewInventoryMiddleware(repo)
 	r := gin.New()
 	r.Use(m.Handler())
-	r.GET("/", func(c *gin.Context) { id := GetInventoryID(c); c.JSON(200, gin.H{"id": id}) })
+	r.GET("/", func(c *gin.Context) { id := middlewares.GetInventoryID(c); c.JSON(200, gin.H{"id": id}) })
 
 	// Actions
 	w := httptest.NewRecorder()

@@ -1,4 +1,4 @@
-package inventory
+package inventory_test
 
 import (
 	"testing"

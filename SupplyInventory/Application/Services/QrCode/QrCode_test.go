@@ -1,10 +1,11 @@
-package services
+package services_test
 
 import (
 	"os"
 	"path/filepath"
 	"testing"
 
+	qrCodeService "go_inventory/SupplyInventory/Application/Services/QrCode"
 	testutils "go_inventory/SupplyInventory/tests/testutils"
 
 	"github.com/stretchr/testify/assert"
@@ -25,7 +26,7 @@ func TestCreateQRCode_Success(t *testing.T) {
 	_ = os.Chdir(tempDir)
 	defer os.Chdir(old)
 
-	svc := NewQRCodeService()
+	svc := qrCodeService.NewQRCodeService()
 	path, _, err := svc.CreateQRCode(7)
 
 	// Assertions
@@ -49,7 +50,7 @@ func TestCreateQRCode_DirectoryError(t *testing.T) {
 	f.Close()
 	defer os.Remove("storage")
 
-	svc := NewQRCodeService()
+	svc := qrCodeService.NewQRCodeService()
 	_, _, err := svc.CreateQRCode(8)
 
 	// Assertions

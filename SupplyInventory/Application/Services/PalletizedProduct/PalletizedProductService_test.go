@@ -1,9 +1,10 @@
-package services
+package services_test
 
 import (
 	"testing"
 
 	errors "go_inventory/Helpers/Errors"
+	palletizedProductService "go_inventory/SupplyInventory/Application/Services/PalletizedProduct"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 
 	"github.com/stretchr/testify/assert"
@@ -65,7 +66,7 @@ func TestAddProductsToPallet_Success(t *testing.T) {
 	// Set
 	palletRepo := &mockPalletRepoPP{}
 	repoProd := &mockPalletizedProductRepo{}
-	svc := NewPalletizedProductService(palletRepo, repoProd)
+	svc := palletizedProductService.NewPalletizedProductService(palletRepo, repoProd)
 
 	// Expectations
 	repoProd.On("AddProductsToPallet", mock.Anything).Return(true, nil)
@@ -86,7 +87,7 @@ func TestAddProductsToPallet_AddError(t *testing.T) {
 	// Set
 	palletRepo := &mockPalletRepoPP{}
 	repoProd := &mockPalletizedProductRepo{}
-	svc := NewPalletizedProductService(palletRepo, repoProd)
+	svc := palletizedProductService.NewPalletizedProductService(palletRepo, repoProd)
 
 	// Expectations
 	appErr := errors.NewAppError("add error", 400)
@@ -105,7 +106,7 @@ func TestDeleteProductsFromPallet_Success(t *testing.T) {
 	// Set
 	palletRepo := &mockPalletRepoPP{}
 	repoProd := &mockPalletizedProductRepo{}
-	svc := NewPalletizedProductService(palletRepo, repoProd)
+	svc := palletizedProductService.NewPalletizedProductService(palletRepo, repoProd)
 
 	// Expectations
 	repoProd.On("DeleteProductsFromPallet", uint(1), 12345).Return(true, nil)
@@ -123,7 +124,7 @@ func TestDeleteProductsFromPallet_RepoError(t *testing.T) {
 	// Set
 	palletRepo := &mockPalletRepoPP{}
 	repoProd := &mockPalletizedProductRepo{}
-	svc := NewPalletizedProductService(palletRepo, repoProd)
+	svc := palletizedProductService.NewPalletizedProductService(palletRepo, repoProd)
 
 	// Expectations
 	appErr := errors.NewAppError("delete error", 400)

@@ -1,4 +1,4 @@
-package infrastructure
+package infrastructure_test
 
 import (
 	"testing"
@@ -7,16 +7,14 @@ import (
 
 	errors "go_inventory/Helpers/Errors"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
+	repository "go_inventory/SupplyInventory/Infrastructure/repositories/PalletizedProduct"
 	"go_inventory/SupplyInventory/tests/testutils"
 )
 
 func TestPalletizedProduct_AddProductsToPallet_Unit(t *testing.T) {
 	// Set
 	adapter := &testutils.FakeDBAdapter{}
-	repo := &PalletizedProductRepository{db: adapter, palletRepository: &stubPalletRepoShim{}}
-
-	// Expectations
-	// fakeAdapter and stubPalletRepoShim return success by default
+	repo := repository.NewPalletizedProductRepository(adapter, &stubPalletRepoShim{})
 
 	// Actions
 	product := entities.PalletizedProductEntity{EAN: 999, Quantity: 1, PalletID: 1}
@@ -30,11 +28,7 @@ func TestPalletizedProduct_AddProductsToPallet_Unit(t *testing.T) {
 func TestPalletizedProduct_DeleteProductsFromPallet_Unit(t *testing.T) {
 	// Set
 	adapter := &testutils.FakeDBAdapter{}
-	// create repo with a stub pallet that has one product with EAN 777
-	repo := &PalletizedProductRepository{db: adapter, palletRepository: &stubPalletRepoShim{}}
-
-	// Expectations
-	// fakeAdapter.DeleteByID will return rows>0
+	repo := repository.NewPalletizedProductRepository(adapter, &stubPalletRepoShim{})
 
 	// Actions
 	ok, appErr := repo.DeleteProductsFromPallet(1, 777)

@@ -1,8 +1,9 @@
-package services
+package services_test
 
 import (
 	"testing"
 
+	userService "go_inventory/SupplyInventory/Application/Services/User"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 
 	"github.com/stretchr/testify/assert"
@@ -36,7 +37,7 @@ func (m *mockUserRepo) FindByID(id uint) (*entities.UserEntity, error) {
 func TestCreateUser_Success(t *testing.T) {
 	// Set
 	repo := &mockUserRepo{}
-	svc := NewUserService(repo)
+	svc := userService.NewUserService(repo)
 
 	// Expectations
 	repo.On("FindByEmail", "new@example.com").Return(nil, assert.AnError)
@@ -54,7 +55,7 @@ func TestCreateUser_Success(t *testing.T) {
 func TestCreateUser_EmailExists(t *testing.T) {
 	// Set
 	repo := &mockUserRepo{}
-	svc := NewUserService(repo)
+	svc := userService.NewUserService(repo)
 
 	// Expectations: FindByEmail returns user (exists)
 	existing := &entities.UserEntity{ID: 1, Email: "exists@example.com"}
@@ -72,7 +73,7 @@ func TestCreateUser_EmailExists(t *testing.T) {
 func TestLogin_Success(t *testing.T) {
 	// Set
 	repo := &mockUserRepo{}
-	svc := NewUserService(repo)
+	svc := userService.NewUserService(repo)
 
 	// Create a hashed password using bcrypt to match login expectations
 	hashed, _ := bcrypt.GenerateFromPassword([]byte("secretpass"), bcrypt.DefaultCost)
@@ -91,7 +92,7 @@ func TestLogin_Success(t *testing.T) {
 func TestLogin_InvalidCredentials(t *testing.T) {
 	// Set
 	repo := &mockUserRepo{}
-	svc := NewUserService(repo)
+	svc := userService.NewUserService(repo)
 
 	stored := &entities.UserEntity{ID: 3, Email: "bad@example.com", Password: "notahash"}
 	repo.On("FindByEmail", "bad@example.com").Return(stored, nil)

@@ -1,10 +1,12 @@
-package services
+package services_test
 
 import (
 	"testing"
 	"time"
 
 	testutils "go_inventory/SupplyInventory/tests/testutils"
+
+	jwtService "go_inventory/SupplyInventory/Application/Services/Jwt"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +18,7 @@ func TestGenerateToken_Success(t *testing.T) {
 	defer restore()
 
 	// Actions
-	svc := NewJWTService()
+	svc := jwtService.NewJWTService()
 	tokenStr, appErr := svc.GenerateToken(10, "john")
 
 	// Assertions
@@ -37,7 +39,7 @@ func TestGenerateRefreshToken_Success(t *testing.T) {
 	defer restore()
 
 	// Actions
-	svc := NewJWTService()
+	svc := jwtService.NewJWTService()
 	tokenStr, appErr := svc.GenerateRefreshToken(20, "mary")
 
 	// Assertions
@@ -60,7 +62,7 @@ func TestValidateToken_InvalidToken(t *testing.T) {
 	restore := testutils.SetEnvAndRestore("JWT_SECRET", "testsecret")
 	defer restore()
 
-	svc := NewJWTService()
+	svc := jwtService.NewJWTService()
 
 	// Actions
 	_, appErr := svc.ValidateToken("this.is.not.a.token")
@@ -84,7 +86,7 @@ func TestValidateToken_ValidToken(t *testing.T) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenStr, _ := token.SignedString([]byte("testsecret"))
 
-	svc := NewJWTService()
+	svc := jwtService.NewJWTService()
 
 	// Actions
 	parsed, appErr := svc.ValidateToken(tokenStr)
@@ -110,7 +112,7 @@ func TestRefreshToken_Success(t *testing.T) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenStr, _ := token.SignedString([]byte("testsecret"))
 
-	svc := NewJWTService()
+	svc := jwtService.NewJWTService()
 
 	// Actions
 	newToken, appErr := svc.RefreshToken(tokenStr)
@@ -125,7 +127,7 @@ func TestRefreshToken_InvalidToken(t *testing.T) {
 	restore := testutils.SetEnvAndRestore("JWT_SECRET", "testsecret")
 	defer restore()
 
-	svc := NewJWTService()
+	svc := jwtService.NewJWTService()
 
 	// Actions
 	_, appErr := svc.RefreshToken("invalid.token")
