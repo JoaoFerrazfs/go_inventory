@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	errors "go_inventory/Helpers/Errors"
+	services "go_inventory/SupplyInventory/Application/Services/Inventory"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 )
 
@@ -43,7 +44,7 @@ func (m *MockInventoryRepository) Update(inventory *entities.InventoryEntity) *e
 func TestCreateInventory_Success(t *testing.T) {
 	// Set
 	mockRepo := new(MockInventoryRepository)
-	service := NewInventoryService(mockRepo)
+	service := services.NewInventoryService(mockRepo)
 	user := entities.UserEntity{ID: 1, Name: "Test User"}
 
 	mockRepo.On("Create", mock.MatchedBy(func(inv *entities.InventoryEntity) bool {
@@ -63,7 +64,7 @@ func TestCreateInventory_Success(t *testing.T) {
 func TestListInventories_Success(t *testing.T) {
 	// Set
 	mockRepo := new(MockInventoryRepository)
-	service := NewInventoryService(mockRepo)
+	service := services.NewInventoryService(mockRepo)
 	inventories := []entities.InventoryEntity{
 		{ID: 1, Name: "Inventory 1", User: entities.UserEntity{ID: 1, Name: "User 1"}},
 		{ID: 2, Name: "Inventory 2", User: entities.UserEntity{ID: 2, Name: "User 2"}},
@@ -84,7 +85,7 @@ func TestListInventories_Success(t *testing.T) {
 func TestGetInventoryByID_Success(t *testing.T) {
 	// Set
 	mockRepo := new(MockInventoryRepository)
-	service := NewInventoryService(mockRepo)
+	service := services.NewInventoryService(mockRepo)
 	inventory := &entities.InventoryEntity{
 		ID:   1,
 		Name: "Test Inventory",
