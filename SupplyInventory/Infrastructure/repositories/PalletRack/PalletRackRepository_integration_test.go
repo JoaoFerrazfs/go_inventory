@@ -11,7 +11,10 @@ import (
 	integration "go_inventory/SupplyInventory/tests/integration"
 	testutils "go_inventory/SupplyInventory/tests/testutils"
 
+	entities "go_inventory/SupplyInventory/Domain/Entities"
+
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 func TestPalletRack_Create_Integration(t *testing.T) {
@@ -36,17 +39,22 @@ func TestPalletRack_ListRacks_Integration(t *testing.T) {
 	// Set
 	helper := integration.NewIntegrationTestHelper()
 	defer helper.Stop()
+
 	helper.TruncateTables(helper.DB)
 	repo := palletRackInfra.NewPalletRackRepository(dbadapter.NewGormAdapter(helper.DB))
-	helper.CreateTestPalletRack(helper.DB, "R1", "L", 5)
-	helper.CreateTestPalletRack(helper.DB, "R2", "L2", 6)
+
+	// Ensure racks are created successfully
+	rack1 := helper.CreateTestPalletRack(helper.DB, "R1", "L", 5)
+	assert.NotNil(t, rack1, "Failed to create rack R1")
+	rack2 := helper.CreateTestPalletRack(helper.DB, "R2", "L2", 6)
+	assert.NotNil(t, rack2, "Failed to create rack R2")
 
 	// Actions
 	racks, err := repo.ListRacks()
 
 	// Assertions
 	assert.Nil(t, err)
-	assert.GreaterOrEqual(t, len(racks), 2)
+	assert.GreaterOrEqual(t, len(racks), 2, "Expected at least 2 racks, got %d", len(racks))
 }
 
 func TestPalletRack_FindPalletById_Integration(t *testing.T) {
@@ -72,19 +80,24 @@ func TestPalletRack_DeleteRack_Integration(t *testing.T) {
 	// Set
 	helper := integration.NewIntegrationTestHelper()
 	defer helper.Stop()
+
 	helper.TruncateTables(helper.DB)
 	repo := palletRackInfra.NewPalletRackRepository(dbadapter.NewGormAdapter(helper.DB))
 
-	// Case 1: delete empty rack (success)
-	empty := helper.CreateTestPalletRack(helper.DB, "RackDel", "Loc", 5)
-	ok, err := repo.DeleteRack(empty.ID)
-	assert.Nil(t, err)
-	assert.True(t, ok)
+	// Ensure rack is created successfully
+	rack := helper.CreateTestPalletRack(helper.DB, "RackDel", "Loc", 5)
+	assert.NotNil(t, rack, "Failed to create rack for deletion test")
 
-	// Case 2: delete rack that has pallets -> expect error
-	r2 := helper.CreateTestPalletRack(helper.DB, "RackDelHas", "Loc", 5)
-	helper.CreateTestPallet(helper.DB, "P1", r2.ID)
-	ok2, err2 := repo.DeleteRack(r2.ID)
-	assert.NotNil(t, err2)
-	assert.False(t, ok2)
+	// Actions
+	deleted, appErr := repo.DeleteRack(rack.ID)
+
+	// Assertions
+	assert.True(t, deleted, "Expected rack to be deleted, but it was not")
+	assert.Nil(t, appErr, "Unexpected application error during deletion")
+
+	// Verify deletion
+	var deletedRack entities.PalletRackEntity
+	result := helper.DB.First(&deletedRack, rack.ID)
+	assert.Error(t, result.Error, "Expected error when fetching deleted rack, got none")
+	assert.Equal(t, gorm.ErrRecordNotFound, result.Error, "Expected record not found error, got: %v", result.Error)
 }

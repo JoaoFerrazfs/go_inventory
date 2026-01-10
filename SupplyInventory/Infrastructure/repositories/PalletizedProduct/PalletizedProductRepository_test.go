@@ -13,7 +13,7 @@ import (
 func TestPalletizedProduct_AddProductsToPallet_Unit(t *testing.T) {
 	// Set
 	adapter := &testutils.FakeDBAdapter{}
-	repo := &PalletizedProductRepositoryImpl{db: adapter, palletRepository: &stubPalletRepoShim{}}
+	repo := &PalletizedProductRepository{db: adapter, palletRepository: &stubPalletRepoShim{}}
 
 	// Expectations
 	// fakeAdapter and stubPalletRepoShim return success by default
@@ -31,7 +31,7 @@ func TestPalletizedProduct_DeleteProductsFromPallet_Unit(t *testing.T) {
 	// Set
 	adapter := &testutils.FakeDBAdapter{}
 	// create repo with a stub pallet that has one product with EAN 777
-	repo := &PalletizedProductRepositoryImpl{db: adapter, palletRepository: &stubPalletRepoShim{}}
+	repo := &PalletizedProductRepository{db: adapter, palletRepository: &stubPalletRepoShim{}}
 
 	// Expectations
 	// fakeAdapter.DeleteByID will return rows>0

@@ -2,6 +2,7 @@ package requestsHelper
 
 import (
 	"fmt"
+	development "go_inventory/Helpers/Development"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -13,6 +14,7 @@ type ValidationResponse struct {
 }
 
 func FormatValidationErrors(err error) []ValidationResponse {
+	development.Dump(err)
 	if validationErrors, ok := err.(validator.ValidationErrors); ok {
 
 		formattedErrors := make([]ValidationResponse, 0, len(validationErrors))

@@ -25,6 +25,14 @@ func (m *mockUserRepo) FindByEmail(email string) (*entities.UserEntity, error) {
 	return args.Get(0).(*entities.UserEntity), args.Error(1)
 }
 
+func (m *mockUserRepo) FindByID(id uint) (*entities.UserEntity, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entities.UserEntity), args.Error(1)
+}
+
 func TestCreateUser_Success(t *testing.T) {
 	// Set
 	repo := &mockUserRepo{}

@@ -2,6 +2,7 @@ package container
 
 import (
 	authController "go_inventory/SupplyInventory/Application/Controllers/Auth"
+	inventoryController "go_inventory/SupplyInventory/Application/Controllers/Inventory"
 	palletController "go_inventory/SupplyInventory/Application/Controllers/Pallet"
 	palletRackController "go_inventory/SupplyInventory/Application/Controllers/PalletRack"
 	palletizedProductController "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
@@ -9,6 +10,7 @@ import (
 	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
 	"os"
 
+	inventory "go_inventory/SupplyInventory/Application/Services/Inventory"
 	jwt "go_inventory/SupplyInventory/Application/Services/Jwt"
 	pallet "go_inventory/SupplyInventory/Application/Services/Pallet"
 	palletrack "go_inventory/SupplyInventory/Application/Services/PalletRack"
@@ -21,6 +23,7 @@ import (
 	repositoriesPalletizedProduct "go_inventory/SupplyInventory/Infrastructure/repositories/PalletizedProduct"
 	repositoriesUser "go_inventory/SupplyInventory/Infrastructure/repositories/User"
 
+	contractInventory "go_inventory/SupplyInventory/Domain/contracts/repositories/Inventory"
 	contractPallet "go_inventory/SupplyInventory/Domain/contracts/repositories/Pallet"
 	contractPalletRack "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletRack"
 	contractPalletized "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletizedProduct"
@@ -30,14 +33,16 @@ import (
 	dbadapter "go_inventory/SupplyInventory/Infrastructure/repositories/db"
 
 	"go.uber.org/fx"
+	"go.uber.org/fx/fxevent"
 	"gorm.io/gorm"
 
-	contractInventory "go_inventory/SupplyInventory/Domain/contracts/repositories/Inventory"
 	repositoriesInventory "go_inventory/SupplyInventory/Infrastructure/repositories/Inventory"
 )
 
 func BuildOptions(db *gorm.DB) fx.Option {
 	return fx.Options(
+
+		fx.WithLogger(func() fxevent.Logger { return fxevent.NopLogger }),
 		fx.Supply(db),
 
 		// Repositories
@@ -81,12 +86,17 @@ func BuildOptions(db *gorm.DB) fx.Option {
 			return user.NewUserService(repo)
 		}),
 
+		fx.Provide(func(repo contractInventory.InventoryRepository) inventory.InventoryService {
+			return inventory.NewInventoryService(repo)
+		}),
+
 		// Controllers
 		fx.Provide(palletController.NewPalletController),
 		fx.Provide(palletizedProductController.NewPalletizedProductController),
 		fx.Provide(palletRackController.NewPalletRackController),
 		fx.Provide(authController.NewAuthController),
 		fx.Provide(userController.NewUserController),
+		fx.Provide(inventoryController.NewInventoryController),
 
 		// Middlewares
 		fx.Provide(middlewares.NewAuthMiddleware),

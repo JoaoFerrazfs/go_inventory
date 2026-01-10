@@ -10,8 +10,6 @@ import (
 	dbadapter "go_inventory/SupplyInventory/Infrastructure/repositories/db"
 )
 
-// Implementa a interface repositories.PalletRackRepository
-
 type palletRackRepository struct {
 	db dbadapter.DBAdapter
 }
