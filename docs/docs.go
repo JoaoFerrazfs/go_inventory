@@ -147,6 +147,135 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/inventories": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "List all inventories",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apiContracts.InventoryListResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Create a new inventory",
+                "parameters": [
+                    {
+                        "description": "Inventory Data",
+                        "name": "inventory",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/inventory.InventoryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/apiContracts.InventoryResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/inventories/{id}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Get inventory by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Inventory ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apiContracts.InventoryResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/pallet/products/{palletId}": {
             "patch": {
                 "consumes": [
@@ -261,6 +390,20 @@ const docTemplate = `{
                     "Pallets"
                 ],
                 "summary": "List pallets",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Filter by pallet rack ID",
+                        "name": "palletRackId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by product EAN",
+                        "name": "ean",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -313,6 +456,48 @@ const docTemplate = `{
                                 "type": "string"
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/api/v1/pallets/export": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pallets"
+                ],
+                "summary": "Export pallets to CSV file",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Filter by pallet rack ID",
+                        "name": "palletRackId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by product EAN",
+                        "name": "ean",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
                     }
                 }
             }
@@ -703,6 +888,79 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "apiContracts.InventoryData": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/apiContracts.UserData"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiContracts.InventoryListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "inventories": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/apiContracts.InventoryData"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "apiContracts.InventoryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/apiContracts.InventoryData"
+                }
+            }
+        },
+        "apiContracts.UserData": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "auth.AuthResponse": {
             "type": "object",
             "properties": {
@@ -754,11 +1012,19 @@ const docTemplate = `{
         "entities.PalletEntity": {
             "type": "object",
             "required": [
+                "inventory_id",
                 "name",
-                "palletRackId"
+                "palletRackId",
+                "palletRackName"
             ],
             "properties": {
+                "created_at": {
+                    "type": "string"
+                },
                 "id": {
+                    "type": "integer"
+                },
+                "inventory_id": {
                     "type": "integer"
                 },
                 "name": {
@@ -766,6 +1032,9 @@ const docTemplate = `{
                 },
                 "palletRackId": {
                     "type": "integer"
+                },
+                "palletRackName": {
+                    "type": "string"
                 },
                 "palletizedProduct": {
                     "type": "array",
@@ -778,18 +1047,28 @@ const docTemplate = `{
                 },
                 "qr_code_url": {
                     "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
         "entities.PalletRackEntity": {
             "type": "object",
             "required": [
+                "inventory_id",
                 "location",
                 "name",
                 "total_capacity"
             ],
             "properties": {
+                "created_at": {
+                    "type": "string"
+                },
                 "id": {
+                    "type": "integer"
+                },
+                "inventory_id": {
                     "type": "integer"
                 },
                 "location": {
@@ -806,6 +1085,9 @@ const docTemplate = `{
                 },
                 "total_capacity": {
                     "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
@@ -816,10 +1098,16 @@ const docTemplate = `{
                 "quantity"
             ],
             "properties": {
+                "created_at": {
+                    "type": "string"
+                },
                 "ean": {
                     "type": "integer"
                 },
                 "id": {
+                    "type": "integer"
+                },
+                "inventory_id": {
                     "type": "integer"
                 },
                 "palletID": {
@@ -827,6 +1115,9 @@ const docTemplate = `{
                 },
                 "quantity": {
                     "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
@@ -846,6 +1137,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "inventory.InventoryRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }
@@ -926,7 +1231,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:3000",
+	Host:             "localhost:8000",
 	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "Go Inventory API",

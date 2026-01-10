@@ -3,6 +3,7 @@ package inventory
 import (
 	"fmt"
 
+	errors "go_inventory/Helpers/Errors"
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
 	inventoryRequest "go_inventory/SupplyInventory/Application/Requests/Inventory"
 	inventoryService "go_inventory/SupplyInventory/Application/Services/Inventory"
@@ -30,6 +31,13 @@ func (controller *InventoryController) Register(group *gin.RouterGroup) {
 	group.PUT("/:id", controller.UpdateInventory)
 }
 
+// @Summary List all inventories
+// @Tags Inventory
+// @Accept json
+// @Produce json
+// @Success 200 {object} apiContracts.InventoryListResponse
+// @Failure 500 {object} map[string]string
+// @Router /api/v1/inventories [get]
 func (controller *InventoryController) ListInventories(c *gin.Context) {
 	inventories, appError := controller.inventoryService.ListInventories()
 	if appError != nil {
@@ -39,6 +47,15 @@ func (controller *InventoryController) ListInventories(c *gin.Context) {
 	c.JSON(200, gin.H{"data": gin.H{"inventories": inventories}})
 }
 
+// @Summary Get inventory by ID
+// @Tags Inventory
+// @Accept json
+// @Produce json
+// @Param id path int true "Inventory ID"
+// @Success 200 {object} apiContracts.InventoryResponse
+// @Failure 422 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /api/v1/inventories/{id} [get]
 func (controller *InventoryController) GetInventoryById(c *gin.Context) {
 	idParam := c.Param("id")
 
@@ -57,6 +74,15 @@ func (controller *InventoryController) GetInventoryById(c *gin.Context) {
 	c.JSON(200, gin.H{"data": gin.H{"inventory": inventory}})
 }
 
+// @Summary Create a new inventory
+// @Tags Inventory
+// @Accept json
+// @Produce json
+// @Param inventory body inventory.InventoryRequest true "Inventory Data"
+// @Success 201 {object} apiContracts.InventoryResponse
+// @Failure 422 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Router /api/v1/inventories [post]
 func (controller *InventoryController) CreateInventory(c *gin.Context) {
 	var req inventoryRequest.InventoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -66,22 +92,25 @@ func (controller *InventoryController) CreateInventory(c *gin.Context) {
 
 	userIDInterface, exists := c.Get("userID")
 	if !exists {
-		c.JSON(401, gin.H{"error": "User not authenticated"})
+		appError := errors.NewAppError("User not authenticated", 401)
+		c.JSON(appError.Code, requestsHelper.FormatValidationErrors(appError))
 		return
 	}
+
 	userID := userIDInterface.(uint)
 
 	user, appErr := controller.userService.GetUserByID(userID)
 	if appErr != nil {
-		c.JSON(appErr.Code, gin.H{"error": appErr.Message})
+		c.JSON(appErr.Code, requestsHelper.FormatValidationErrors(appErr))
 		return
 	}
 
 	inventory, appError := controller.inventoryService.CreateInventory(req.Name, req.Description, *user)
 	if appError != nil {
-		c.JSON(appError.Code, gin.H{"error": appError.Message})
+		c.JSON(appError.Code, requestsHelper.FormatValidationErrors(appError))
 		return
 	}
+
 	c.JSON(201, gin.H{"data": gin.H{"inventory": inventory}})
 }
 
