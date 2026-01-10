@@ -1,9 +1,8 @@
-package inventory_test
+package controllers_test
 
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,22 +10,17 @@ import (
 	appErrors "go_inventory/Helpers/Errors"
 	inventory "go_inventory/SupplyInventory/Application/Controllers/Inventory"
 	inventoryRequest "go_inventory/SupplyInventory/Application/Requests/Inventory"
-	inventoryService "go_inventory/SupplyInventory/Application/Services/Inventory"
-	userService "go_inventory/SupplyInventory/Application/Services/User"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 	"go_inventory/SupplyInventory/tests/mocks"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestListInventories_Success(t *testing.T) {
 	// Set
-	inventoryRepo := new(mocks.InventoryRepository)
-	userRepo := new(mocks.UserRepository)
-	inventorySvc := inventoryService.NewInventoryService(inventoryRepo)
-	userSvc := userService.NewUserService(userRepo)
+	inventorySvc := new(mocks.InventoryService)
+	userSvc := new(mocks.UserService)
 	controller := inventory.NewInventoryController(inventorySvc, userSvc)
 
 	inventories := []entities.InventoryEntity{
@@ -35,7 +29,7 @@ func TestListInventories_Success(t *testing.T) {
 	}
 
 	// Expectations
-	inventoryRepo.On("Where", mock.Anything).Return(inventories, (*appErrors.AppError)(nil))
+	inventorySvc.On("ListInventories").Return(inventories, (*appErrors.AppError)(nil))
 
 	// Actions
 	w := httptest.NewRecorder()
@@ -47,19 +41,17 @@ func TestListInventories_Success(t *testing.T) {
 	var response map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NotNil(t, response["data"])
-	inventoryRepo.AssertExpectations(t)
+	inventorySvc.AssertExpectations(t)
 }
 
 func TestListInventories_Error(t *testing.T) {
 	// Set
-	inventoryRepo := new(mocks.InventoryRepository)
-	userRepo := new(mocks.UserRepository)
-	inventorySvc := inventoryService.NewInventoryService(inventoryRepo)
-	userSvc := userService.NewUserService(userRepo)
+	inventorySvc := new(mocks.InventoryService)
+	userSvc := new(mocks.UserService)
 	controller := inventory.NewInventoryController(inventorySvc, userSvc)
 
 	// Expectations
-	inventoryRepo.On("Where", mock.Anything).Return(nil, appErrors.NewAppError("Database error", 500))
+	inventorySvc.On("ListInventories").Return(nil, appErrors.NewAppError("Database error", 500))
 
 	// Actions
 	w := httptest.NewRecorder()
@@ -71,19 +63,17 @@ func TestListInventories_Error(t *testing.T) {
 	var response map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &response)
 	assert.Equal(t, "Database error", response["error"])
-	inventoryRepo.AssertExpectations(t)
+	inventorySvc.AssertExpectations(t)
 }
 
 func TestGetInventoryById_Success(t *testing.T) {
 	// Set
-	inventoryRepo := new(mocks.InventoryRepository)
-	userRepo := new(mocks.UserRepository)
-	inventorySvc := inventoryService.NewInventoryService(inventoryRepo)
-	userSvc := userService.NewUserService(userRepo)
+	inventorySvc := new(mocks.InventoryService)
+	userSvc := new(mocks.UserService)
 	controller := inventory.NewInventoryController(inventorySvc, userSvc)
 
 	// Expectations
-	inventoryRepo.On("FindById", uint(1)).Return(&entities.InventoryEntity{ID: 1, Name: "Inventory 1"}, (*appErrors.AppError)(nil))
+	inventorySvc.On("GetInventoryByID", uint(1)).Return(entities.InventoryEntity{ID: 1, Name: "Inventory 1"}, (*appErrors.AppError)(nil))
 
 	// Actions
 	w := httptest.NewRecorder()
@@ -96,15 +86,13 @@ func TestGetInventoryById_Success(t *testing.T) {
 	var response map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NotNil(t, response["data"])
-	inventoryRepo.AssertExpectations(t)
+	inventorySvc.AssertExpectations(t)
 }
 
 func TestGetInventoryById_InvalidID(t *testing.T) {
 	// Set
-	inventoryRepo := new(mocks.InventoryRepository)
-	userRepo := new(mocks.UserRepository)
-	inventorySvc := inventoryService.NewInventoryService(inventoryRepo)
-	userSvc := userService.NewUserService(userRepo)
+	inventorySvc := new(mocks.InventoryService)
+	userSvc := new(mocks.UserService)
 	controller := inventory.NewInventoryController(inventorySvc, userSvc)
 
 	// Actions
@@ -122,14 +110,12 @@ func TestGetInventoryById_InvalidID(t *testing.T) {
 
 func TestGetInventoryById_NotFound(t *testing.T) {
 	// Set
-	inventoryRepo := new(mocks.InventoryRepository)
-	userRepo := new(mocks.UserRepository)
-	inventorySvc := inventoryService.NewInventoryService(inventoryRepo)
-	userSvc := userService.NewUserService(userRepo)
+	inventorySvc := new(mocks.InventoryService)
+	userSvc := new(mocks.UserService)
 	controller := inventory.NewInventoryController(inventorySvc, userSvc)
 
 	// Expectations
-	inventoryRepo.On("FindById", uint(1)).Return(nil, appErrors.NewAppError("Inventory not found", 404))
+	inventorySvc.On("GetInventoryByID", uint(1)).Return(entities.InventoryEntity{}, appErrors.NewAppError("Inventory not found", 404))
 
 	// Actions
 	w := httptest.NewRecorder()
@@ -142,23 +128,21 @@ func TestGetInventoryById_NotFound(t *testing.T) {
 	var response map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &response)
 	assert.Equal(t, "Inventory not found", response["error"])
-	inventoryRepo.AssertExpectations(t)
+	inventorySvc.AssertExpectations(t)
 }
 
 func TestCreateInventory_Success(t *testing.T) {
 	// Set
-	inventoryRepo := new(mocks.InventoryRepository)
-	userRepo := new(mocks.UserRepository)
-	inventorySvc := inventoryService.NewInventoryService(inventoryRepo)
-	userSvc := userService.NewUserService(userRepo)
+	inventorySvc := new(mocks.InventoryService)
+	userSvc := new(mocks.UserService)
 	controller := inventory.NewInventoryController(inventorySvc, userSvc)
 
 	req := inventoryRequest.InventoryRequest{Name: "New Inventory", Description: "Description"}
 	user := &entities.UserEntity{ID: 1, Name: "User"}
 
 	// Expectations
-	userRepo.On("FindByID", uint(1)).Return(user, nil)
-	inventoryRepo.On("Create", mock.AnythingOfType("*entities.InventoryEntity")).Return((*appErrors.AppError)(nil))
+	userSvc.On("GetUserByID", uint(1)).Return(user, (*appErrors.AppError)(nil))
+	inventorySvc.On("CreateInventory", "New Inventory", "Description", *user).Return(entities.InventoryEntity{ID: 1, Name: "New Inventory", Description: "Description", User: *user}, (*appErrors.AppError)(nil))
 
 	// Actions
 	w := httptest.NewRecorder()
@@ -174,16 +158,14 @@ func TestCreateInventory_Success(t *testing.T) {
 	var response map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NotNil(t, response["data"])
-	inventoryRepo.AssertExpectations(t)
-	userRepo.AssertExpectations(t)
+	inventorySvc.AssertExpectations(t)
+	userSvc.AssertExpectations(t)
 }
 
 func TestCreateInventory_InvalidJSON(t *testing.T) {
 	// Set
-	inventoryRepo := new(mocks.InventoryRepository)
-	userRepo := new(mocks.UserRepository)
-	inventorySvc := inventoryService.NewInventoryService(inventoryRepo)
-	userSvc := userService.NewUserService(userRepo)
+	inventorySvc := new(mocks.InventoryService)
+	userSvc := new(mocks.UserService)
 	controller := inventory.NewInventoryController(inventorySvc, userSvc)
 
 	// Actions
@@ -200,10 +182,8 @@ func TestCreateInventory_InvalidJSON(t *testing.T) {
 
 func TestCreateInventory_UserNotAuthenticated(t *testing.T) {
 	// Set
-	inventoryRepo := new(mocks.InventoryRepository)
-	userRepo := new(mocks.UserRepository)
-	inventorySvc := inventoryService.NewInventoryService(inventoryRepo)
-	userSvc := userService.NewUserService(userRepo)
+	inventorySvc := new(mocks.InventoryService)
+	userSvc := new(mocks.UserService)
 	controller := inventory.NewInventoryController(inventorySvc, userSvc)
 
 	req := inventoryRequest.InventoryRequest{Name: "New Inventory"}
@@ -222,16 +202,14 @@ func TestCreateInventory_UserNotAuthenticated(t *testing.T) {
 
 func TestCreateInventory_UserNotFound(t *testing.T) {
 	// Set
-	inventoryRepo := new(mocks.InventoryRepository)
-	userRepo := new(mocks.UserRepository)
-	inventorySvc := inventoryService.NewInventoryService(inventoryRepo)
-	userSvc := userService.NewUserService(userRepo)
+	inventorySvc := new(mocks.InventoryService)
+	userSvc := new(mocks.UserService)
 	controller := inventory.NewInventoryController(inventorySvc, userSvc)
 
 	req := inventoryRequest.InventoryRequest{Name: "New Inventory"}
 
 	// Expectations
-	userRepo.On("FindByID", uint(1)).Return(nil, errors.New("user not found"))
+	userSvc.On("GetUserByID", uint(1)).Return(nil, appErrors.NewAppError("User not found", 404))
 
 	// Actions
 	w := httptest.NewRecorder()
@@ -244,23 +222,21 @@ func TestCreateInventory_UserNotFound(t *testing.T) {
 
 	// Assertions
 	assert.Equal(t, 404, w.Code)
-	userRepo.AssertExpectations(t)
+	userSvc.AssertExpectations(t)
 }
 
 func TestCreateInventory_ErrorCreating(t *testing.T) {
 	// Set
-	inventoryRepo := new(mocks.InventoryRepository)
-	userRepo := new(mocks.UserRepository)
-	inventorySvc := inventoryService.NewInventoryService(inventoryRepo)
-	userSvc := userService.NewUserService(userRepo)
+	inventorySvc := new(mocks.InventoryService)
+	userSvc := new(mocks.UserService)
 	controller := inventory.NewInventoryController(inventorySvc, userSvc)
 
 	req := inventoryRequest.InventoryRequest{Name: "New Inventory"}
 	user := &entities.UserEntity{ID: 1, Name: "User"}
 
 	// Expectations
-	userRepo.On("FindByID", uint(1)).Return(user, nil)
-	inventoryRepo.On("Create", mock.AnythingOfType("*entities.InventoryEntity")).Return(appErrors.NewAppError("Creation error", 500))
+	userSvc.On("GetUserByID", uint(1)).Return(user, (*appErrors.AppError)(nil))
+	inventorySvc.On("CreateInventory", "New Inventory", "", *user).Return(entities.InventoryEntity{}, appErrors.NewAppError("Creation error", 500))
 
 	// Actions
 	w := httptest.NewRecorder()
@@ -273,6 +249,6 @@ func TestCreateInventory_ErrorCreating(t *testing.T) {
 
 	// Assertions
 	assert.Equal(t, 500, w.Code)
-	inventoryRepo.AssertExpectations(t)
-	userRepo.AssertExpectations(t)
+	inventorySvc.AssertExpectations(t)
+	userSvc.AssertExpectations(t)
 }

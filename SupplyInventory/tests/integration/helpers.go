@@ -4,11 +4,13 @@ import (
 	"context"
 	container "go_inventory/Container"
 	auth "go_inventory/SupplyInventory/Application/Controllers/Auth"
+	inventory "go_inventory/SupplyInventory/Application/Controllers/Inventory"
 	pallet "go_inventory/SupplyInventory/Application/Controllers/Pallet"
 	palletRack "go_inventory/SupplyInventory/Application/Controllers/PalletRack"
 	palletizedProduct "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
 	user "go_inventory/SupplyInventory/Application/Controllers/User"
 	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
+	inventoryService "go_inventory/SupplyInventory/Application/Services/Inventory"
 	jwtService "go_inventory/SupplyInventory/Application/Services/Jwt"
 	palletService "go_inventory/SupplyInventory/Application/Services/Pallet"
 	palletRackService "go_inventory/SupplyInventory/Application/Services/PalletRack"
@@ -16,6 +18,7 @@ import (
 	qrCodeService "go_inventory/SupplyInventory/Application/Services/QrCode"
 	userService "go_inventory/SupplyInventory/Application/Services/User"
 	entities "go_inventory/SupplyInventory/Domain/Entities" //nolint
+	Inventory "go_inventory/SupplyInventory/Domain/contracts/repositories/Inventory"
 	Pallet "go_inventory/SupplyInventory/Domain/contracts/repositories/Pallet"
 	PalletRack "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletRack"
 	PalletizedProduct "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletizedProduct"
@@ -28,6 +31,8 @@ import (
 	palletRackInfra "go_inventory/SupplyInventory/Infrastructure/repositories/PalletRack"
 	palletizedProductInfra "go_inventory/SupplyInventory/Infrastructure/repositories/PalletizedProduct"
 	userInfra "go_inventory/SupplyInventory/Infrastructure/repositories/User"
+
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/mock"
@@ -44,10 +49,12 @@ type TestDependencies struct {
 	PalletRepo               Pallet.PalletRepository
 	PalletizedProductRepo    PalletizedProduct.PalletizedProductRepository
 	PalletRackRepo           PalletRack.PalletRackRepository
+	InventoryRepo            Inventory.InventoryRepository
 	UserService              userService.UserService
 	PalletService            palletService.PalletService
 	PalletizedProductService palletizedProductService.PalletizedProductService
 	PalletRackService        palletRackService.PalletRackService
+	InventoryService         inventoryService.InventoryService
 	QrCodeService            qrCodeService.QRCodeService
 	JwtService               jwtService.JWTService
 }
@@ -72,10 +79,12 @@ func NewIntegrationTestHelper() *IntegrationTestHelper {
 			palletRepo Pallet.PalletRepository,
 			palletizedProductRepo PalletizedProduct.PalletizedProductRepository,
 			palletRackRepo PalletRack.PalletRackRepository,
+			inventoryRepo Inventory.InventoryRepository,
 			userSrv userService.UserService,
 			palletSrv palletService.PalletService,
 			palletizedProductSrv palletizedProductService.PalletizedProductService,
 			palletRackSrv palletRackService.PalletRackService,
+			inventorySrv inventoryService.InventoryService,
 			jwtSrv jwtService.JWTService,
 			qrSrv qrCodeService.QRCodeService,
 		) {
@@ -84,10 +93,12 @@ func NewIntegrationTestHelper() *IntegrationTestHelper {
 				PalletRepo:               palletRepo,
 				PalletizedProductRepo:    palletizedProductRepo,
 				PalletRackRepo:           palletRackRepo,
+				InventoryRepo:            inventoryRepo,
 				UserService:              userSrv,
 				PalletService:            palletSrv,
 				PalletizedProductService: palletizedProductSrv,
 				PalletRackService:        palletRackSrv,
+				InventoryService:         inventorySrv,
 				JwtService:               jwtSrv,
 				QrCodeService:            qrSrv,
 			}
@@ -124,6 +135,29 @@ func (h *IntegrationTestHelper) SetupRouterForAuth(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
 	api := r.Group("/api/v1/auth")
 	controller.RegisterLogin(api)
+	return r
+}
+
+func (h *IntegrationTestHelper) SetupRouterForInventory(db *gorm.DB) *gin.Engine {
+	inventoryRepo := inventoryInfra.NewInventoryRepository(dbadapter.NewGormAdapter(db))
+	inventorySrv := inventoryService.NewInventoryService(inventoryRepo)
+	userRepo := userInfra.NewUserRepository(dbadapter.NewGormAdapter(db))
+	userSrv := userService.NewUserService(userRepo)
+
+	controller := inventory.NewInventoryController(inventorySrv, userSrv)
+
+	r := gin.Default()
+	// Middleware to simulate user authentication for testing
+	r.Use(func(c *gin.Context) {
+		if userIDStr := c.GetHeader("X-Test-User-ID"); userIDStr != "" {
+			if userID, err := strconv.Atoi(userIDStr); err == nil {
+				c.Set("userID", uint(userID))
+			}
+		}
+		c.Next()
+	})
+	api := r.Group("/api/v1/inventories")
+	controller.Register(api)
 	return r
 }
 
@@ -197,6 +231,7 @@ func SetupTestRouter(db *gorm.DB) *gin.Engine {
 
 	// Initialize controllers
 	authCtrl := auth.NewAuthController(deps.JwtService, deps.UserService)
+	inventoryCtrl := inventory.NewInventoryController(deps.InventoryService, deps.UserService)
 	palletCtrl := pallet.NewPalletController(deps.PalletService)
 	palletizedProductCtrl := palletizedProduct.NewPalletizedProductController(deps.PalletizedProductService)
 	palletRackCtrl := palletRack.NewPalletRackController(deps.PalletRackService)
@@ -209,6 +244,9 @@ func SetupTestRouter(db *gorm.DB) *gin.Engine {
 
 	// Register routes (similar to main.go registerRoutes)
 	apiV1 := router.Group("/api/v1")
+
+	inventoriesGroup := apiV1.Group("/inventories")
+	inventoryCtrl.Register(inventoriesGroup)
 
 	palletsGroup := apiV1.Group("/pallets")
 	palletCtrl.Register(palletsGroup)
@@ -232,6 +270,10 @@ func (h *IntegrationTestHelper) TruncateTables(db *gorm.DB) {
 
 func (h *IntegrationTestHelper) CreateTestUser(db *gorm.DB, name, email, password string) *entities.UserEntity {
 	return testutils.CreateTestUser(db, name, email, password)
+}
+
+func (h *IntegrationTestHelper) CreateTestInventory(db *gorm.DB) *entities.InventoryEntity {
+	return testutils.CreateTestInventory(db)
 }
 
 func (h *IntegrationTestHelper) CreateTestPallet(db *gorm.DB, name string, palletRackID uint) *entities.PalletEntity {
