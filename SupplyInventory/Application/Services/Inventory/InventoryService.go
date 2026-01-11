@@ -11,7 +11,7 @@ type InventoryService interface {
 	ListInventories() ([]entities.InventoryEntity, *errors.AppError)
 	GetInventoryByID(id uint) (entities.InventoryEntity, *errors.AppError)
 	CreateInventory(name string, description string, user entities.UserEntity) (entities.InventoryEntity, *errors.AppError)
-	UpdateInventory(id uint, data interface{}) (entities.InventoryEntity, *errors.AppError)
+	UpdateInventory(id uint, name string, description string, status string) (*entities.InventoryEntity, *errors.AppError)
 }
 
 type inventoryService struct {
@@ -50,9 +50,49 @@ func (service *inventoryService) CreateInventory(name string, description string
 	return inventory, nil
 }
 
-func (service *inventoryService) UpdateInventory(id uint, data interface{}) (entities.InventoryEntity, *errors.AppError) {
-	// TODO: Implement logic to update inventory
-	return entities.InventoryEntity{}, nil
+func (service *inventoryService) UpdateInventory(
+	id uint, name string, description string, status string) (*entities.InventoryEntity, *errors.AppError) {
+
+	inventory, err := service.inventoryRepository.FindById(id)
+
+	if err != nil {
+		return nil, errors.NewAppError("Entity not Found", 404)
+	}
+
+	service.updateInventoryFields(inventory, name, description, status)
+
+	if errUpdate := service.inventoryRepository.Update(inventory); errUpdate != nil {
+		return nil, errUpdate
+	}
+
+	return inventory, nil
+}
+
+func (service *inventoryService) updateInventoryFields(
+	inventory *entities.InventoryEntity,
+	name string,
+	description string,
+	status string) {
+	if name != "" {
+		inventory.Name = name
+	}
+
+	if description != "" {
+		inventory.Description = description
+	}
+
+	if status != "" {
+		inventory.Status = entities.InventoryStatus(status)
+
+		if status == string(entities.InventoryStatusOpen) {
+			inventory.EndedAt = nil
+		}
+
+		if status == string(entities.InventoryStatusClosed) {
+			now := time.Now()
+			inventory.EndedAt = &now
+		}
+	}
 }
 
 func NewInventoryService(

@@ -129,15 +129,21 @@ func TestIntegration_UpdateInventory(t *testing.T) {
 		inv := h.CreateTestInventory(tx)
 		r := h.SetupRouterForInventory(tx)
 
+		updateReq := inventoryRequests.UpdateInventoryRequest{
+			Name: "Updated Inventory Name",
+		}
+		body, _ := json.Marshal(updateReq)
+
 		// Actions
 		w := httptest.NewRecorder()
 		url := fmt.Sprintf("/api/v1/inventories/%d", inv.ID)
-		req, _ := http.NewRequest("PUT", url, nil)
+		req, _ := http.NewRequest("PUT", url, bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
 		r.ServeHTTP(w, req)
 
 		// Assertions
 		assert.Equal(t, http.StatusOK, w.Code)
-		assert.Contains(t, w.Body.String(), "Update inventory")
+		assert.Contains(t, w.Body.String(), "Updated Inventory Name")
 
 		return nil
 	})

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"net/http"
 
 	errors "go_inventory/Helpers/Errors"
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
@@ -115,5 +116,30 @@ func (controller *InventoryController) CreateInventory(c *gin.Context) {
 }
 
 func (controller *InventoryController) UpdateInventory(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "Update inventory"})
+	var req inventoryRequest.UpdateInventoryRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(422, requestsHelper.FormatValidationErrors(err))
+		return
+	}
+
+	inventoryIdParam := c.Param("id")
+	var inventoryId uint
+	_, err := fmt.Sscanf(inventoryIdParam, "%d", &inventoryId)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "Invalid inventory ID"})
+		return
+	}
+
+	if req.Name == "" && req.Description == "" && req.Status == "" {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "At least one field (name, description, status) must be provided"})
+		return
+	}
+
+	inventory, appError := controller.inventoryService.UpdateInventory(inventoryId, req.Name, req.Description, req.Status)
+	if appError != nil {
+		c.JSON(appError.Code, gin.H{"error": appError.Message})
+		return
+	}
+
+	c.JSON(200, gin.H{"data": gin.H{"inventory": inventory}})
 }

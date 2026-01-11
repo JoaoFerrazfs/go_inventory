@@ -252,3 +252,138 @@ func TestCreateInventory_ErrorCreating(t *testing.T) {
 	inventorySvc.AssertExpectations(t)
 	userSvc.AssertExpectations(t)
 }
+
+func TestUpdateInventory_Success(t *testing.T) {
+	// Set
+	inventorySvc := new(mocks.InventoryService)
+	userSvc := new(mocks.UserService)
+	controller := inventory.NewInventoryController(inventorySvc, userSvc)
+
+	req := inventoryRequest.UpdateInventoryRequest{
+		Name:        "Updated Name",
+		Description: "Updated Description",
+		Status:      "Closed",
+	}
+	inventoryId := uint(1)
+	updatedInventory := &entities.InventoryEntity{
+		ID:          inventoryId,
+		Name:        req.Name,
+		Description: req.Description,
+		Status:      entities.InventoryStatus(req.Status),
+	}
+
+	// Expectations
+	inventorySvc.On("UpdateInventory", inventoryId, req.Name, req.Description, req.Status).
+		Return(updatedInventory, (*appErrors.AppError)(nil))
+
+	// Actions
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Params = gin.Params{{Key: "id", Value: "1"}}
+	body, _ := json.Marshal(req)
+	c.Request, _ = http.NewRequest("PUT", "/1", bytes.NewBuffer(body))
+	c.Request.Header.Set("Content-Type", "application/json")
+	controller.UpdateInventory(c)
+
+	// Assertions
+	assert.Equal(t, http.StatusOK, w.Code)
+	var response map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NotNil(t, response["data"])
+	inventorySvc.AssertExpectations(t)
+}
+
+func TestUpdateInventory_InvalidJSON(t *testing.T) {
+	// Set
+	inventorySvc := new(mocks.InventoryService)
+	userSvc := new(mocks.UserService)
+	controller := inventory.NewInventoryController(inventorySvc, userSvc)
+
+	// Actions
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("PUT", "/1", bytes.NewBufferString("invalid json"))
+	c.Request.Header.Set("Content-Type", "application/json")
+	controller.UpdateInventory(c)
+
+	// Assertions
+	assert.Equal(t, http.StatusUnprocessableEntity, w.Code)
+}
+
+func TestUpdateInventory_InvalidID(t *testing.T) {
+	// Set
+	inventorySvc := new(mocks.InventoryService)
+	userSvc := new(mocks.UserService)
+	controller := inventory.NewInventoryController(inventorySvc, userSvc)
+
+	req := inventoryRequest.UpdateInventoryRequest{Name: "Name"}
+
+	// Actions
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Params = gin.Params{{Key: "id", Value: "abc"}}
+	body, _ := json.Marshal(req)
+	c.Request, _ = http.NewRequest("PUT", "/abc", bytes.NewBuffer(body))
+	c.Request.Header.Set("Content-Type", "application/json")
+	controller.UpdateInventory(c)
+
+	// Assertions
+	assert.Equal(t, http.StatusUnprocessableEntity, w.Code)
+	var response map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &response)
+	assert.Equal(t, "Invalid inventory ID", response["error"])
+}
+
+func TestUpdateInventory_NoFieldsProvided(t *testing.T) {
+	// Set
+	inventorySvc := new(mocks.InventoryService)
+	userSvc := new(mocks.UserService)
+	controller := inventory.NewInventoryController(inventorySvc, userSvc)
+
+	req := inventoryRequest.UpdateInventoryRequest{} // All empty
+
+	// Actions
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Params = gin.Params{{Key: "id", Value: "1"}}
+	body, _ := json.Marshal(req)
+	c.Request, _ = http.NewRequest("PUT", "/1", bytes.NewBuffer(body))
+	c.Request.Header.Set("Content-Type", "application/json")
+	controller.UpdateInventory(c)
+
+	// Assertions
+	assert.Equal(t, http.StatusUnprocessableEntity, w.Code)
+	var response map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &response)
+	assert.Equal(t, "At least one field (name, description, status) must be provided", response["error"])
+}
+
+func TestUpdateInventory_ServiceError(t *testing.T) {
+	// Set
+	inventorySvc := new(mocks.InventoryService)
+	userSvc := new(mocks.UserService)
+	controller := inventory.NewInventoryController(inventorySvc, userSvc)
+
+	req := inventoryRequest.UpdateInventoryRequest{Name: "New Name"}
+	inventoryId := uint(1)
+
+	// Expectations
+	inventorySvc.On("UpdateInventory", inventoryId, req.Name, "", "").
+		Return(nil, appErrors.NewAppError("Entity not Found", 404))
+
+	// Actions
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Params = gin.Params{{Key: "id", Value: "1"}}
+	body, _ := json.Marshal(req)
+	c.Request, _ = http.NewRequest("PUT", "/1", bytes.NewBuffer(body))
+	c.Request.Header.Set("Content-Type", "application/json")
+	controller.UpdateInventory(c)
+
+	// Assertions
+	assert.Equal(t, http.StatusNotFound, w.Code)
+	var response map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &response)
+	assert.Equal(t, "Entity not Found", response["error"])
+	inventorySvc.AssertExpectations(t)
+}

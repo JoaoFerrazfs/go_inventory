@@ -1,10 +1,10 @@
 package mocks
 
 import (
-	appErrors "go_inventory/Helpers/Errors"
-	entities "go_inventory/SupplyInventory/Domain/Entities"
+appErrors "go_inventory/Helpers/Errors"
+entities "go_inventory/SupplyInventory/Domain/Entities"
 
-	"github.com/stretchr/testify/mock"
+"github.com/stretchr/testify/mock"
 )
 
 type InventoryService struct {
@@ -30,7 +30,11 @@ func (m *InventoryService) CreateInventory(name string, description string, user
 	return args.Get(0).(entities.InventoryEntity), args.Get(1).(*appErrors.AppError)
 }
 
-func (m *InventoryService) UpdateInventory(id uint, data interface{}) (entities.InventoryEntity, *appErrors.AppError) {
-	args := m.Called(id, data)
-	return args.Get(0).(entities.InventoryEntity), args.Get(1).(*appErrors.AppError)
+func (m *InventoryService) UpdateInventory(id uint, name string, description string, status string) (*entities.InventoryEntity, *appErrors.AppError) {
+	args := m.Called(id, name, description, status)
+	result := args.Get(0)
+	if result == nil {
+		return nil, args.Get(1).(*appErrors.AppError)
+	}
+	return result.(*entities.InventoryEntity), args.Get(1).(*appErrors.AppError)
 }
