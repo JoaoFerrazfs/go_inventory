@@ -176,6 +176,18 @@ definitions:
     required:
     - name
     type: object
+  inventory.UpdateInventoryRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      status:
+        enum:
+        - Open
+        - Closed
+        type: string
+    type: object
   paletrack.PalletRackRequest:
     properties:
       location:
@@ -399,6 +411,43 @@ paths:
               type: string
             type: object
       summary: Get inventory by ID
+      tags:
+      - Inventory
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Inventory ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Inventory Data
+        in: body
+        name: inventory
+        required: true
+        schema:
+          $ref: '#/definitions/inventory.UpdateInventoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apiContracts.InventoryResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update an inventory
       tags:
       - Inventory
   /api/v1/pallet/products/{palletId}:

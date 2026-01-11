@@ -115,6 +115,16 @@ func (controller *InventoryController) CreateInventory(c *gin.Context) {
 	c.JSON(201, gin.H{"data": gin.H{"inventory": inventory}})
 }
 
+// @Summary Update an inventory
+// @Tags Inventory
+// @Accept json
+// @Produce json
+// @Param id path int true "Inventory ID"
+// @Param inventory body inventory.UpdateInventoryRequest true "Inventory Data"
+// @Success 200 {object} apiContracts.InventoryResponse
+// @Failure 422 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /api/v1/inventories/{id} [put]
 func (controller *InventoryController) UpdateInventory(c *gin.Context) {
 	var req inventoryRequest.UpdateInventoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
