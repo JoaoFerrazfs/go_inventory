@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
+	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
 	palletRequests "go_inventory/SupplyInventory/Application/Requests/Pallet"
 	pallet "go_inventory/SupplyInventory/Application/Services/Pallet"
 
@@ -156,7 +157,8 @@ func (controller *PalletController) CreatePallet(c *gin.Context) {
 		return
 	}
 
-	newPallet, appErr := controller.service.CreatePallet(req.Name, req.PalletRackID)
+	inventoryID := middlewares.GetInventoryID(c)
+	newPallet, appErr := controller.service.CreatePallet(req.Name, req.PalletRackID, inventoryID)
 
 	if appErr != nil {
 		c.JSON(appErr.ErrorCode(), gin.H{"message": appErr.Error()})
@@ -187,8 +189,8 @@ func (controller *PalletController) UpdatePallet(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
-
-	pallet, appErr := controller.service.UpdatePallet(id, req.Name, req.PalletRackID)
+	inventoryID := middlewares.GetInventoryID(c)
+	pallet, appErr := controller.service.UpdatePallet(id, req.Name, req.PalletRackID, inventoryID)
 	if pallet == nil {
 		c.JSON(appErr.ErrorCode(), gin.H{"message": appErr.Error()})
 		return

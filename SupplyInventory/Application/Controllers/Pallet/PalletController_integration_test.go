@@ -45,6 +45,39 @@ func TestIntegration_CreatePallet(t *testing.T) {
 	})
 }
 
+func TestIntegration_CreatePallet_DifferentInventory(t *testing.T) {
+	h := integration.NewIntegrationTestHelper()
+	h.TruncateTables(h.DB)
+	h.DB.Transaction(func(tx *gorm.DB) error {
+		// Set
+		rack := h.CreateTestPalletRack(tx, "Rack1", "Location1", 10)
+
+		// Create a second inventory
+		inv2 := h.CreateTestInventory(tx)
+
+		r := h.SetupRouterForPallet(tx)
+
+		createReq := palletRequests.PalletRequest{
+			Name:         "Pallet1",
+			PalletRackID: rack.ID,
+		}
+		body, _ := json.Marshal(createReq)
+
+		// Actions
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("POST", "/api/v1/pallets/", bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Inventory-ID", strconv.Itoa(int(inv2.ID))) // Different inventory
+		r.ServeHTTP(w, req)
+
+		// Assertions
+		assert.Equal(t, 422, w.Code)
+		assert.Contains(t, w.Body.String(), "Pallet Rack does not belong to the same inventory")
+
+		return nil
+	})
+}
+
 func TestIntegration_ExportPalletsCsv(t *testing.T) {
 	h := integration.NewIntegrationTestHelper()
 	h.TruncateTables(h.DB)
@@ -70,6 +103,41 @@ func TestIntegration_ExportPalletsCsv(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.Contains(t, url, "http://localhost:3000/reports/Pallets")
 		assert.Contains(t, url, ".csv")
+
+		return nil
+	})
+}
+
+func TestIntegration_UpdatePallet_DifferentInventory(t *testing.T) {
+	h := integration.NewIntegrationTestHelper()
+	h.TruncateTables(h.DB)
+	h.DB.Transaction(func(tx *gorm.DB) error {
+		// Set
+		rack1 := h.CreateTestPalletRack(tx, "Rack1", "Location1", 10)
+		pallet := h.CreateTestPallet(tx, "Pallet1", rack1.ID)
+
+		// Create a second inventory
+		inv2 := h.CreateTestInventory(tx)
+
+		r := h.SetupRouterForPallet(tx)
+
+		updateReq := palletRequests.PalletRequest{
+			Name:         "Updated Pallet",
+			PalletRackID: rack1.ID,
+		}
+		body, _ := json.Marshal(updateReq)
+
+		// Actions
+		w := httptest.NewRecorder()
+		url := "/api/v1/pallets/" + strconv.Itoa(int(pallet.ID))
+		req, _ := http.NewRequest("PATCH", url, bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Inventory-ID", strconv.Itoa(int(inv2.ID))) // Different inventory
+		r.ServeHTTP(w, req)
+
+		// Assertions
+		assert.Equal(t, 422, w.Code)
+		assert.Contains(t, w.Body.String(), "Pallet Rack does not belong to the same inventory as the pallet")
 
 		return nil
 	})

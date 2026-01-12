@@ -61,7 +61,8 @@ func (controller *PalletRackController) createPalletRack(c *gin.Context) {
 // @Failure 404 {object} map[string]string
 // @Router /api/v1/racks [get]
 func (controller *PalletRackController) listRacks(c *gin.Context) {
-	racks, err := controller.palletRackService.ListRacks()
+	inventoryID := middlewares.GetInventoryID(c)
+	racks, err := controller.palletRackService.ListRacks(inventoryID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{})
 		return

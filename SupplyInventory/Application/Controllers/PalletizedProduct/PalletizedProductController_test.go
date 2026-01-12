@@ -6,6 +6,7 @@ import (
 	errors "go_inventory/Helpers/Errors"
 	palletizedproduct "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
+	testutils "go_inventory/SupplyInventory/tests/testutils"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -41,10 +42,14 @@ func TestAddProductsToPallet_InternalServerError(t *testing.T) {
 	mockService := new(mockPalletizedProductService)
 	controller := palletizedproduct.NewPalletizedProductController(mockService)
 	// Expectations
-	mockService.On("AddProductsToPallet", uint(1), 123, 10).Return(nil, errors.NewAppError("fail", 500))
+	mockService.On("AddProductsToPallet", uint(1), 123, 10, testutils.DefaultInventoryID).Return(nil, errors.NewAppError("fail", 500))
 
 	// Actions
 	r := gin.Default()
+	r.Use(func(c *gin.Context) {
+		c.Set("inventoryID", testutils.DefaultInventoryID)
+		c.Next()
+	})
 	group := r.Group("/")
 	controller.RegisterProductPallet(group)
 	body, _ := json.Marshal(map[string]interface{}{ "EAN": 123, "Quantity": 10 })
@@ -57,7 +62,6 @@ func TestAddProductsToPallet_InternalServerError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
-// Testa erro de palletId inválido no PATCH
 func TestAddProductsToPallet_InvalidPalletId(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mockService := new(mockPalletizedProductService)
@@ -105,8 +109,8 @@ type mockPalletizedProductService struct {
 	mock.Mock
 }
 
-func (m *mockPalletizedProductService) AddProductsToPallet(palletId uint, ean int, quantity int) (*entities.PalletEntity, *errors.AppError) {
-	args := m.Called(palletId, ean, quantity)
+func (m *mockPalletizedProductService) AddProductsToPallet(palletId uint, ean int, quantity int, inventoryID uint) (*entities.PalletEntity, *errors.AppError) {
+	args := m.Called(palletId, ean, quantity, inventoryID)
 	if args.Get(0) == nil {
 		return nil, args.Get(1).(*errors.AppError)
 	}
@@ -125,10 +129,14 @@ func TestAddProductsToPallet_Success(t *testing.T) {
 	pallet := &entities.PalletEntity{ID: 1, Name: "Test Pallet"}
 
 	// Expectations
-	mockService.On("AddProductsToPallet", uint(1), 123, 10).Return(pallet, (*errors.AppError)(nil))
+	mockService.On("AddProductsToPallet", uint(1), 123, 10, testutils.DefaultInventoryID).Return(pallet, (*errors.AppError)(nil))
 
 	// Actions
 	r := gin.Default()
+	r.Use(func(c *gin.Context) {
+		c.Set("inventoryID", testutils.DefaultInventoryID)
+		c.Next()
+	})
 	group := r.Group("/")
 	controller.RegisterProductPallet(group)
 	body, _ := json.Marshal(map[string]interface{}{"EAN": 123, "Quantity": 10})

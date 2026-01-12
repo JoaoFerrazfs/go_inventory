@@ -61,7 +61,7 @@ func TestIntegration_GetInventoryById(t *testing.T) {
 
 		// Actions
 		w := httptest.NewRecorder()
-		url := fmt.Sprintf("/api/v1/inventories/%d", inv.ID)
+		url := fmt.Sprintf("/api/v1/inventories/%d/", inv.ID)
 		req, _ := http.NewRequest("GET", url, nil)
 		r.ServeHTTP(w, req)
 
@@ -136,7 +136,7 @@ func TestIntegration_UpdateInventory(t *testing.T) {
 
 		// Actions
 		w := httptest.NewRecorder()
-		url := fmt.Sprintf("/api/v1/inventories/%d", inv.ID)
+		url := fmt.Sprintf("/api/v1/inventories/%d/", inv.ID)
 		req, _ := http.NewRequest("PUT", url, bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
 		r.ServeHTTP(w, req)

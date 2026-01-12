@@ -70,11 +70,11 @@ func TestAddProductsToPallet_Success(t *testing.T) {
 
 	// Expectations
 	repoProd.On("AddProductsToPallet", mock.Anything).Return(true, nil)
-	expected := &entities.PalletEntity{ID: 1}
+	expected := &entities.PalletEntity{ID: 1, InventoryID: 1}
 	palletRepo.On("GetSupplyById", uint(1)).Return(expected, nil)
 
 	// Actions
-	res, err := svc.AddProductsToPallet(1, 12345, 2)
+	res, err := svc.AddProductsToPallet(1, 12345, 2, 1)
 
 	// Assertions
 	assert.Nil(t, err)
@@ -91,15 +91,39 @@ func TestAddProductsToPallet_AddError(t *testing.T) {
 
 	// Expectations
 	appErr := errors.NewAppError("add error", 400)
+	expected := &entities.PalletEntity{ID: 2, InventoryID: 1}
+	palletRepo.On("GetSupplyById", uint(2)).Return(expected, nil)
 	repoProd.On("AddProductsToPallet", mock.Anything).Return(false, appErr)
 
 	// Actions
-	res, err := svc.AddProductsToPallet(2, 11111, 1)
+	res, err := svc.AddProductsToPallet(2, 11111, 1, 1)
 
 	// Assertions
 	assert.Nil(t, res)
 	assert.NotNil(t, err)
 	repoProd.AssertExpectations(t)
+}
+
+func TestAddProductsToPallet_InvalidInventory(t *testing.T) {
+	// Set
+	palletRepo := &mockPalletRepoPP{}
+	repoProd := &mockPalletizedProductRepo{}
+	svc := palletizedProductService.NewPalletizedProductService(palletRepo, repoProd)
+
+	// Expectations
+	// Pallet belongs to inventory 2, but we try to add products using inventory 1
+	expected := &entities.PalletEntity{ID: 1, InventoryID: 2}
+	palletRepo.On("GetSupplyById", uint(1)).Return(expected, nil)
+
+	// Actions
+	res, err := svc.AddProductsToPallet(1, 12222, 1, 1)
+
+	// Assertions
+	assert.Nil(t, res)
+	assert.NotNil(t, err)
+	assert.Equal(t, 422, err.ErrorCode())
+	assert.Equal(t, "Pallet does not belong to the same inventory", err.Message)
+	palletRepo.AssertExpectations(t)
 }
 
 func TestDeleteProductsFromPallet_Success(t *testing.T) {

@@ -8,6 +8,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const DefaultInventoryID uint = 1
+
 func CreateTestUser(db *gorm.DB, name, email, password string) *entities.UserEntity {
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 

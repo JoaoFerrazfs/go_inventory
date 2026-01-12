@@ -12,9 +12,9 @@ import (
 type PalletService interface {
 	ListPallets(palletRackId *uint, productEan *int) ([]entities.PalletEntity, *errors.AppError)
 	FindPalletById(id uint) (*entities.PalletEntity, *errors.AppError)
-	CreatePallet(PalletName string, PalletRackId uint) (*entities.PalletEntity, *errors.AppError)
+	CreatePallet(PalletName string, PalletRackId uint, InventoryID uint) (*entities.PalletEntity, *errors.AppError)
 	DeletePalletById(id uint) (bool, *errors.AppError)
-	UpdatePallet(id uint, Name string, PalletRackId uint) (*entities.PalletEntity, *errors.AppError)
+	UpdatePallet(id uint, Name string, PalletRackId uint, InventoryID uint) (*entities.PalletEntity, *errors.AppError)
 	GeneratePalletsCsvFile(palletRackId *uint, productEan *int) (string, *errors.AppError)
 }
 
@@ -42,11 +42,15 @@ func (service *palletService) FindPalletById(id uint) (*entities.PalletEntity, *
 	return service.palletRepository.GetSupplyById(id)
 }
 
-func (service *palletService) CreatePallet(PalletName string, PalletRackId uint) (*entities.PalletEntity, *errors.AppError) {
+func (service *palletService) CreatePallet(PalletName string, PalletRackId uint, InventoryID uint) (*entities.PalletEntity, *errors.AppError) {
 
 	palletRack, apperr := service.palletRackRepository.FindPalletById(PalletRackId)
 	if apperr != nil {
 		return nil, apperr
+	}
+
+	if palletRack.InventoryID != InventoryID {
+		return nil, errors.NewAppError("Pallet Rack does not belong to the same inventory", 422)
 	}
 
 	newPallet, appErr := service.palletRepository.AddSupply(PalletName, PalletRackId)
@@ -63,6 +67,7 @@ func (service *palletService) CreatePallet(PalletName string, PalletRackId uint)
 	newPallet.QrCodeUrl = publicURL
 	newPallet.PalletRackName = palletRack.Name
 	newPallet.PalletRackID = palletRack.ID
+	newPallet.InventoryID = InventoryID
 
 	palletWithQrCode, appErr := service.palletRepository.UpdateSupply(newPallet)
 	if appErr != nil {
@@ -76,8 +81,8 @@ func (service *palletService) DeletePalletById(id uint) (bool, *errors.AppError)
 	return service.palletRepository.DeletePalletById(id)
 }
 
-func (service *palletService) UpdatePallet(id uint, Name string, PalletRackId uint) (*entities.PalletEntity, *errors.AppError) {
-	// Load existing pallet to avoid overwriting other fields
+func (service *palletService) UpdatePallet(id uint, Name string, PalletRackId uint, InventoryID uint) (*entities.PalletEntity, *errors.AppError) {
+
 	existing, appErr := service.palletRepository.GetSupplyById(id)
 	if appErr != nil {
 		return nil, appErr
@@ -86,6 +91,10 @@ func (service *palletService) UpdatePallet(id uint, Name string, PalletRackId ui
 	palletRack, apperr := service.palletRackRepository.FindPalletById(PalletRackId)
 	if apperr != nil {
 		return nil, apperr
+	}
+
+	if existing.InventoryID != InventoryID {
+		return nil, errors.NewAppError("Pallet Rack does not belong to the same inventory as the pallet", 422)
 	}
 
 	existing.Name = Name

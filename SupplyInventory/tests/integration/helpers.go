@@ -188,7 +188,7 @@ func (h *IntegrationTestHelper) SetupRouterForPalletizedProduct(db *gorm.DB) *gi
 	palletizedProductSrv := palletizedProductService.NewPalletizedProductService(palletRepo, palletizedProductRepo)
 	controller := palletizedProduct.NewPalletizedProductController(palletizedProductSrv)
 	r := gin.Default()
-	api := r.Group("/api/v1/palletized-products")
+	api := r.Group("/api/v1/pallet/products")
 	invRepo := inventoryInfra.NewInventoryRepository(dbadapter.NewGormAdapter(db))
 	invMiddleware := middlewares.NewInventoryMiddleware(invRepo)
 	api.Use(invMiddleware.Handler())
@@ -201,7 +201,7 @@ func (h *IntegrationTestHelper) SetupRouterForPalletRack(db *gorm.DB) *gin.Engin
 	palletRackSrv := palletRackService.NewPalletRackService(palletRackRepo)
 	controller := palletRack.NewPalletRackController(palletRackSrv)
 	r := gin.Default()
-	api := r.Group("/api/v1/pallet-racks")
+	api := r.Group("/api/v1/racks")
 	invRepo := inventoryInfra.NewInventoryRepository(dbadapter.NewGormAdapter(db))
 	invMiddleware := middlewares.NewInventoryMiddleware(invRepo)
 	api.Use(invMiddleware.Handler())
@@ -251,10 +251,10 @@ func SetupTestRouter(db *gorm.DB) *gin.Engine {
 	palletsGroup := apiV1.Group("/pallets")
 	palletCtrl.Register(palletsGroup)
 
-	palletProductsGroup := apiV1.Group("/palletized-products")
+	palletProductsGroup := apiV1.Group("/pallet/products")
 	palletizedProductCtrl.RegisterProductPallet(palletProductsGroup)
 
-	racksGroup := apiV1.Group("/pallet-racks")
+	racksGroup := apiV1.Group("/racks")
 	palletRackCtrl.RegisterPalletRack(racksGroup)
 
 	authCtrl.RegisterLogin(apiV1.Group("/auth"))

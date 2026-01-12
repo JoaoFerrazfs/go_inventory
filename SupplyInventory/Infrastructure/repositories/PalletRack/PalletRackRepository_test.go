@@ -29,7 +29,7 @@ func TestPalletRack_ListRacks_Unit(t *testing.T) {
 	repo := repositories.NewPalletRackRepository(adapter)
 
 	// Actions
-	racks, err := repo.ListRacks()
+	racks, err := repo.ListRacks(1)
 
 	// Assertions
 	assert.NoError(t, err)

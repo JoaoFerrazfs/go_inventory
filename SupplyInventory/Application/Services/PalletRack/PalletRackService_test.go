@@ -22,8 +22,8 @@ func (m *mockPalletRackRepo) Create(name string, location string, totalCapacity 
 	return args.Get(0).(*entities.PalletRackEntity), args.Error(1)
 }
 
-func (m *mockPalletRackRepo) ListRacks() ([]entities.PalletRackEntity, error) {
-	args := m.Called()
+func (m *mockPalletRackRepo) ListRacks(inventoryID uint) ([]entities.PalletRackEntity, error) {
+	args := m.Called(inventoryID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -55,11 +55,11 @@ func TestCreate_Success(t *testing.T) {
 	svc := palletRackService.NewPalletRackService(repo)
 
 	// Expectations
-	created := &entities.PalletRackEntity{ID: 1, Name: "R1", Location: "L1", TotalCapacity: 10}
-	repo.On("Create", "R1", "L1", 10, uint(0)).Return(created, nil)
+	created := &entities.PalletRackEntity{ID: 1, Name: "R1", Location: "L1", TotalCapacity: 10, InventoryID: 1}
+	repo.On("Create", "R1", "L1", 10, uint(1)).Return(created, nil)
 
 	// Actions
-	res, err := svc.Create("R1", "L1", 10, uint(0))
+	res, err := svc.Create("R1", "L1", 10, uint(1))
 
 	// Assertions
 	assert.Nil(t, err)
@@ -74,12 +74,12 @@ func TestListRacks_TransformsPercentage(t *testing.T) {
 
 	// Expectations
 	racks := []entities.PalletRackEntity{
-		{ID: 1, Name: "R1", Location: "L1", TotalCapacity: 4, Pallets: []entities.PalletEntity{{}, {}}},
+		{ID: 1, Name: "R1", Location: "L1", TotalCapacity: 4, InventoryID: 1, Pallets: []entities.PalletEntity{{}, {}}},
 	}
-	repo.On("ListRacks").Return(racks, nil)
+	repo.On("ListRacks", uint(1)).Return(racks, nil)
 
 	// Actions
-	res, err := svc.ListRacks()
+	res, err := svc.ListRacks(uint(1))
 
 	// Assertions
 	assert.Nil(t, err)

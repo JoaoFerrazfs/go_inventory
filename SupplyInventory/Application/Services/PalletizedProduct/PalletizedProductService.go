@@ -9,7 +9,7 @@ import (
 )
 
 type PalletizedProductService interface {
-	AddProductsToPallet(PalletID uint, Ean int, Quantity int) (*entities.PalletEntity, *errors.AppError)
+	AddProductsToPallet(PalletID uint, Ean int, Quantity int, InventoryID uint) (*entities.PalletEntity, *errors.AppError)
 	DeleteProductsFromPallet(palletId uint, productsEan int) (bool, *errors.AppError)
 }
 
@@ -25,11 +25,21 @@ func NewPalletizedProductService(
 	return &palletizedProductService{palletRepository: palletRepository, palletizedProductRepository: palletizedProductRepository}
 }
 
-func (service *palletizedProductService) AddProductsToPallet(PalletID uint, Ean int, Quantity int) (*entities.PalletEntity, *errors.AppError) {
+func (service *palletizedProductService) AddProductsToPallet(PalletID uint, Ean int, Quantity int, InventoryID uint) (*entities.PalletEntity, *errors.AppError) {
+	pallet, appErr := service.palletRepository.GetSupplyById(PalletID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if pallet.InventoryID != InventoryID {
+		return nil, errors.NewAppError("Pallet does not belong to the same inventory", 422)
+	}
+
 	product := entities.PalletizedProductEntity{
-		PalletID: PalletID,
-		EAN:      Ean,
-		Quantity: Quantity,
+		PalletID:    PalletID,
+		EAN:         Ean,
+		Quantity:    Quantity,
+		InventoryID: InventoryID,
 	}
 
 	_, err := service.palletizedProductRepository.AddProductsToPallet(product)
@@ -37,12 +47,13 @@ func (service *palletizedProductService) AddProductsToPallet(PalletID uint, Ean 
 		return nil, errors.NewAppError(err.Error(), 400)
 	}
 
-	pallet, appErr := service.palletRepository.GetSupplyById(product.PalletID)
+	// Fetch updated pallet
+	updatedPallet, appErr := service.palletRepository.GetSupplyById(PalletID)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	return pallet, nil
+	return updatedPallet, nil
 }
 
 func (service *palletizedProductService) DeleteProductsFromPallet(palletId uint, productsEan int) (bool, *errors.AppError) {

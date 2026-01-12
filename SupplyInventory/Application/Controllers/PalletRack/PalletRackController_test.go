@@ -15,6 +15,7 @@ import (
 	apiContracts "go_inventory/SupplyInventory/Application/ApiContracts"
 	palletRack "go_inventory/SupplyInventory/Application/Controllers/PalletRack"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
+	testutils "go_inventory/SupplyInventory/tests/testutils"
 )
 
 type mockPalletRackService struct {
@@ -25,8 +26,8 @@ func (m *mockPalletRackService) Create(name, location string, totalCapacity int,
 	args := m.Called(name, location, totalCapacity, inventoryID)
 	return args.Get(0).(*entities.PalletRackEntity), nil
 }
-func (m *mockPalletRackService) ListRacks() ([]apiContracts.TransformedRack, error) {
-	args := m.Called()
+func (m *mockPalletRackService) ListRacks(inventoryID uint) ([]apiContracts.TransformedRack, error) {
+	args := m.Called(inventoryID)
 	return args.Get(0).([]apiContracts.TransformedRack), args.Error(1)
 }
 func (m *mockPalletRackService) FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError) {
@@ -49,12 +50,12 @@ func TestCreatePalletRack_Success(t *testing.T) {
 	rack := &entities.PalletRackEntity{ID: 1, Name: "Rack1"}
 
 	// Expectations
-	mockService.On("Create", "Rack1", "A1", 100, uint(123)).Return(rack, nil)
+	mockService.On("Create", "Rack1", "A1", 100, testutils.DefaultInventoryID).Return(rack, nil)
 
 	// Actions
 	r := gin.Default()
 	r.Use(func(c *gin.Context) {
-		c.Set("inventoryID", uint(123))
+		c.Set("inventoryID", testutils.DefaultInventoryID)
 		c.Next()
 	})
 	group := r.Group("/")
@@ -89,8 +90,12 @@ func TestListRacks_Success(t *testing.T) {
 	mockService := new(mockPalletRackService)
 	controller := palletRack.NewPalletRackController(mockService)
 	racks := []apiContracts.TransformedRack{{ID: 1, Name: "Rack1"}}
-	mockService.On("ListRacks").Return(racks, nil)
+	mockService.On("ListRacks", testutils.DefaultInventoryID).Return(racks, nil)
 	r := gin.Default()
+	r.Use(func(c *gin.Context) {
+		c.Set("inventoryID", testutils.DefaultInventoryID)
+		c.Next()
+	})
 	group := r.Group("/")
 	controller.RegisterPalletRack(group)
 	req, _ := http.NewRequest("GET", "/", nil)
@@ -103,8 +108,12 @@ func TestListRacks_Error(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mockService := new(mockPalletRackService)
 	controller := palletRack.NewPalletRackController(mockService)
-	mockService.On("ListRacks").Return([]apiContracts.TransformedRack{}, assert.AnError)
+	mockService.On("ListRacks", testutils.DefaultInventoryID).Return([]apiContracts.TransformedRack{}, assert.AnError)
 	r := gin.Default()
+	r.Use(func(c *gin.Context) {
+		c.Set("inventoryID", testutils.DefaultInventoryID)
+		c.Next()
+	})
 	group := r.Group("/")
 	controller.RegisterPalletRack(group)
 	req, _ := http.NewRequest("GET", "/", nil)

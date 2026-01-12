@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
+	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
 	palletizedProductRequests "go_inventory/SupplyInventory/Application/Requests/PalletizedProduct"
 	palletizedproduct "go_inventory/SupplyInventory/Application/Services/PalletizedProduct"
 
@@ -46,9 +47,11 @@ func (controller *PalletizedProductController) addProductsToPallet(c *gin.Contex
 		return
 	}
 
-	updatedPallet, appErr := controller.palletizedProductService.AddProductsToPallet(palletId, req.EAN, req.Quantity)
+	inventoryID := middlewares.GetInventoryID(c)
+	updatedPallet, appErr := controller.palletizedProductService.AddProductsToPallet(palletId, req.EAN, req.Quantity, inventoryID)
+
 	if appErr != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": appErr.Error()})
+		c.JSON(appErr.ErrorCode(), gin.H{"error": appErr.Error()})
 		return
 	}
 

@@ -44,13 +44,17 @@ func TestPalletRack_ListRacks_Integration(t *testing.T) {
 	repo := palletRackInfra.NewPalletRackRepository(dbadapter.NewGormAdapter(helper.DB))
 
 	// Ensure racks are created successfully
+	inv := testutils.CreateTestInventory(helper.DB)
 	rack1 := helper.CreateTestPalletRack(helper.DB, "R1", "L", 5)
-	assert.NotNil(t, rack1, "Failed to create rack R1")
+	rack1.InventoryID = inv.ID
+	helper.DB.Save(rack1)
+
 	rack2 := helper.CreateTestPalletRack(helper.DB, "R2", "L2", 6)
-	assert.NotNil(t, rack2, "Failed to create rack R2")
+	rack2.InventoryID = inv.ID
+	helper.DB.Save(rack2)
 
 	// Actions
-	racks, err := repo.ListRacks()
+	racks, err := repo.ListRacks(inv.ID)
 
 	// Assertions
 	assert.Nil(t, err)

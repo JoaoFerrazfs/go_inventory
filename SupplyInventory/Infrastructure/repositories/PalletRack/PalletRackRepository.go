@@ -28,10 +28,10 @@ func (repository *palletRackRepository) Create(name string, location string, tot
 	return palletRack, nil
 }
 
-func (repository *palletRackRepository) ListRacks() ([]entities.PalletRackEntity, error) {
+func (repository *palletRackRepository) ListRacks(inventoryID uint) ([]entities.PalletRackEntity, error) {
 	var racks []entities.PalletRackEntity
 
-	if err := repository.db.PreloadFind(&racks, "Pallets"); err != nil {
+	if err := repository.db.WherePreloadFind(&racks, "Pallets", "inventory_id = ?", inventoryID); err != nil {
 		return nil, err
 	}
 

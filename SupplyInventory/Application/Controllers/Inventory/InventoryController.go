@@ -27,9 +27,9 @@ func NewInventoryController(inventoryService inventoryService.InventoryService, 
 
 func (controller *InventoryController) Register(group *gin.RouterGroup) {
 	group.GET("/", controller.ListInventories)
-	group.GET("/:id", controller.GetInventoryById)
+	group.GET("/:id/", controller.GetInventoryById)
 	group.POST("/", controller.CreateInventory)
-	group.PUT("/:id", controller.UpdateInventory)
+	group.PUT("/:id/", controller.UpdateInventory)
 }
 
 // @Summary List all inventories
