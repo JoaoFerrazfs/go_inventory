@@ -34,7 +34,7 @@ func TestAdminPalletRackController_Integration(t *testing.T) {
 			r := h.SetupRouterForAdminPalletRack(tx)
 
 			// Actions
-			req, _ := http.NewRequest("GET", "/api/v1/admin/racks/", nil)
+			req, _ := http.NewRequest("GET", "/api/v1/admin/racks", nil)
 			w := httptest.NewRecorder()
 			r.ServeHTTP(w, req)
 
@@ -53,7 +53,7 @@ func TestAdminPalletRackController_Integration(t *testing.T) {
 			r := h.SetupRouterForAdminPalletRack(tx)
 
 			// Actions
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/api/v1/admin/racks/?inventory_id=%d&page=1&limit=10", rack.InventoryID), nil)
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/api/v1/admin/racks?inventory_id=%d&page=1&limit=10", rack.InventoryID), nil)
 			w := httptest.NewRecorder()
 			r.ServeHTTP(w, req)
 

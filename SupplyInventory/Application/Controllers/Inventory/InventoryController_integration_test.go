@@ -31,7 +31,7 @@ func TestIntegration_ListInventories(t *testing.T) {
 
 		// Actions
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("GET", "/api/v1/inventories/", nil)
+		req, _ := http.NewRequest("GET", "/api/v1/inventories", nil)
 		r.ServeHTTP(w, req)
 
 		// Assertions
@@ -61,7 +61,7 @@ func TestIntegration_GetInventoryById(t *testing.T) {
 
 		// Actions
 		w := httptest.NewRecorder()
-		url := fmt.Sprintf("/api/v1/inventories/%d/", inv.ID)
+		url := fmt.Sprintf("/api/v1/inventories/%d", inv.ID)
 		req, _ := http.NewRequest("GET", url, nil)
 		r.ServeHTTP(w, req)
 
@@ -99,7 +99,7 @@ func TestIntegration_CreateInventory(t *testing.T) {
 
 		// Actions
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/api/v1/inventories/", bytes.NewBuffer(body))
+		req, _ := http.NewRequest("POST", "/api/v1/inventories", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("X-Test-User-ID", strconv.Itoa(int(user.ID)))
 		r.ServeHTTP(w, req)
@@ -136,7 +136,7 @@ func TestIntegration_UpdateInventory(t *testing.T) {
 
 		// Actions
 		w := httptest.NewRecorder()
-		url := fmt.Sprintf("/api/v1/inventories/%d/", inv.ID)
+		url := fmt.Sprintf("/api/v1/inventories/%d", inv.ID)
 		req, _ := http.NewRequest("PUT", url, bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
 		r.ServeHTTP(w, req)

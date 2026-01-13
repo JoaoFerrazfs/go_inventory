@@ -21,11 +21,11 @@ func NewPalletController(service pallet.PalletService) *PalletController {
 }
 
 func (controller *PalletController) Register(group *gin.RouterGroup) {
-	group.GET("/", controller.ListPallets)
+	group.GET("", controller.ListPallets)
 	group.GET("/export", controller.ExportPalletsCsv)
 	group.GET("/:id", controller.FindPalletById)
 	group.PATCH("/:id", controller.UpdatePallet)
-	group.POST("/", controller.CreatePallet)
+	group.POST("", controller.CreatePallet)
 	group.DELETE("/:id", controller.DeletePalletById)
 }
 

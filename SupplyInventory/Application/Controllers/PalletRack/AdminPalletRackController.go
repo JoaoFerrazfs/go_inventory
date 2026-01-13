@@ -18,7 +18,7 @@ func NewAdminPalletRackController(palletRackService palletrack.PalletRackService
 }
 
 func (controller *AdminPalletRackController) RegisterAdminPalletRack(group *gin.RouterGroup) {
-	group.GET("/", controller.ListRacks)
+	group.GET("", controller.ListRacks)
 }
 
 func (controller *AdminPalletRackController) parseInventoryID(c *gin.Context) (*uint, error) {

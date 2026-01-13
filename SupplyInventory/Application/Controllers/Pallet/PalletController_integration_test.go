@@ -34,7 +34,7 @@ func TestIntegration_CreatePallet(t *testing.T) {
 
 		// Actions
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/api/v1/pallets/", bytes.NewBuffer(body))
+		req, _ := http.NewRequest("POST", "/api/v1/pallets, bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("X-Inventory-ID", strconv.Itoa(int(rack.InventoryID)))
 		r.ServeHTTP(w, req)
