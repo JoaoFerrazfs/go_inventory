@@ -64,11 +64,15 @@ func TestIntegration_ListPalletRacks_Filtering(t *testing.T) {
 		r.ServeHTTP(w, req)
 
 		// Assertions
-		assert.Equal(t, http.StatusCreated, w.Code) // Controller currently returns 201 for list? strange.
+		assert.Equal(t, http.StatusOK, w.Code) 
 
-		var response []interface{}
+		var response struct {
+			Data  []interface{} `json:"data"`
+			Total int64         `json:"total"`
+		}
 		json.Unmarshal(w.Body.Bytes(), &response)
-		assert.Equal(t, 1, len(response))
+		assert.Equal(t, 1, len(response.Data))
+		assert.Equal(t, int64(1), response.Total)
 
 		return nil
 	})

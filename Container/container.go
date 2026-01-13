@@ -94,6 +94,7 @@ func BuildOptions(db *gorm.DB) fx.Option {
 		fx.Provide(palletController.NewPalletController),
 		fx.Provide(palletizedProductController.NewPalletizedProductController),
 		fx.Provide(palletRackController.NewPalletRackController),
+		fx.Provide(palletRackController.NewAdminPalletRackController),
 		fx.Provide(authController.NewAuthController),
 		fx.Provide(userController.NewUserController),
 		fx.Provide(inventoryController.NewInventoryController),

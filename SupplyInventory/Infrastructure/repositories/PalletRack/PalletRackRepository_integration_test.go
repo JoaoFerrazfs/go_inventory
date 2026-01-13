@@ -54,11 +54,13 @@ func TestPalletRack_ListRacks_Integration(t *testing.T) {
 	helper.DB.Save(rack2)
 
 	// Actions
-	racks, err := repo.ListRacks(inv.ID)
+	inventoryID := inv.ID
+	racks, total, err := repo.ListRacks(&inventoryID, 1, 10)
 
 	// Assertions
 	assert.Nil(t, err)
 	assert.GreaterOrEqual(t, len(racks), 2, "Expected at least 2 racks, got %d", len(racks))
+	assert.GreaterOrEqual(t, total, int64(2))
 }
 
 func TestPalletRack_FindPalletById_Integration(t *testing.T) {

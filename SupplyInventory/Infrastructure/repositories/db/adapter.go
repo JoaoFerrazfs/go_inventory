@@ -18,6 +18,7 @@ type DBAdapter interface {
     WherePreloadFind(out interface{}, preload string, where string, args ...interface{}) error
     GetDB() *gorm.DB
     AppendAssociation(pallet *entities.PalletEntity, product *entities.PalletizedProductEntity) error
+    CountAndPaginatedFind(model interface{}, out interface{}, total *int64, page int, limit int, preloads []string, where string, args ...interface{}) error
 }
 
 // gormAdapter implements DBAdapter using *gorm.DB
@@ -72,4 +73,23 @@ func (g *gormAdapter) GetDB() *gorm.DB {
 
 func (g *gormAdapter) AppendAssociation(pallet *entities.PalletEntity, product *entities.PalletizedProductEntity) error {
     return g.db.Model(pallet).Association("PalletizedProduct").Append(product)
+}
+
+func (g *gormAdapter) CountAndPaginatedFind(model interface{}, out interface{}, total *int64, page int, limit int, preloads []string, where string, args ...interface{}) error {
+	query := g.db.Model(model)
+
+	for _, preload := range preloads {
+		query = query.Preload(preload)
+	}
+
+	if where != "" {
+		query = query.Where(where, args...)
+	}
+
+	if err := query.Count(total).Error; err != nil {
+		return err
+	}
+
+	offset := (page - 1) * limit
+	return query.Limit(limit).Offset(offset).Find(out).Error
 }

@@ -18,6 +18,7 @@ type FakeDBAdapter struct {
 	WherePreloadFindFn  func(out interface{}, preload string, where string, args ...interface{}) error
 	GetDBFn             func() *gorm.DB
 	AppendAssociationFn func(pallet *entities.PalletEntity, product *entities.PalletizedProductEntity) error
+	CountAndPaginatedFindFn func(model interface{}, out interface{}, total *int64, page int, limit int, preloads []string, where string, args ...interface{}) error
 }
 
 func (f *FakeDBAdapter) Create(value interface{}) error {
@@ -87,6 +88,13 @@ func (f *FakeDBAdapter) GetDB() *gorm.DB {
 func (f *FakeDBAdapter) AppendAssociation(pallet *entities.PalletEntity, product *entities.PalletizedProductEntity) error {
 	if f.AppendAssociationFn != nil {
 		return f.AppendAssociationFn(pallet, product)
+	}
+	return nil
+}
+
+func (f *FakeDBAdapter) CountAndPaginatedFind(model interface{}, out interface{}, total *int64, page int, limit int, preloads []string, where string, args ...interface{}) error {
+	if f.CountAndPaginatedFindFn != nil {
+		return f.CountAndPaginatedFindFn(model, out, total, page, limit, preloads, where, args...)
 	}
 	return nil
 }

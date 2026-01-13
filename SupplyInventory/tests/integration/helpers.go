@@ -196,12 +196,29 @@ func (h *IntegrationTestHelper) SetupRouterForPalletizedProduct(db *gorm.DB) *gi
 	return r
 }
 
+func (h *IntegrationTestHelper) SetupRouterForAdminPalletRack(db *gorm.DB) *gin.Engine {
+	palletRackRepo := palletRackInfra.NewPalletRackRepository(dbadapter.NewGormAdapter(db))
+	palletRackSrv := palletRackService.NewPalletRackService(palletRackRepo)
+	controller := palletRack.NewAdminPalletRackController(palletRackSrv)
+	r := gin.Default()
+	// Add auth middleware simulation
+	r.Use(func(c *gin.Context) {
+		// Simulate authenticated user
+		c.Set("userID", uint(1))
+		c.Next()
+	})
+	api := r.Group("/api/v1/admin/racks")
+	controller.RegisterAdminPalletRack(api)
+	return r
+}
+
 func (h *IntegrationTestHelper) SetupRouterForPalletRack(db *gorm.DB) *gin.Engine {
 	palletRackRepo := palletRackInfra.NewPalletRackRepository(dbadapter.NewGormAdapter(db))
 	palletRackSrv := palletRackService.NewPalletRackService(palletRackRepo)
 	controller := palletRack.NewPalletRackController(palletRackSrv)
 	r := gin.Default()
 	api := r.Group("/api/v1/racks")
+	// inventory middleware
 	invRepo := inventoryInfra.NewInventoryRepository(dbadapter.NewGormAdapter(db))
 	invMiddleware := middlewares.NewInventoryMiddleware(invRepo)
 	api.Use(invMiddleware.Handler())

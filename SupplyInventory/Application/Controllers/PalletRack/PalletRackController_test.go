@@ -26,9 +26,12 @@ func (m *mockPalletRackService) Create(name, location string, totalCapacity int,
 	args := m.Called(name, location, totalCapacity, inventoryID)
 	return args.Get(0).(*entities.PalletRackEntity), nil
 }
-func (m *mockPalletRackService) ListRacks(inventoryID uint) ([]apiContracts.TransformedRack, error) {
-	args := m.Called(inventoryID)
-	return args.Get(0).([]apiContracts.TransformedRack), args.Error(1)
+func (m *mockPalletRackService) ListRacks(inventoryID *uint, page int, limit int) (*apiContracts.PaginatedRacksResponse, error) {
+	args := m.Called(inventoryID, page, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*apiContracts.PaginatedRacksResponse), args.Error(1)
 }
 func (m *mockPalletRackService) FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError) {
 	args := m.Called(id)
@@ -89,8 +92,14 @@ func TestListRacks_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mockService := new(mockPalletRackService)
 	controller := palletRack.NewPalletRackController(mockService)
-	racks := []apiContracts.TransformedRack{{ID: 1, Name: "Rack1"}}
-	mockService.On("ListRacks", testutils.DefaultInventoryID).Return(racks, nil)
+	inventoryID := testutils.DefaultInventoryID
+	response := &apiContracts.PaginatedRacksResponse{
+		Data:  []apiContracts.TransformedRack{{ID: 1, Name: "Rack1"}},
+		Total: 1,
+		Page:  1,
+		Limit: 10,
+	}
+	mockService.On("ListRacks", &inventoryID, 1, 10).Return(response, nil)
 	r := gin.Default()
 	r.Use(func(c *gin.Context) {
 		c.Set("inventoryID", testutils.DefaultInventoryID)
@@ -101,14 +110,15 @@ func TestListRacks_Success(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusCreated, w.Code)
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestListRacks_Error(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mockService := new(mockPalletRackService)
 	controller := palletRack.NewPalletRackController(mockService)
-	mockService.On("ListRacks", testutils.DefaultInventoryID).Return([]apiContracts.TransformedRack{}, assert.AnError)
+	inventoryID := testutils.DefaultInventoryID
+	mockService.On("ListRacks", &inventoryID, 1, 10).Return((*apiContracts.PaginatedRacksResponse)(nil), assert.AnError)
 	r := gin.Default()
 	r.Use(func(c *gin.Context) {
 		c.Set("inventoryID", testutils.DefaultInventoryID)

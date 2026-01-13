@@ -25,16 +25,21 @@ func TestPalletRack_Create_Unit(t *testing.T) {
 
 func TestPalletRack_ListRacks_Unit(t *testing.T) {
 	// Set
-	adapter := &testutils.FakeDBAdapter{}
+	adapter := &testutils.FakeDBAdapter{
+		CountAndPaginatedFindFn: func(model interface{}, out interface{}, total *int64, page int, limit int, preloads []string, where string, args ...interface{}) error {
+			*total = 0
+			return nil
+		},
+	}
 	repo := repositories.NewPalletRackRepository(adapter)
 
 	// Actions
-	racks, err := repo.ListRacks(1)
+	racks, total, err := repo.ListRacks(nil, 1, 10)
 
 	// Assertions
 	assert.NoError(t, err)
-	// fakeAdapter does not populate data; expect empty slice
 	assert.Equal(t, 0, len(racks))
+	assert.Equal(t, int64(0), total)
 }
 
 func TestPalletRack_FindPalletById_Unit(t *testing.T) {

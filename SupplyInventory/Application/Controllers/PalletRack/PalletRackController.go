@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	requestsHelper "go_inventory/Helpers/RequestsHelper"
 	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
@@ -24,6 +25,34 @@ func (controller *PalletRackController) RegisterPalletRack(group *gin.RouterGrou
 	group.GET("/", controller.listRacks)
 	group.GET("/:id", controller.FindRackById)
 	group.DELETE("/:id", controller.DeleteRack)
+}
+
+func (controller *PalletRackController) parsePage(c *gin.Context) int {
+	pageStr := c.Query("page")
+	if pageStr == "" {
+		return 1
+	}
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page <= 0 {
+		return 1
+	}
+
+	return page
+}
+
+func (controller *PalletRackController) parseLimit(c *gin.Context) int {
+	limitStr := c.Query("limit")
+	if limitStr == "" {
+		return 10
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 || limit > 100 {
+		return 10
+	}
+
+	return limit
 }
 
 // @Summary Create Pallet Racks
@@ -56,19 +85,23 @@ func (controller *PalletRackController) createPalletRack(c *gin.Context) {
 // @Tags Pallet Racks
 // @Accept json
 // @Produce json
-// @Param PalletRack body paletrack.PalletRackRequest true "Palletized Product"
-// @Success 200 {array} entities.PalletRackEntity
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Items per page" default(10)
+// @Success 200 {object} apiContracts.PaginatedRacksResponse
 // @Failure 404 {object} map[string]string
 // @Router /api/v1/racks [get]
 func (controller *PalletRackController) listRacks(c *gin.Context) {
 	inventoryID := middlewares.GetInventoryID(c)
-	racks, err := controller.palletRackService.ListRacks(inventoryID)
+	page := controller.parsePage(c)
+	limit := controller.parseLimit(c)
+
+	racks, err := controller.palletRackService.ListRacks(&inventoryID, page, limit)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{})
 		return
 	}
 
-	c.JSON(http.StatusCreated, racks)
+	c.JSON(http.StatusOK, racks)
 }
 
 // @Summary Get Rack

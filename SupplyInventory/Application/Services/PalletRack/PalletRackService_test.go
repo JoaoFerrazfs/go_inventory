@@ -22,12 +22,12 @@ func (m *mockPalletRackRepo) Create(name string, location string, totalCapacity 
 	return args.Get(0).(*entities.PalletRackEntity), args.Error(1)
 }
 
-func (m *mockPalletRackRepo) ListRacks(inventoryID uint) ([]entities.PalletRackEntity, error) {
-	args := m.Called(inventoryID)
+func (m *mockPalletRackRepo) ListRacks(inventoryID *uint, page int, limit int) ([]entities.PalletRackEntity, int64, error) {
+	args := m.Called(inventoryID, page, limit)
 	if args.Get(0) == nil {
-		return nil, args.Error(1)
+		return nil, 0, args.Error(2)
 	}
-	return args.Get(0).([]entities.PalletRackEntity), args.Error(1)
+	return args.Get(0).([]entities.PalletRackEntity), args.Get(1).(int64), args.Error(2)
 }
 
 func (m *mockPalletRackRepo) FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError) {
@@ -76,17 +76,44 @@ func TestListRacks_TransformsPercentage(t *testing.T) {
 	racks := []entities.PalletRackEntity{
 		{ID: 1, Name: "R1", Location: "L1", TotalCapacity: 4, InventoryID: 1, Pallets: []entities.PalletEntity{{}, {}}},
 	}
-	repo.On("ListRacks", uint(1)).Return(racks, nil)
+	inventoryID := uint(1)
+	repo.On("ListRacks", &inventoryID, 1, 10).Return(racks, int64(len(racks)), nil)
 
 	// Actions
-	res, err := svc.ListRacks(uint(1))
+	res, err := svc.ListRacks(&inventoryID, 1, 10)
 
 	// Assertions
 	assert.Nil(t, err)
-	if len(res) > 0 {
+	assert.Equal(t, int64(1), res.Total)
+	assert.Equal(t, 1, res.Page)
+	assert.Equal(t, 10, res.Limit)
+	if len(res.Data) > 0 {
 		expected := apiContracts.TransformedRack{ID: 1, Name: "R1", Location: "L1", TotalCapacity: 4, PercetageUsed: 50.0, Pallets: racks[0].Pallets}
-		assert.Equal(t, expected, res[0])
+		assert.Equal(t, expected, res.Data[0])
 	}
+	repo.AssertExpectations(t)
+}
+
+func TestListRacks_Admin_NoInventoryID(t *testing.T) {
+	// Set
+	repo := &mockPalletRackRepo{}
+	svc := palletRackService.NewPalletRackService(repo)
+
+	// Expectations
+	racks := []entities.PalletRackEntity{
+		{ID: 1, Name: "R1", Location: "L1", TotalCapacity: 4, InventoryID: 1, Pallets: []entities.PalletEntity{{}, {}}},
+		{ID: 2, Name: "R2", Location: "L2", TotalCapacity: 10, InventoryID: 2, Pallets: []entities.PalletEntity{}},
+	}
+	repo.On("ListRacks", (*uint)(nil), 1, 20).Return(racks, int64(len(racks)), nil)
+
+	// Actions
+	res, err := svc.ListRacks(nil, 1, 20)
+
+	// Assertions
+	assert.Nil(t, err)
+	assert.Equal(t, int64(2), res.Total)
+	assert.Equal(t, 2, len(res.Data))
+	assert.Equal(t, 20, res.Limit)
 	repo.AssertExpectations(t)
 }
 

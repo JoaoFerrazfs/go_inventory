@@ -28,14 +28,23 @@ func (repository *palletRackRepository) Create(name string, location string, tot
 	return palletRack, nil
 }
 
-func (repository *palletRackRepository) ListRacks(inventoryID uint) ([]entities.PalletRackEntity, error) {
+func (repository *palletRackRepository) ListRacks(inventoryID *uint, page int, limit int) ([]entities.PalletRackEntity, int64, error) {
 	var racks []entities.PalletRackEntity
+	var total int64
 
-	if err := repository.db.WherePreloadFind(&racks, "Pallets", "inventory_id = ?", inventoryID); err != nil {
-		return nil, err
+	where := ""
+	var args []interface{}
+	if inventoryID != nil {
+		where = "inventory_id = ?"
+		args = append(args, *inventoryID)
 	}
 
-	return racks, nil
+	err := repository.db.CountAndPaginatedFind(&entities.PalletRackEntity{}, &racks, &total, page, limit, []string{"Pallets"}, where, args...)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return racks, total, nil
 }
 
 func (repository *palletRackRepository) FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError) {

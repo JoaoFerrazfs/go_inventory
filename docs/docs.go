@@ -18,6 +18,59 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/admin/racks": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Pallet Racks"
+                ],
+                "summary": "Admin List Pallet Racks",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Inventory ID to filter",
+                        "name": "inventory_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apiContracts.PaginatedRacksResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/login": {
             "post": {
                 "consumes": [
@@ -718,23 +771,25 @@ const docTemplate = `{
                 "summary": "List Pallet Racks",
                 "parameters": [
                     {
-                        "description": "Palletized Product",
-                        "name": "PalletRack",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/paletrack.PalletRackRequest"
-                        }
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entities.PalletRackEntity"
-                            }
+                            "$ref": "#/definitions/apiContracts.PaginatedRacksResponse"
                         }
                     },
                     "404": {
@@ -994,6 +1049,53 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/apiContracts.InventoryData"
+                }
+            }
+        },
+        "apiContracts.PaginatedRacksResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/apiContracts.TransformedRack"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apiContracts.TransformedRack": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "pallets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.PalletEntity"
+                    }
+                },
+                "percetageUsed": {
+                    "type": "number",
+                    "format": "float64"
+                },
+                "totalCapacity": {
+                    "type": "integer"
                 }
             }
         },

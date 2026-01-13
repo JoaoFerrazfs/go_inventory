@@ -9,7 +9,7 @@ import (
 
 type PalletRackService interface {
 	Create(name string, location string, totalCapacity int, inventoryID uint) (*entities.PalletRackEntity, error)
-	ListRacks(inventoryID uint) ([]apiContracts.TransformedRack, error)
+	ListRacks(inventoryID *uint, page int, limit int) (*apiContracts.PaginatedRacksResponse, error)
 	FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError)
 	DeleteRack(id uint) (bool, *errors.AppError)
 }
@@ -31,29 +31,34 @@ func (service *palletRackService) Create(name string, location string, totalCapa
 	return newPalletRack, nil
 }
 
-func (service *palletRackService) ListRacks(inventoryID uint) ([]apiContracts.TransformedRack, error) {
-	racks, err := service.repository.ListRacks(inventoryID)
+func (service *palletRackService) ListRacks(inventoryID *uint, page int, limit int) (*apiContracts.PaginatedRacksResponse, error) {
+	racks, total, err := service.repository.ListRacks(inventoryID, page, limit)
 	if err != nil {
 		return nil, err
 	}
 
-	newIndices := []apiContracts.TransformedRack{}
+	transformedRacks := []apiContracts.TransformedRack{}
 
-	for _, valor := range racks {
-
+	for _, rack := range racks {
 		transformedRack := apiContracts.TransformedRack{
-			ID:            valor.ID,
-			Name:          valor.Name,
-			Pallets:       valor.Pallets,
-			Location:      valor.Location,
-			TotalCapacity: valor.TotalCapacity,
-			PercetageUsed: (float64(len(valor.Pallets)) / float64(valor.TotalCapacity)) * 100,
+			ID:            rack.ID,
+			Name:          rack.Name,
+			Pallets:       rack.Pallets,
+			Location:      rack.Location,
+			TotalCapacity: rack.TotalCapacity,
+			PercetageUsed: (float64(len(rack.Pallets)) / float64(rack.TotalCapacity)) * 100,
 		}
-
-		newIndices = append(newIndices, transformedRack)
+		transformedRacks = append(transformedRacks, transformedRack)
 	}
 
-	return newIndices, nil
+	response := &apiContracts.PaginatedRacksResponse{
+		Data:  transformedRacks,
+		Total: total,
+		Page:  page,
+		Limit: limit,
+	}
+
+	return response, nil
 }
 
 func (service *palletRackService) FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError) {

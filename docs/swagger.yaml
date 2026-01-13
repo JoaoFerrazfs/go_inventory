@@ -33,6 +33,37 @@ definitions:
       data:
         $ref: '#/definitions/apiContracts.InventoryData'
     type: object
+  apiContracts.PaginatedRacksResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/apiContracts.TransformedRack'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  apiContracts.TransformedRack:
+    properties:
+      id:
+        type: integer
+      location:
+        type: string
+      name:
+        type: string
+      pallets:
+        items:
+          $ref: '#/definitions/entities.PalletEntity'
+        type: array
+      percetageUsed:
+        format: float64
+        type: number
+      totalCapacity:
+        type: integer
+    type: object
   apiContracts.UserData:
     properties:
       created_at:
@@ -245,6 +276,41 @@ info:
   title: Go Inventory API
   version: "1.0"
 paths:
+  /api/v1/admin/racks:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Inventory ID to filter
+        in: query
+        name: inventory_id
+        type: integer
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apiContracts.PaginatedRacksResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Admin List Pallet Racks
+      tags:
+      - Admin Pallet Racks
   /api/v1/auth/login:
     post:
       consumes:
@@ -698,21 +764,23 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Palletized Product
-        in: body
-        name: PalletRack
-        required: true
-        schema:
-          $ref: '#/definitions/paletrack.PalletRackRequest'
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/entities.PalletRackEntity'
-            type: array
+            $ref: '#/definitions/apiContracts.PaginatedRacksResponse'
         "404":
           description: Not Found
           schema:
