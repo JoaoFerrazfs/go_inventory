@@ -36,6 +36,7 @@ func (controller *InventoryController) Register(group *gin.RouterGroup) {
 // @Tags Inventory
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Success 200 {object} apiContracts.InventoryListResponse
 // @Failure 500 {object} map[string]string
 // @Router /api/v1/inventories [get]
@@ -52,6 +53,7 @@ func (controller *InventoryController) ListInventories(c *gin.Context) {
 // @Tags Inventory
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param id path int true "Inventory ID"
 // @Success 200 {object} apiContracts.InventoryResponse
 // @Failure 422 {object} map[string]string
@@ -79,6 +81,7 @@ func (controller *InventoryController) GetInventoryById(c *gin.Context) {
 // @Tags Inventory
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param inventory body inventory.InventoryRequest true "Inventory Data"
 // @Success 201 {object} apiContracts.InventoryResponse
 // @Failure 422 {object} map[string]string
@@ -119,6 +122,7 @@ func (controller *InventoryController) CreateInventory(c *gin.Context) {
 // @Tags Inventory
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param id path int true "Inventory ID"
 // @Param inventory body inventory.UpdateInventoryRequest true "Inventory Data"
 // @Success 200 {object} apiContracts.InventoryResponse

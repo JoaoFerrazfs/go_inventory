@@ -59,6 +59,7 @@ func (controller *PalletRackController) parseLimit(c *gin.Context) int {
 // @Tags Pallet Racks
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param PalletRack body paletrack.PalletRackRequest true "Palletized Product"
 // @Success 200 {object} entities.PalletRackEntity
 // @Failure 422 {object} map[string]string
@@ -85,6 +86,7 @@ func (controller *PalletRackController) createPalletRack(c *gin.Context) {
 // @Tags Pallet Racks
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Items per page" default(10)
 // @Success 200 {object} apiContracts.PaginatedRacksResponse
@@ -108,6 +110,7 @@ func (controller *PalletRackController) listRacks(c *gin.Context) {
 // @Tags Pallet Racks
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Success 200 {object} entities.PalletRackEntity
 // @Failure 404 {object} map[string]string
 // @Failure 422 {object} map[string]string
@@ -133,6 +136,7 @@ func (pc *PalletRackController) FindRackById(c *gin.Context) {
 // @Tags Pallet Racks
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Success 204 "Delete successful"
 // @Failure 404 {object} map[string]string
 // @Failure 422 {object} map[string]string

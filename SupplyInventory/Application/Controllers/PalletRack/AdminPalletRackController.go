@@ -68,6 +68,7 @@ func (controller *AdminPalletRackController) parseLimit(c *gin.Context) int {
 // @Tags Admin Pallet Racks
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param inventory_id query int false "Inventory ID to filter"
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Items per page" default(10)

@@ -38,6 +38,11 @@ import (
 
 // @host localhost:8000
 
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Digite: "Bearer {token}" para se autenticar.
+
 func main() {
 	// Carregar variáveis de ambiente
 	if err := godotenv.Load(); err != nil {
@@ -68,7 +73,7 @@ func setupRouter() *gin.Engine {
 	router := gin.Default()
 	// Disable automatic redirect for trailing slash mismatches to avoid 307
 	// redirects on OPTIONS preflight requests which can break CORS flows.
-	router.RedirectTrailingSlash = false
+	router.RedirectTrailingSlash = true
 
 	// Enable CORS for any origin.
 	// When AllowCredentials is true, using "*" in AllowOrigins is not allowed,

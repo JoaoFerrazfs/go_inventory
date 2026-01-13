@@ -28,6 +28,7 @@ func (controller *PalletizedProductController) RegisterProductPallet(group *gin.
 // @Tags Palletized products
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Success 200 {object} entities.PalletizedProductEntity
 // @Failure 422 {object} map[string]string
 // @Param palletId path int true "ID do pallet"
@@ -63,6 +64,7 @@ func (controller *PalletizedProductController) addProductsToPallet(c *gin.Contex
 // @Tags Palletized products
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Success 204 "No Content"
 // @Failure 400 {object} map[string]string
 // @Failure 422 {object} map[string]string

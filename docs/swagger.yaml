@@ -308,6 +308,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Admin List Pallet Racks
       tags:
       - Admin Pallet Racks
@@ -412,6 +414,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: List all inventories
       tags:
       - Inventory
@@ -444,6 +448,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Create a new inventory
       tags:
       - Inventory
@@ -476,6 +482,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Get inventory by ID
       tags:
       - Inventory
@@ -513,6 +521,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Update an inventory
       tags:
       - Inventory
@@ -545,6 +555,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Add a product to a pallet
       tags:
       - Palletized products
@@ -580,6 +592,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Delete product from pallet
       tags:
       - Palletized products
@@ -607,6 +621,8 @@ paths:
             type: array
         "404":
           description: Not Found
+      security:
+      - BearerAuth: []
       summary: List pallets
       tags:
       - Pallets
@@ -633,6 +649,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Create Pallet
       tags:
       - Pallets
@@ -677,6 +695,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Delete Pallet
       tags:
       - Pallets
@@ -698,6 +718,8 @@ paths:
             $ref: '#/definitions/entities.PalletEntity'
         "404":
           description: Not Found
+      security:
+      - BearerAuth: []
       summary: Get pallet by ID
       tags:
       - Pallets
@@ -729,6 +751,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Update Pallet
       tags:
       - Pallets
@@ -756,6 +780,8 @@ paths:
             type: object
         "404":
           description: Not Found
+      security:
+      - BearerAuth: []
       summary: Export pallets to CSV file
       tags:
       - Pallets
@@ -787,6 +813,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: List Pallet Racks
       tags:
       - Pallet Racks
@@ -813,6 +841,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Create Pallet Racks
       tags:
       - Pallet Racks
@@ -849,6 +879,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Delete Rack
       tags:
       - Pallet Racks
@@ -880,6 +912,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Get Rack
       tags:
       - Pallet Racks
@@ -916,4 +950,10 @@ paths:
       summary: Create User
       tags:
       - Users
+securityDefinitions:
+  BearerAuth:
+    description: 'Digite: "Bearer {token}" para se autenticar.'
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

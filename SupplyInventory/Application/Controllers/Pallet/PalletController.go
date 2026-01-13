@@ -53,6 +53,7 @@ func (controller *PalletController) parseFilterParams(c *gin.Context) (*uint, *i
 // @Tags Pallets
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Success 200 {array} entities.PalletEntity
 // @Failure 404 "Not Found"
 // @Param palletRackId query uint false "Filter by pallet rack ID"
@@ -73,6 +74,7 @@ func (controller *PalletController) ListPallets(c *gin.Context) {
 // @Tags Pallets
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Success 200 {object} map[string]string
 // @Failure 404 "Not Found"
 // @Param palletRackId query uint false "Filter by pallet rack ID"
@@ -94,6 +96,7 @@ func (controller *PalletController) ExportPalletsCsv(c *gin.Context) {
 // @Tags Pallets
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Success 200 {object} entities.PalletEntity
 // @Failure 404 "Not Found"
 // @Param id path int true "ID do pallet"
@@ -118,6 +121,7 @@ func (controller *PalletController) FindPalletById(c *gin.Context) {
 // @Tags Pallets
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param pallet body pallet.PalletRequest true "Palletized Product"
 // @Success 200 {object} entities.PalletEntity
 // @Failure 422 {object} map[string]string
@@ -146,6 +150,7 @@ func (controller *PalletController) DeletePalletById(c *gin.Context) {
 // @Tags Pallets
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param pallet body pallet.PalletRequest true "Palletized Product"
 // @Success 200 {object} entities.PalletEntity
 // @Failure 422 {object} map[string]string
@@ -172,6 +177,7 @@ func (controller *PalletController) CreatePallet(c *gin.Context) {
 // @Tags Pallets
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param pallet body pallet.PalletRequest true "Palletized Product"
 // @Success 200 {object} entities.PalletEntity
 // @Failure 422 {object} map[string]string
