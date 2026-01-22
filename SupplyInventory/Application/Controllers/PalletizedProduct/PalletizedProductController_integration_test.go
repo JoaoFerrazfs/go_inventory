@@ -28,7 +28,7 @@ func TestIntegration_AddProductsToPallet(t *testing.T) {
 		r := h.SetupRouterForPalletizedProduct(tx)
 
 		addReq := palletizedProductRequests.PalletizedProductRequest{
-			EAN:      123,
+			EAN:      1234567890123,
 			Quantity: 10,
 		}
 		body, _ := json.Marshal(addReq)
@@ -60,7 +60,7 @@ func TestIntegration_AddProductsToPallet_DifferentInventory(t *testing.T) {
 		r := h.SetupRouterForPalletizedProduct(tx)
 
 		addReq := palletizedProductRequests.PalletizedProductRequest{
-			EAN:      123,
+			EAN:      1234567890123,
 			Quantity: 10,
 		}
 		body, _ := json.Marshal(addReq)

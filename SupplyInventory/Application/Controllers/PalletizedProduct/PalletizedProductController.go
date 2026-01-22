@@ -57,7 +57,6 @@ func (controller *PalletizedProductController) addProductsToPallet(c *gin.Contex
 	}
 
 	c.JSON(http.StatusOK, updatedPallet)
-
 }
 
 // @Summary Delete product from pallet
