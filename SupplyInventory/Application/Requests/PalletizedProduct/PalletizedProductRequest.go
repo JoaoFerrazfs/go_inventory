@@ -1,6 +1,6 @@
 package palletizedproduct
 
 type PalletizedProductRequest struct {
-	EAN      int `json:"ean" binding:"required"`
-	Quantity int `json:"quantity" binding:"required"`
+	EAN      string `json:"ean" binding:"required,len=13"`
+	Quantity int    `json:"quantity" binding:"required"`
 }
