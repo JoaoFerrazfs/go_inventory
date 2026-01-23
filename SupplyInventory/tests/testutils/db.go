@@ -13,8 +13,10 @@ import (
 	"gorm.io/gorm"
 )
 
-var TestDB *gorm.DB
-var TestDBName string
+var (
+	TestDB     *gorm.DB
+	TestDBName string
+)
 
 func SetupTestDB() *gorm.DB {
 	if TestDB != nil {
@@ -127,6 +129,7 @@ func TruncateTables(db *gorm.DB) {
 	db.Exec("TRUNCATE TABLE palletized_products")
 	db.Exec("TRUNCATE TABLE pallets")
 	db.Exec("TRUNCATE TABLE pallet_racks")
+	db.Exec("TRUNCATE TABLE products")
 	db.Exec("TRUNCATE TABLE user_entities")
 	db.Exec("TRUNCATE TABLE inventories")
 	db.Exec("SET FOREIGN_KEY_CHECKS = 1")

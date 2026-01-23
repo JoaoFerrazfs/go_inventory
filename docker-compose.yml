@@ -24,6 +24,11 @@ services:
       - MINIO_PUBLIC_ENDPOINT=http://localhost:9000
       # Make uploaded objects public (MINIO_PUBLIC_READ=true will set bucket policy)
       - MINIO_PUBLIC_READ=true
+      # Test DB environment variables
+      - TEST_DB_HOST=db
+      - TEST_DB_PORT=3306
+      - TEST_DB_USER=root
+      - TEST_DB_PASSWORD=root
     depends_on:
       - db
     

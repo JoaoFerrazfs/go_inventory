@@ -15,38 +15,37 @@ import (
 )
 
 func TestUserRepository_Create_Integration(t *testing.T) {
-    // Set
-    helper := integration.NewIntegrationTestHelper()
-    defer helper.Stop()
-    helper.TruncateTables(helper.DB)
-    repo := userInfra.NewUserRepository(dbadapter.NewGormAdapter(helper.DB))
+	// Set
+	helper := integration.NewIntegrationTestHelper()
+	defer helper.Stop()
+	helper.TruncateTables(helper.DB)
+	repo := userInfra.NewUserRepository(dbadapter.NewGormAdapter(helper.DB))
 
-    u := &entities.UserEntity{Name: "IntUser", Email: "int@example.com", Password: "pwd"}
+	u := &entities.UserEntity{Name: "IntUser", Email: "int@example.com", Password: "pwd"}
 
-    // Actions
-    err := repo.Create(u)
+	// Actions
+	err := repo.Create(u)
 
-    // Assertions
-    assert.Nil(t, err)
-    assert.NotZero(t, u.ID)
+	// Assertions
+	assert.Nil(t, err)
+	assert.NotZero(t, u.ID)
 }
 
 func TestUserRepository_FindByEmail_Integration(t *testing.T) {
-    // Set
-    helper := integration.NewIntegrationTestHelper()
-    defer helper.Stop()
-    helper.TruncateTables(helper.DB)
-    // create fixture
-    u := &entities.UserEntity{Name: "IntUser2", Email: "findme@example.com", Password: "pwd"}
-    helper.DB.Create(u)
+	// Set
+	helper := integration.NewIntegrationTestHelper()
+	defer helper.Stop()
+	helper.TruncateTables(helper.DB)
+	// create fixture
+	helper.CreateTestUser(helper.DB, "IntUser2", "findme@example.com", "pwd")
 
-    repo := userInfra.NewUserRepository(dbadapter.NewGormAdapter(helper.DB))
+	repo := userInfra.NewUserRepository(dbadapter.NewGormAdapter(helper.DB))
 
-    // Actions
-    got, err := repo.FindByEmail("findme@example.com")
+	// Actions
+	got, err := repo.FindByEmail("findme@example.com")
 
-    // Assertions
-    assert.Nil(t, err)
-    assert.NotNil(t, got)
-    assert.Equal(t, "findme@example.com", got.Email)
+	// Assertions
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, "findme@example.com", got.Email)
 }

@@ -1,8 +1,9 @@
 package testutils
 
 import (
-	entities "go_inventory/SupplyInventory/Domain/Entities"
 	"time"
+
+	entities "go_inventory/SupplyInventory/Domain/Entities"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -79,3 +80,17 @@ func CreateTestInventory(db *gorm.DB) *entities.InventoryEntity {
 }
 
 // Add more fixtures as needed for other entities
+
+func CreateTestProduct(db *gorm.DB, ean, name string) *entities.ProductEntity {
+	// Check if product already exists
+	var existingProduct entities.ProductEntity
+	if err := db.Where("ean = ?", ean).First(&existingProduct).Error; err == nil {
+		return &existingProduct // Return existing product if found
+	}
+
+	product := entities.NewProductEntity(ean, name)
+	if err := db.Create(product).Error; err != nil {
+		panic(err) // Ensure the product creation error is handled
+	}
+	return product
+}

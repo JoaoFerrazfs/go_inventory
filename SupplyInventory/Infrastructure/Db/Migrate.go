@@ -13,6 +13,7 @@ func Migrate(db *gorm.DB) error {
 		&entities.PalletEntity{},
 		&entities.PalletizedProductEntity{},
 		&entities.UserEntity{},
+		&entities.ProductEntity{},
 	)
 	if err != nil {
 		return err

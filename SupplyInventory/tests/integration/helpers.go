@@ -300,3 +300,7 @@ func (h *IntegrationTestHelper) CreateTestPallet(db *gorm.DB, name string, palle
 func (h *IntegrationTestHelper) CreateTestPalletRack(db *gorm.DB, name, location string, totalCapacity int) *entities.PalletRackEntity {
 	return testutils.CreateTestPalletRack(db, name, location, totalCapacity)
 }
+
+func (h *IntegrationTestHelper) CreateTestProduct(db *gorm.DB, ean, name string) *entities.ProductEntity {
+	return testutils.CreateTestProduct(db, ean, name)
+}
