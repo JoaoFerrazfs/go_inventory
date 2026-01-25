@@ -8,6 +8,7 @@ import (
 	pallet "go_inventory/SupplyInventory/Application/Controllers/Pallet"
 	palletRack "go_inventory/SupplyInventory/Application/Controllers/PalletRack"
 	palletizedProduct "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
+	product "go_inventory/SupplyInventory/Application/Controllers/Product"
 	user "go_inventory/SupplyInventory/Application/Controllers/User"
 	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
 	inventoryService "go_inventory/SupplyInventory/Application/Services/Inventory"
@@ -15,6 +16,7 @@ import (
 	palletService "go_inventory/SupplyInventory/Application/Services/Pallet"
 	palletRackService "go_inventory/SupplyInventory/Application/Services/PalletRack"
 	palletizedProductService "go_inventory/SupplyInventory/Application/Services/PalletizedProduct"
+	productService "go_inventory/SupplyInventory/Application/Services/Product"
 	qrCodeService "go_inventory/SupplyInventory/Application/Services/QrCode"
 	userService "go_inventory/SupplyInventory/Application/Services/User"
 	entities "go_inventory/SupplyInventory/Domain/Entities" //nolint
@@ -22,6 +24,7 @@ import (
 	Pallet "go_inventory/SupplyInventory/Domain/contracts/repositories/Pallet"
 	PalletRack "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletRack"
 	PalletizedProduct "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletizedProduct"
+	Product "go_inventory/SupplyInventory/Domain/contracts/repositories/Product"
 	User "go_inventory/SupplyInventory/Domain/contracts/repositories/User"
 	testutils "go_inventory/SupplyInventory/tests/testutils"
 
@@ -30,6 +33,7 @@ import (
 	palletInfra "go_inventory/SupplyInventory/Infrastructure/repositories/Pallet"
 	palletRackInfra "go_inventory/SupplyInventory/Infrastructure/repositories/PalletRack"
 	palletizedProductInfra "go_inventory/SupplyInventory/Infrastructure/repositories/PalletizedProduct"
+	productInfra "go_inventory/SupplyInventory/Infrastructure/repositories/Product"
 	userInfra "go_inventory/SupplyInventory/Infrastructure/repositories/User"
 
 	"strconv"
@@ -50,11 +54,13 @@ type TestDependencies struct {
 	PalletizedProductRepo    PalletizedProduct.PalletizedProductRepository
 	PalletRackRepo           PalletRack.PalletRackRepository
 	InventoryRepo            Inventory.InventoryRepository
+	ProductRepo              Product.ProductRepository
 	UserService              userService.UserService
 	PalletService            palletService.PalletService
 	PalletizedProductService palletizedProductService.PalletizedProductService
 	PalletRackService        palletRackService.PalletRackService
 	InventoryService         inventoryService.InventoryService
+	ProductService           productService.ProductService
 	QrCodeService            qrCodeService.QRCodeService
 	JwtService               jwtService.JWTService
 }
@@ -80,11 +86,13 @@ func NewIntegrationTestHelper() *IntegrationTestHelper {
 			palletizedProductRepo PalletizedProduct.PalletizedProductRepository,
 			palletRackRepo PalletRack.PalletRackRepository,
 			inventoryRepo Inventory.InventoryRepository,
+			productRepo Product.ProductRepository,
 			userSrv userService.UserService,
 			palletSrv palletService.PalletService,
 			palletizedProductSrv palletizedProductService.PalletizedProductService,
 			palletRackSrv palletRackService.PalletRackService,
 			inventorySrv inventoryService.InventoryService,
+			productSrv productService.ProductService,
 			jwtSrv jwtService.JWTService,
 			qrSrv qrCodeService.QRCodeService,
 		) {
@@ -94,11 +102,13 @@ func NewIntegrationTestHelper() *IntegrationTestHelper {
 				PalletizedProductRepo:    palletizedProductRepo,
 				PalletRackRepo:           palletRackRepo,
 				InventoryRepo:            inventoryRepo,
+				ProductRepo:              productRepo,
 				UserService:              userSrv,
 				PalletService:            palletSrv,
 				PalletizedProductService: palletizedProductSrv,
 				PalletRackService:        palletRackSrv,
 				InventoryService:         inventorySrv,
+				ProductService:           productSrv,
 				JwtService:               jwtSrv,
 				QrCodeService:            qrSrv,
 			}
@@ -233,6 +243,16 @@ func (h *IntegrationTestHelper) SetupRouterForUser(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
 	api := r.Group("/api/v1/users")
 	controller.RegisterUserRoutes(api)
+	return r
+}
+
+func (h *IntegrationTestHelper) SetupRouterForProduct(db *gorm.DB) *gin.Engine {
+	productRepo := productInfra.NewProductRepository(dbadapter.NewGormAdapter(db))
+	productSrv := productService.NewProductService(productRepo)
+	controller := product.NewProductController(productSrv)
+	r := gin.Default()
+	api := r.Group("/api/v1/products")
+	controller.Register(api)
 	return r
 }
 

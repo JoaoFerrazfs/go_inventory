@@ -31,7 +31,7 @@ func (r *productRepository) FindByEAN(ean string) (*domain.ProductEntity, *error
 	var product domain.ProductEntity
 
 	if err := r.db.WhereFirst(&product, "ean = ?", ean); err != nil {
-		return nil, errors.NewAppError(err.Error(), 500)
+		return nil, errors.NewAppError("Product not found", 404)
 	}
 
 	return &product, nil

@@ -3,13 +3,14 @@ package controllers_test
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	errors "go_inventory/Helpers/Errors"
 	palletizedproduct "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
 	testutils "go_inventory/SupplyInventory/tests/testutils"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -52,14 +53,14 @@ func TestAddProductsToPallet_InternalServerError(t *testing.T) {
 	})
 	group := r.Group("/")
 	controller.RegisterProductPallet(group)
-	body, _ := json.Marshal(map[string]interface{}{ "EAN": 123, "Quantity": 10 })
+	body, _ := json.Marshal(map[string]interface{}{"EAN": 123, "Quantity": 10})
 	req, _ := http.NewRequest("PATCH", "/1", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
 	// Assertions
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	assert.Equal(t, http.StatusUnprocessableEntity, w.Code)
 }
 
 func TestAddProductsToPallet_InvalidPalletId(t *testing.T) {
@@ -69,12 +70,12 @@ func TestAddProductsToPallet_InvalidPalletId(t *testing.T) {
 	r := gin.Default()
 	group := r.Group("/")
 	controller.RegisterProductPallet(group)
-	body, _ := json.Marshal(map[string]interface{}{ "ean": 123, "quantity": 10 })
+	body, _ := json.Marshal(map[string]interface{}{"ean": 123, "quantity": 10})
 	req, _ := http.NewRequest("PATCH", "/invalid", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Equal(t, http.StatusUnprocessableEntity, w.Code)
 }
 
 // Testa erro de palletId inválido no DELETE
@@ -116,6 +117,7 @@ func (m *mockPalletizedProductService) AddProductsToPallet(palletId uint, ean in
 	}
 	return args.Get(0).(*entities.PalletEntity), args.Get(1).(*errors.AppError)
 }
+
 func (m *mockPalletizedProductService) DeleteProductsFromPallet(palletId uint, productsEan int) (bool, *errors.AppError) {
 	args := m.Called(palletId, productsEan)
 	return args.Bool(0), args.Get(1).(*errors.AppError)
@@ -129,7 +131,7 @@ func TestAddProductsToPallet_Success(t *testing.T) {
 	pallet := &entities.PalletEntity{ID: 1, Name: "Test Pallet"}
 
 	// Expectations
-	mockService.On("AddProductsToPallet", uint(1), 123, 10, testutils.DefaultInventoryID).Return(pallet, (*errors.AppError)(nil))
+	mockService.On("AddProductsToPallet", uint(1), 1234567891234, 10, testutils.DefaultInventoryID).Return(pallet, (*errors.AppError)(nil))
 
 	// Actions
 	r := gin.Default()
@@ -139,7 +141,7 @@ func TestAddProductsToPallet_Success(t *testing.T) {
 	})
 	group := r.Group("/")
 	controller.RegisterProductPallet(group)
-	body, _ := json.Marshal(map[string]interface{}{"EAN": 123, "Quantity": 10})
+	body, _ := json.Marshal(map[string]interface{}{"EAN": 1234567891234, "Quantity": 10})
 	req, _ := http.NewRequest("PATCH", "/1", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()

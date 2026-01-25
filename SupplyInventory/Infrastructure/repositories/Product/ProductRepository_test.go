@@ -41,18 +41,18 @@ func TestProductRepository_FindByEAN_Unit(t *testing.T) {
 
 	// Expectations
 	adapter.WhereFirstFn = func(out interface{}, query string, args ...interface{}) error {
-		if query == "ean = ?" && args[0] == "123456789" {
-			*out.(*entities.ProductEntity) = entities.ProductEntity{ID: 1, EAN: "123456789", Name: "Test Product"}
+		if query == "ean = ?" && args[0] == "1234567891234" {
+			*out.(*entities.ProductEntity) = entities.ProductEntity{ID: 1, EAN: "1234567891234", Name: "Test Product"}
 		}
 		return nil
 	}
 
 	// Actions
-	product, _ := repo.FindByEAN("123456789")
+	product, _ := repo.FindByEAN("1234567891234")
 
 	// Assertions
 	assert.NotNil(t, product)
-	assert.Equal(t, "123456789", product.EAN)
+	assert.Equal(t, "1234567891234", product.EAN)
 	assert.Equal(t, "Test Product", product.Name)
 }
 
@@ -63,7 +63,7 @@ func TestProductRepository_FindByEAN_NotFound_Unit(t *testing.T) {
 
 	// Expectations
 	adapter.WhereFirstFn = func(out interface{}, query string, args ...interface{}) error {
-		return errors.NewAppError("record not found", 404)
+		return errors.NewAppError("Product not found", 404)
 	}
 
 	// Actions
@@ -71,7 +71,7 @@ func TestProductRepository_FindByEAN_NotFound_Unit(t *testing.T) {
 
 	// Assertions
 	assert.Error(t, err)
-	assert.Equal(t, "record not found", err.Message)
+	assert.Equal(t, "Product not found", err.Message)
 	assert.Nil(t, product)
 }
 
@@ -82,8 +82,8 @@ func TestProductRepository_Delete_Unit(t *testing.T) {
 
 	// Expectations
 	adapter.WhereFirstFn = func(out interface{}, query string, args ...interface{}) error {
-		if query == "ean = ?" && args[0] == "123456789" {
-			*out.(*entities.ProductEntity) = entities.ProductEntity{ID: 1, EAN: "123456789", Name: "Test Product"}
+		if query == "ean = ?" && args[0] == "1234567891234" {
+			*out.(*entities.ProductEntity) = entities.ProductEntity{ID: 1, EAN: "1234567891234", Name: "Test Product"}
 		}
 		return nil
 	}
@@ -92,7 +92,7 @@ func TestProductRepository_Delete_Unit(t *testing.T) {
 	}
 
 	// Actions
-	deleted, err := repo.Delete("123456789")
+	deleted, err := repo.Delete("1234567891234")
 
 	// Assertions
 	assert.Nil(t, err)
@@ -106,7 +106,7 @@ func TestProductRepository_Delete_NotFound_Unit(t *testing.T) {
 
 	// Expectations
 	adapter.WhereFirstFn = func(out interface{}, query string, args ...interface{}) error {
-		return errors.NewAppError("record not found", 404)
+		return errors.NewAppError("Product not found", 404)
 	}
 
 	// Actions
