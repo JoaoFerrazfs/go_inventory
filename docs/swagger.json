@@ -815,6 +815,144 @@
                 }
             }
         },
+        "/api/v1/products": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product"
+                ],
+                "summary": "Create a new product",
+                "parameters": [
+                    {
+                        "description": "Product Data (EAN must be 13 digits)",
+                        "name": "product",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateProductRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/apiContracts.ProductResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/products/{ean}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product"
+                ],
+                "summary": "Get product by EAN",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Product EAN (13 digits)",
+                        "name": "ean",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apiContracts.ProductResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product"
+                ],
+                "summary": "Delete product by EAN",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Product EAN (13 digits)",
+                        "name": "ean",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/racks": {
             "get": {
                 "security": [
@@ -1150,6 +1288,28 @@
                 }
             }
         },
+        "apiContracts.ProductData": {
+            "type": "object",
+            "properties": {
+                "ean": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "apiContracts.ProductResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/apiContracts.ProductData"
+                }
+            }
+        },
         "apiContracts.TransformedRack": {
             "type": "object",
             "properties": {
@@ -1452,10 +1612,27 @@
             ],
             "properties": {
                 "ean": {
-                    "type": "integer"
+                    "type": "integer",
+                    "maximum": 9999999999999,
+                    "minimum": 1000000000000
                 },
                 "quantity": {
                     "type": "integer"
+                }
+            }
+        },
+        "requests.CreateProductRequest": {
+            "type": "object",
+            "required": [
+                "ean",
+                "name"
+            ],
+            "properties": {
+                "ean": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },

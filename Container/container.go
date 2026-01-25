@@ -1,32 +1,37 @@
 package container
 
 import (
+	"os"
+
 	authController "go_inventory/SupplyInventory/Application/Controllers/Auth"
 	inventoryController "go_inventory/SupplyInventory/Application/Controllers/Inventory"
 	palletController "go_inventory/SupplyInventory/Application/Controllers/Pallet"
 	palletRackController "go_inventory/SupplyInventory/Application/Controllers/PalletRack"
 	palletizedProductController "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
+	productController "go_inventory/SupplyInventory/Application/Controllers/Product"
 	userController "go_inventory/SupplyInventory/Application/Controllers/User"
 	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
-	"os"
 
 	inventory "go_inventory/SupplyInventory/Application/Services/Inventory"
 	jwt "go_inventory/SupplyInventory/Application/Services/Jwt"
 	pallet "go_inventory/SupplyInventory/Application/Services/Pallet"
 	palletrack "go_inventory/SupplyInventory/Application/Services/PalletRack"
 	palletizedproduct "go_inventory/SupplyInventory/Application/Services/PalletizedProduct"
+	productService "go_inventory/SupplyInventory/Application/Services/Product"
 	qrcode "go_inventory/SupplyInventory/Application/Services/QrCode"
 	user "go_inventory/SupplyInventory/Application/Services/User"
 
 	repositoriesPallet "go_inventory/SupplyInventory/Infrastructure/repositories/Pallet"
 	repositoriesPalletRack "go_inventory/SupplyInventory/Infrastructure/repositories/PalletRack"
 	repositoriesPalletizedProduct "go_inventory/SupplyInventory/Infrastructure/repositories/PalletizedProduct"
+	repositoryProduct "go_inventory/SupplyInventory/Infrastructure/repositories/Product"
 	repositoriesUser "go_inventory/SupplyInventory/Infrastructure/repositories/User"
 
 	contractInventory "go_inventory/SupplyInventory/Domain/contracts/repositories/Inventory"
 	contractPallet "go_inventory/SupplyInventory/Domain/contracts/repositories/Pallet"
 	contractPalletRack "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletRack"
 	contractPalletized "go_inventory/SupplyInventory/Domain/contracts/repositories/PalletizedProduct"
+	contractProduct "go_inventory/SupplyInventory/Domain/contracts/repositories/Product"
 	contractUser "go_inventory/SupplyInventory/Domain/contracts/repositories/User"
 
 	storage "go_inventory/SupplyInventory/Application/Services/Storage"
@@ -62,6 +67,10 @@ func BuildOptions(db *gorm.DB) fx.Option {
 			return repositoriesInventory.NewInventoryRepository(dbadapter.NewGormAdapter(db))
 		}),
 
+		fx.Provide(func(db *gorm.DB) contractProduct.ProductRepository {
+			return repositoryProduct.NewProductRepository(dbadapter.NewGormAdapter(db))
+		}),
+
 		// Storage
 		fx.Provide(getStorage),
 
@@ -90,6 +99,10 @@ func BuildOptions(db *gorm.DB) fx.Option {
 			return inventory.NewInventoryService(repo)
 		}),
 
+		fx.Provide(func(repository contractProduct.ProductRepository) productService.ProductService {
+			return productService.NewProductService(repository)
+		}),
+
 		// Controllers
 		fx.Provide(palletController.NewPalletController),
 		fx.Provide(palletizedProductController.NewPalletizedProductController),
@@ -98,6 +111,7 @@ func BuildOptions(db *gorm.DB) fx.Option {
 		fx.Provide(authController.NewAuthController),
 		fx.Provide(userController.NewUserController),
 		fx.Provide(inventoryController.NewInventoryController),
+		fx.Provide(productController.NewProductController),
 
 		// Middlewares
 		fx.Provide(middlewares.NewAuthMiddleware),

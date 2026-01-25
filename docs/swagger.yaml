@@ -46,6 +46,20 @@ definitions:
       total:
         type: integer
     type: object
+  apiContracts.ProductData:
+    properties:
+      ean:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  apiContracts.ProductResponse:
+    properties:
+      data:
+        $ref: '#/definitions/apiContracts.ProductData'
+    type: object
   apiContracts.TransformedRack:
     properties:
       id:
@@ -246,12 +260,24 @@ definitions:
   palletizedproduct.PalletizedProductRequest:
     properties:
       ean:
+        maximum: 9999999999999
+        minimum: 1000000000000
         type: integer
       quantity:
         type: integer
     required:
     - ean
     - quantity
+    type: object
+  requests.CreateProductRequest:
+    properties:
+      ean:
+        type: string
+      name:
+        type: string
+    required:
+    - ean
+    - name
     type: object
   user.UserRequest:
     properties:
@@ -785,6 +811,92 @@ paths:
       summary: Export pallets to CSV file
       tags:
       - Pallets
+  /api/v1/products:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Product Data (EAN must be 13 digits)
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/apiContracts.ProductResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new product
+      tags:
+      - Product
+  /api/v1/products/{ean}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Product EAN (13 digits)
+        in: path
+        name: ean
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete product by EAN
+      tags:
+      - Product
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Product EAN (13 digits)
+        in: path
+        name: ean
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apiContracts.ProductResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get product by EAN
+      tags:
+      - Product
   /api/v1/racks:
     get:
       consumes:

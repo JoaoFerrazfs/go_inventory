@@ -15,6 +15,7 @@ import (
 	palletControllerPkg "go_inventory/SupplyInventory/Application/Controllers/Pallet"
 	palletRackControllerPkg "go_inventory/SupplyInventory/Application/Controllers/PalletRack"
 	palletizedProductControllerPkg "go_inventory/SupplyInventory/Application/Controllers/PalletizedProduct"
+	productControllerPkg "go_inventory/SupplyInventory/Application/Controllers/Product"
 	userControllerPkg "go_inventory/SupplyInventory/Application/Controllers/User"
 	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
 
@@ -67,7 +68,6 @@ func main() {
 }
 
 func setupRouter() *gin.Engine {
-
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.Default()
@@ -130,6 +130,7 @@ func registerRoutes(
 	palletizedProductController *palletizedProductControllerPkg.PalletizedProductController,
 	palletRackController *palletRackControllerPkg.PalletRackController,
 	adminPalletRackController *palletRackControllerPkg.AdminPalletRackController,
+	productController *productControllerPkg.ProductController,
 	authController *authControllerPkg.AuthController,
 	userController *userControllerPkg.UserController,
 	authMiddleware *middlewares.AuthMiddleware,
@@ -164,6 +165,10 @@ func registerRoutes(
 	inventoryGroup := apiV1.Group("/inventories")
 	inventoryGroup.Use(authMiddleware.Handler())
 	inventoryController.Register(inventoryGroup)
+
+	productGroup := apiV1.Group("/products")
+	productGroup.Use(authMiddleware.Handler())
+	productController.Register(productGroup)
 }
 
 func startServer(lc fx.Lifecycle, router *gin.Engine) {
