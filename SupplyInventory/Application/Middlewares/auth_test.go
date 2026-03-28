@@ -8,6 +8,7 @@ import (
 
 	errors "go_inventory/Helpers/Errors"
 	middlewares "go_inventory/SupplyInventory/Application/Middlewares"
+	"go_inventory/SupplyInventory/Domain/constants"
 
 	"github.com/gin-gonic/gin"
 	jwtv5 "github.com/golang-jwt/jwt/v5"
@@ -19,10 +20,10 @@ type stubJWTService struct {
 	appErr *errors.AppError
 }
 
-func (s *stubJWTService) GenerateToken(userID uint, username string) (string, *errors.AppError) {
+func (s *stubJWTService) GenerateToken(userID uint, username string, role constants.UserRole) (string, *errors.AppError) {
 	return "", nil
 }
-func (s *stubJWTService) GenerateRefreshToken(userID uint, username string) (string, *errors.AppError) {
+func (s *stubJWTService) GenerateRefreshToken(userID uint, username string, role constants.UserRole) (string, *errors.AppError) {
 	return "", nil
 }
 func (s *stubJWTService) ValidateToken(tokenString string) (*jwtv5.Token, *errors.AppError) {
@@ -154,7 +155,7 @@ func TestAuth_InvalidTokenType(t *testing.T) {
 func TestAuth_Success(t *testing.T) {
 	// Set
 	gin.SetMode(gin.TestMode)
-	token := &jwtv5.Token{Valid: true, Claims: jwtv5.MapClaims{"userID": float64(42), "username": "alice", "tokenType": "access"}}
+	token := &jwtv5.Token{Valid: true, Claims: jwtv5.MapClaims{"userID": float64(42), "username": "alice", "tokenType": "access", "role": string(constants.RoleUser)}}
 	stub := &stubJWTService{token: token, appErr: nil}
 	m := &middlewares.AuthMiddleware{JWTService: stub}
 	r := gin.New()

@@ -116,6 +116,7 @@ func BuildOptions(db *gorm.DB) fx.Option {
 		// Middlewares
 		fx.Provide(middlewares.NewAuthMiddleware),
 		fx.Provide(middlewares.NewInventoryMiddleware),
+		fx.Provide(middlewares.NewRBACMiddleware),
 	)
 }
 

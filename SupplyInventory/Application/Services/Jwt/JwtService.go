@@ -5,6 +5,7 @@ import (
 	"time"
 
 	errors "go_inventory/Helpers/Errors"
+	"go_inventory/SupplyInventory/Domain/constants"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -15,8 +16,8 @@ const (
 )
 
 type JWTService interface {
-	GenerateToken(userID uint, username string) (string, *errors.AppError)
-	GenerateRefreshToken(userID uint, username string) (string, *errors.AppError)
+	GenerateToken(userID uint, username string, role constants.UserRole) (string, *errors.AppError)
+	GenerateRefreshToken(userID uint, username string, role constants.UserRole) (string, *errors.AppError)
 	ValidateToken(tokenString string) (*jwt.Token, *errors.AppError)
 	RefreshToken(token string) (string, *errors.AppError)
 }
@@ -27,18 +28,19 @@ func NewJWTService() JWTService {
 	return &jwtService{}
 }
 
-func (service *jwtService) GenerateToken(userID uint, username string) (string, *errors.AppError) {
-	return generateTokenWithExpiration(userID, username, time.Hour*1, TokenTypeAccess)
+func (service *jwtService) GenerateToken(userID uint, username string, role constants.UserRole) (string, *errors.AppError) {
+	return generateTokenWithExpiration(userID, username, role, time.Hour*1, TokenTypeAccess)
 }
 
-func (service *jwtService) GenerateRefreshToken(userID uint, username string) (string, *errors.AppError) {
-	return generateTokenWithExpiration(userID, username, time.Hour*24*7, TokenTypeRefresh)
+func (service *jwtService) GenerateRefreshToken(userID uint, username string, role constants.UserRole) (string, *errors.AppError) {
+	return generateTokenWithExpiration(userID, username, role, time.Hour*24*7, TokenTypeRefresh)
 }
 
-func generateTokenWithExpiration(userID uint, username string, duration time.Duration, tokenType string) (string, *errors.AppError) {
+func generateTokenWithExpiration(userID uint, username string, role constants.UserRole, duration time.Duration, tokenType string) (string, *errors.AppError) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"userID":    userID,
 		"username":  username,
+		"role":      role.String(),
 		"tokenType": tokenType,
 		"exp":       time.Now().Add(duration).Unix(),
 	})
@@ -77,8 +79,9 @@ func (service *jwtService) RefreshToken(refreshToken string) (string, *errors.Ap
 	claims := token.Claims.(jwt.MapClaims)
 	userID := uint(claims["userID"].(float64))
 	username := claims["username"].(string)
+	role := constants.UserRole(claims["role"].(string))
 
-	newToken, appErr := service.GenerateToken(userID, username)
+	newToken, appErr := service.GenerateToken(userID, username, role)
 	if appErr != nil {
 		return "", appErr
 	}

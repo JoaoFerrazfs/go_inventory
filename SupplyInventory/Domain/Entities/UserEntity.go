@@ -1,16 +1,20 @@
 package entities
 
-import "time"
+import (
+	"time"
+
+	"go_inventory/SupplyInventory/Domain/constants"
+)
 
 type UserEntity struct {
-	ID        uint      `gorm:"primaryKey;autoIncrement" json:"id"`
-	Name      string    `gorm:"size:100;not null" json:"name"`
-	Email     string    `gorm:"size:100;uniqueIndex;not null" json:"email"`
-	Password  string    `gorm:"size:255;not null" json:"-"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        uint               `gorm:"primaryKey;autoIncrement" json:"id"`
+	Name      string             `gorm:"size:100;not null" json:"name"`
+	Email     string             `gorm:"size:100;uniqueIndex;not null" json:"email"`
+	Password  string             `gorm:"size:255;not null" json:"-"`
+	Role      constants.UserRole `gorm:"size:20;not null;default:'user'" json:"role"`
+	CreatedAt time.Time          `json:"created_at"`
+	UpdatedAt time.Time          `json:"updated_at"`
 }
-
 func NewUserEntity(
 	name string,
 	email string,
@@ -20,5 +24,6 @@ func NewUserEntity(
 		Name:     name,
 		Email:    email,
 		Password: password,
+		Role:     constants.RoleUser,
 	}
 }

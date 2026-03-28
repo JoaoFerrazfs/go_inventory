@@ -51,13 +51,13 @@ func (controller *AuthController) Login(context *gin.Context) {
 		return
 	}
 
-	token, appErr := controller.jwtService.GenerateToken(user.ID, user.Email)
+	token, appErr := controller.jwtService.GenerateToken(user.ID, user.Email, user.Role)
 	if appErr != nil {
 		context.JSON(appErr.ErrorCode(), appErr.Error())
 		return
 	}
 
-	refreshToken, appErr := controller.jwtService.GenerateRefreshToken(user.ID, user.Email)
+	refreshToken, appErr := controller.jwtService.GenerateRefreshToken(user.ID, user.Email, user.Role)
 	if appErr != nil {
 		context.JSON(appErr.ErrorCode(), appErr.Error())
 		return

@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	errors "go_inventory/Helpers/Errors"
+	"go_inventory/SupplyInventory/Domain/constants"
 
 	auth "go_inventory/SupplyInventory/Application/Controllers/Auth"
 	entities "go_inventory/SupplyInventory/Domain/Entities"
@@ -22,8 +23,8 @@ type mockJWTService struct {
 	mock.Mock
 }
 
-func (m *mockJWTService) GenerateToken(userID uint, email string) (string, *errors.AppError) {
-	args := m.Called(userID, email)
+func (m *mockJWTService) GenerateToken(userID uint, email string, role constants.UserRole) (string, *errors.AppError) {
+	args := m.Called(userID, email, role)
 	var appErr *errors.AppError
 	if args.Get(1) != nil {
 		appErr = args.Get(1).(*errors.AppError)
@@ -31,8 +32,8 @@ func (m *mockJWTService) GenerateToken(userID uint, email string) (string, *erro
 	return args.String(0), appErr
 }
 
-func (m *mockJWTService) GenerateRefreshToken(userID uint, email string) (string, *errors.AppError) {
-	args := m.Called(userID, email)
+func (m *mockJWTService) GenerateRefreshToken(userID uint, email string, role constants.UserRole) (string, *errors.AppError) {
+	args := m.Called(userID, email, role)
 	var appErr *errors.AppError
 	if args.Get(1) != nil {
 		appErr = args.Get(1).(*errors.AppError)
@@ -93,14 +94,18 @@ func TestLogin_Success(t *testing.T) {
 	userMock := new(mockUserService)
 	controller := auth.NewAuthController(jwtMock, userMock)
 
-	user := &entities.UserEntity{ID: 1, Email: "test@example.com"}
+	user := &entities.UserEntity{
+		ID:    1,
+		Email: "test@example.com",
+		Role:  constants.UserRole_,
+	}
 
 	// Expectations
 	userMock.On("Login", "test@example.com", "password").Return(user, nil)
 
-	jwtMock.On("GenerateToken", user.ID, user.Email).Return("token", nil)
+	jwtMock.On("GenerateToken", user.ID, user.Email, user.Role).Return("token", nil)
 
-	jwtMock.On("GenerateRefreshToken", user.ID, user.Email).Return("refresh", nil)
+	jwtMock.On("GenerateRefreshToken", user.ID, user.Email, user.Role).Return("refresh", nil)
 
 	// Actions
 	w := httptest.NewRecorder()
@@ -242,12 +247,16 @@ func TestLogin_EmptyTokenAndRefreshToken(t *testing.T) {
 	userMock := new(mockUserService)
 	controller := auth.NewAuthController(jwtMock, userMock)
 
-	user := &entities.UserEntity{ID: 4, Email: "empty@example.com"}
+	user := &entities.UserEntity{
+		ID:    4,
+		Email: "empty@example.com",
+		Role:  constants.UserRole_,
+	}
 
 	// Expectations
 	userMock.On("Login", "empty@example.com", "password").Return(user, nil)
-	jwtMock.On("GenerateToken", user.ID, user.Email).Return("", nil)
-	jwtMock.On("GenerateRefreshToken", user.ID, user.Email).Return("", nil)
+	jwtMock.On("GenerateToken", user.ID, user.Email, user.Role).Return("", nil)
+	jwtMock.On("GenerateRefreshToken", user.ID, user.Email, user.Role).Return("", nil)
 
 	// Actions
 	w := httptest.NewRecorder()

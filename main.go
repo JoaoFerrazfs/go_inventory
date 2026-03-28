@@ -134,6 +134,7 @@ func registerRoutes(
 	authController *authControllerPkg.AuthController,
 	userController *userControllerPkg.UserController,
 	authMiddleware *middlewares.AuthMiddleware,
+	rbacMiddleware *middlewares.RBACMiddleware,
 	inventoryController *inventoryControllerPkg.InventoryController,
 	inventoryMiddleware *middlewares.InventoryMiddleware,
 ) {
@@ -156,6 +157,7 @@ func registerRoutes(
 
 	adminRacksGroup := apiV1.Group("/admin/racks")
 	adminRacksGroup.Use(authMiddleware.Handler())
+	adminRacksGroup.Use(rbacMiddleware.RequireAdmin())
 	adminPalletRackController.RegisterAdminPalletRack(adminRacksGroup)
 
 	authController.RegisterLogin(apiV1.Group("/auth"))

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	errors "go_inventory/Helpers/Errors"
+	"go_inventory/SupplyInventory/Domain/constants"
 	jwt "go_inventory/SupplyInventory/Application/Services/Jwt"
 
 	"github.com/gin-gonic/gin"
@@ -53,6 +54,7 @@ func (m *AuthMiddleware) Handler() gin.HandlerFunc {
 
 		c.Set("userID", uint(claims["userID"].(float64)))
 		c.Set("username", claims["username"].(string))
+		c.Set("role", constants.UserRole(claims["role"].(string)))
 
 		c.Next()
 	}
