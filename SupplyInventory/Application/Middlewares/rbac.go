@@ -4,10 +4,9 @@ import (
 	"net/http"
 
 	"go_inventory/SupplyInventory/Domain/constants"
+
 	"github.com/gin-gonic/gin"
 )
-
-
 
 type RBACMiddleware struct{}
 
@@ -59,7 +58,6 @@ func (m *RBACMiddleware) RequireAny(roles ...constants.UserRole) gin.HandlerFunc
 	return m.RequireRole(roles...)
 }
 
-
 // Convenience functions for direct use
 func RequireRole(allowedRoles ...constants.UserRole) gin.HandlerFunc {
 	return NewRBACMiddleware().RequireRole(allowedRoles...)
@@ -72,4 +70,3 @@ func RequireAdmin() gin.HandlerFunc {
 func RequireAny(roles ...constants.UserRole) gin.HandlerFunc {
 	return NewRBACMiddleware().RequireAny(roles...)
 }
-

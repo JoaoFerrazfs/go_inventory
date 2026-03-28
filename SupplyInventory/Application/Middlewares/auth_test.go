@@ -23,12 +23,15 @@ type stubJWTService struct {
 func (s *stubJWTService) GenerateToken(userID uint, username string, role constants.UserRole) (string, *errors.AppError) {
 	return "", nil
 }
+
 func (s *stubJWTService) GenerateRefreshToken(userID uint, username string, role constants.UserRole) (string, *errors.AppError) {
 	return "", nil
 }
+
 func (s *stubJWTService) ValidateToken(tokenString string) (*jwtv5.Token, *errors.AppError) {
 	return s.token, s.appErr
 }
+
 func (s *stubJWTService) RefreshToken(token string) (string, *errors.AppError) {
 	return "", nil
 }

@@ -15,6 +15,7 @@ type UserEntity struct {
 	CreatedAt time.Time          `json:"created_at"`
 	UpdatedAt time.Time          `json:"updated_at"`
 }
+
 func NewUserEntity(
 	name string,
 	email string,

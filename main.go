@@ -45,10 +45,19 @@ import (
 // @description Digite: "Bearer {token}" para se autenticar.
 
 func main() {
-	// Carregar variáveis de ambiente
-	if err := godotenv.Load(); err != nil {
-		log.Println("Nenhum .env encontrado, usando variáveis do sistema")
-	}
+	       // Carregar variáveis de ambiente
+	       envFile := os.Getenv("ENV_FILE")
+	       if envFile != "" {
+		       if err := godotenv.Load(envFile); err != nil {
+			       log.Printf("Não foi possível carregar %s: %v", envFile, err)
+		       } else {
+			       log.Printf("Arquivo de env carregado: %s", envFile)
+		       }
+	       } else {
+		       if err := godotenv.Load(); err != nil {
+			       log.Println("Nenhum .env encontrado, usando variáveis do sistema")
+		       }
+	       }
 
 	// Conectar DB
 	dbInstance := db.Connect()
