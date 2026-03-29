@@ -41,14 +41,11 @@ reportController.Register(managerGroup)
 ```bash
 curl -X GET "http://localhost:8000/api/v1/admin/racks?page=1" \
   -H "Authorization: Bearer <TOKEN_ADMIN>"
-```
-**Resposta esperada:** 200 OK, dados retornados.
 
 ### 2. User tentando acessar rota admin
 
 ```bash
 curl -X GET "http://localhost:8000/api/v1/admin/racks?page=1" \
-  -H "Authorization: Bearer <TOKEN_USER>"
 ```
 **Resposta esperada:** 403 Forbidden
 ```json
@@ -63,24 +60,18 @@ curl -X GET "http://localhost:8000/api/v1/manager/reports/summary" \
 # ou
 curl -X GET "http://localhost:8000/api/v1/manager/reports/summary" \
   -H "Authorization: Bearer <TOKEN_MANAGER>"
-```
-**Resposta esperada:** 200 OK para admin/manager, 403 para user comum.
 
 ---
 
 ## Como funciona internamente
 
 - O middleware lê a role do JWT e coloca no contexto.
-- O RBAC verifica se a role do usuário está entre as permitidas.
-- Se não estiver, retorna 403 Forbidden.
+> Para detalhes completos sobre arquitetura, troubleshooting, seed DRY e expansão dos testes E2E, consulte:
+> [`/documents/Testing/E2E.md`](../../Testing/E2E.md)
 
----
 
 ## Testes
 
-Todos os testes automatizados cobrem:
-- Acesso permitido e negado para cada role.
-- Cenários de erro (role ausente ou inválida).
 
 Para rodar:
 ```bash
