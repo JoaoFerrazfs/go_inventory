@@ -25,7 +25,7 @@ services:
     depends_on:
       - db-test
       - minio-test
-    command: go test -tags=integration -v ./SupplyInventory/tests/e2e
+    command: go test -tags=e2e -v ./SupplyInventory/tests/e2e
   app:
     container_name: go_inventory_dev
     build:

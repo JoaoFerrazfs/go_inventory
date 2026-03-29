@@ -1,3 +1,5 @@
+//go:build unit
+
 package controllers_test
 
 import (
@@ -19,7 +21,6 @@ import (
 )
 
 func TestListPallets_Error(t *testing.T) {
-
 	gin.SetMode(gin.TestMode)
 	// Set
 	mockService := new(mockPalletService)
@@ -116,6 +117,7 @@ func (m *mockPalletService) ListPallets(palletRackId *uint, productEan *int) ([]
 	args := m.Called(palletRackId, productEan)
 	return args.Get(0).([]entities.PalletEntity), args.Get(1).(*errors.AppError)
 }
+
 func (m *mockPalletService) FindPalletById(id uint) (*entities.PalletEntity, *errors.AppError) {
 	args := m.Called(id)
 	if args.Get(0) == nil {
@@ -123,10 +125,12 @@ func (m *mockPalletService) FindPalletById(id uint) (*entities.PalletEntity, *er
 	}
 	return args.Get(0).(*entities.PalletEntity), args.Get(1).(*errors.AppError)
 }
+
 func (m *mockPalletService) DeletePalletById(id uint) (bool, *errors.AppError) {
 	args := m.Called(id)
 	return args.Bool(0), args.Get(1).(*errors.AppError)
 }
+
 func (m *mockPalletService) CreatePallet(name string, rackID uint, inventoryID uint) (*entities.PalletEntity, *errors.AppError) {
 	args := m.Called(name, rackID, inventoryID)
 	if args.Get(0) == nil {
@@ -134,6 +138,7 @@ func (m *mockPalletService) CreatePallet(name string, rackID uint, inventoryID u
 	}
 	return args.Get(0).(*entities.PalletEntity), args.Get(1).(*errors.AppError)
 }
+
 func (m *mockPalletService) UpdatePallet(id uint, name string, rackID uint, inventoryID uint) (*entities.PalletEntity, *errors.AppError) {
 	args := m.Called(id, name, rackID, inventoryID)
 	if args.Get(0) == nil {
@@ -141,6 +146,7 @@ func (m *mockPalletService) UpdatePallet(id uint, name string, rackID uint, inve
 	}
 	return args.Get(0).(*entities.PalletEntity), args.Get(1).(*errors.AppError)
 }
+
 func (m *mockPalletService) GeneratePalletsCsvFile(palletRackId *uint, productEan *int) (string, *errors.AppError) {
 	args := m.Called(palletRackId, productEan)
 	return args.String(0), args.Get(1).(*errors.AppError)

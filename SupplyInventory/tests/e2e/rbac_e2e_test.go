@@ -1,10 +1,9 @@
-//go:build integration
+//go:build e2e
 
 package e2e
 
 import (
 	"bufio"
-	"go_inventory/SupplyInventory/tests/e2e/testsetup"
 	"net/http"
 	"os"
 	"os/exec"
@@ -12,6 +11,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"go_inventory/SupplyInventory/tests/e2e/testsetup"
 
 	httpExpect "github.com/gavv/httpexpect/v2"
 )

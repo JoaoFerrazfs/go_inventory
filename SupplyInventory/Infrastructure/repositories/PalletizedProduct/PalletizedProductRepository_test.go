@@ -1,3 +1,5 @@
+//go:build unit
+
 package infrastructure_test
 
 import (
@@ -49,15 +51,19 @@ func (s *stubPalletRepoShim) Update(p *entities.PalletEntity) error            {
 func (s *stubPalletRepoShim) GetAllPallets(palletRackId *uint, productEan *int) ([]entities.PalletEntity, *errors.AppError) {
 	return nil, nil
 }
+
 func (s *stubPalletRepoShim) GetSupplyById(id uint) (*entities.PalletEntity, *errors.AppError) {
 	return &entities.PalletEntity{ID: id, PalletizedProduct: []entities.PalletizedProductEntity{{ID: 1, EAN: 777, Quantity: 1, PalletID: id}}}, nil
 }
+
 func (s *stubPalletRepoShim) AddSupply(name string, rackId uint) (*entities.PalletEntity, *errors.AppError) {
 	return nil, nil
 }
+
 func (s *stubPalletRepoShim) UpdateSupply(p *entities.PalletEntity) (*entities.PalletEntity, *errors.AppError) {
 	return nil, nil
 }
+
 func (s *stubPalletRepoShim) AddProductsToPallet(prod entities.PalletizedProductEntity) (*entities.PalletEntity, *errors.AppError) {
 	return nil, nil
 }

@@ -65,3 +65,42 @@ docker exec -e TEST_DB_HOST=172.17.0.2 -e TEST_DB_PORT=3306 -e TEST_DB_USER=root
 ```
 
 Branch and commit policy for tests: create a focused branch named `test/<scope>` and commit test files only after verifying they pass locally. Use `test:` in the commit message prefix for test-only commits.
+
+## 🧪 Testes: Unitários, Integração e E2E
+
+O projeto utiliza build tags para separar os tipos de teste:
+
+- **Unitários**: `//go:build unit` — Não dependem de banco ou serviços externos.
+- **Integração**: `//go:build integration` — Usam banco real, testam integração entre componentes.
+- **E2E**: `//go:build e2e` — Simulam uso real da API, sobem o backend e testam via HTTP.
+
+### Como rodar os testes
+
+Todos os comandos devem ser executados na raiz do projeto:
+
+- **Testes unitários:**
+  ```sh
+  make test-unit
+  ```
+- **Testes de integração:**
+  ```sh
+  make test-integration
+  ```
+- **Testes E2E:**
+  ```sh
+  make test-e2e
+  ```
+- **Todos os testes (sequencial):**
+  ```sh
+  make test-all
+  ```
+
+> Os testes são executados dentro do container Docker `go_inventory_dev` e usam o pretty reporter customizado.
+> Para integração/E2E, o banco de testes deve estar disponível (veja docker-compose).
+
+### Estrutura dos arquivos de teste
+- Testes unitários: `*_test.go` com tag `unit`.
+- Testes de integração: `*_integration_test.go` com tag `integration`.
+- Testes E2E: `SupplyInventory/tests/e2e/rbac_e2e_test.go` com tag `e2e`.
+
+Consulte os comentários nos próprios arquivos para exemplos e padrões de escrita.

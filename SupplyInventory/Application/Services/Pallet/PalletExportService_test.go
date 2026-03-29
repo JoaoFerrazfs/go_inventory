@@ -1,3 +1,5 @@
+//go:build unit
+
 package services_test
 
 import (
@@ -129,6 +131,7 @@ func TestExportPalletsToCsv_EmptyPallets(t *testing.T) {
 	assert.Equal(t, expectedURL, url)
 	storage.AssertExpectations(t)
 }
+
 func TestExportPalletsToCsv_WithProducts(t *testing.T) {
 	// Set
 	storage := &mocks.MockStorage{}

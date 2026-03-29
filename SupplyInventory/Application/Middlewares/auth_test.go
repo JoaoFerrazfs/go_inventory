@@ -1,3 +1,5 @@
+//go:build unit
+
 package middlewares_test
 
 import (

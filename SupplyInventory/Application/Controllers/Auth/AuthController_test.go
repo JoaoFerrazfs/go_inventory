@@ -1,3 +1,5 @@
+//go:build unit
+
 package controllers_test
 
 import (
@@ -250,7 +252,7 @@ func TestLogin_EmptyTokenAndRefreshToken(t *testing.T) {
 	user := &entities.UserEntity{
 		ID:    4,
 		Email: "empty@example.com",
-		Role:  constants.UserRole_,
+		Role:  constants.RoleUser,
 	}
 
 	// Expectations
