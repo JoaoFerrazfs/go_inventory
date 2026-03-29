@@ -97,7 +97,7 @@ func TestLogin_Success(t *testing.T) {
 	user := &entities.UserEntity{
 		ID:    1,
 		Email: "test@example.com",
-		Role:  constants.UserRole_,
+		Role:  constants.RoleUser,
 	}
 
 	// Expectations

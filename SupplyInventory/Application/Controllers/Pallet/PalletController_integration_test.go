@@ -6,7 +6,6 @@ package controllers_test
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -70,7 +69,6 @@ func TestIntegration_CreatePallet_DifferentInventory(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("X-Inventory-ID", strconv.Itoa(int(inv2.ID))) // Different inventory
 		r.ServeHTTP(w, req)
-		fmt.Println(w.Body, "response body")
 
 		// Assertions
 		assert.Equal(t, 422, w.Code)

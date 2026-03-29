@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -49,15 +50,18 @@ func TestRBAC_E2E(t *testing.T) {
 		t.Logf("STDERR final do backend:\n%s", strings.Join(stderrLines, "\n"))
 	}()
 
-	// Aguarda o servidor subir (procura por "Listening" no stdout)
+	// Aguarda o servidor subir (procura por "Starting server..." no stdout ou stderr)
 	ready := make(chan struct{})
+	var onceReady sync.Once
+	closeReady := func() { onceReady.Do(func() { close(ready) }) }
+
 	go func() {
 		scanner := bufio.NewScanner(appStdout)
 		for scanner.Scan() {
 			line := scanner.Text()
 			stdoutLines = append(stdoutLines, line)
 			if strings.Contains(line, "Starting server...") {
-				close(ready)
+				closeReady()
 				return
 			}
 		}
@@ -68,7 +72,7 @@ func TestRBAC_E2E(t *testing.T) {
 			line := scanner.Text()
 			stderrLines = append(stderrLines, line)
 			if strings.Contains(line, "Starting server...") {
-				close(ready)
+				closeReady()
 				return
 			}
 		}

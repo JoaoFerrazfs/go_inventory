@@ -265,4 +265,3 @@ Body: {
 
 **Status:** ✅ **PRONTO PARA USAR**
 
-Qualquer dúvida, ver: `documents/security/RBAC_GUIDE.md`

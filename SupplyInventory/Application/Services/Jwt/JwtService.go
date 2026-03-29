@@ -76,10 +76,27 @@ func (service *jwtService) RefreshToken(refreshToken string) (string, *errors.Ap
 		return "", errors.NewAppError("invalid refresh token", 401)
 	}
 
-	claims := token.Claims.(jwt.MapClaims)
-	userID := uint(claims["userID"].(float64))
-	username := claims["username"].(string)
-	role := constants.UserRole(claims["role"].(string))
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", errors.NewAppError("invalid token claims", 401)
+	}
+
+	userIDFloat, ok := claims["userID"].(float64)
+	if !ok {
+		return "", errors.NewAppError("invalid or missing userID in token claims", 401)
+	}
+	userID := uint(userIDFloat)
+
+	username, ok := claims["username"].(string)
+	if !ok {
+		return "", errors.NewAppError("invalid or missing username in token claims", 401)
+	}
+
+	roleStr, ok := claims["role"].(string)
+	if !ok {
+		return "", errors.NewAppError("invalid or missing role in token claims", 401)
+	}
+	role := constants.UserRole(roleStr)
 
 	newToken, appErr := service.GenerateToken(userID, username, role)
 	if appErr != nil {
