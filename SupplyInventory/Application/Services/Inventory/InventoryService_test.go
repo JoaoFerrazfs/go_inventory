@@ -1,3 +1,5 @@
+//go:build unit
+
 package inventory_test
 
 import (

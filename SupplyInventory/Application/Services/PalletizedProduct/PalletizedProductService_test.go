@@ -1,3 +1,5 @@
+//go:build unit
+
 package services_test
 
 import (
@@ -29,12 +31,15 @@ func (m *mockPalletRepoPP) AddProductsToPallet(product entities.PalletizedProduc
 	}
 	return args.Get(0).(*entities.PalletEntity), nil
 }
+
 func (m *mockPalletRepoPP) GetAllPallets(palletRackId *uint, productEan *int) ([]entities.PalletEntity, *errors.AppError) {
 	return nil, nil
 }
+
 func (m *mockPalletRepoPP) AddSupply(name string, rackId uint) (*entities.PalletEntity, *errors.AppError) {
 	return nil, nil
 }
+
 func (m *mockPalletRepoPP) UpdateSupply(p *entities.PalletEntity) (*entities.PalletEntity, *errors.AppError) {
 	return nil, nil
 }
@@ -54,6 +59,7 @@ func (m *mockPalletizedProductRepo) AddProductsToPallet(product entities.Palleti
 	}
 	return args.Bool(0), nil
 }
+
 func (m *mockPalletizedProductRepo) DeleteProductsFromPallet(palletId uint, productsEan int) (bool, *errors.AppError) {
 	args := m.Called(palletId, productsEan)
 	if args.Get(1) != nil {

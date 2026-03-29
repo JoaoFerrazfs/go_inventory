@@ -1,3 +1,5 @@
+//go:build unit
+
 package controllers_test
 
 import (
@@ -26,6 +28,7 @@ func (m *mockPalletRackService) Create(name, location string, totalCapacity int,
 	args := m.Called(name, location, totalCapacity, inventoryID)
 	return args.Get(0).(*entities.PalletRackEntity), nil
 }
+
 func (m *mockPalletRackService) ListRacks(inventoryID *uint, page int, limit int) (*apiContracts.PaginatedRacksResponse, error) {
 	args := m.Called(inventoryID, page, limit)
 	if args.Get(0) == nil {
@@ -33,6 +36,7 @@ func (m *mockPalletRackService) ListRacks(inventoryID *uint, page int, limit int
 	}
 	return args.Get(0).(*apiContracts.PaginatedRacksResponse), args.Error(1)
 }
+
 func (m *mockPalletRackService) FindPalletById(id uint) (*entities.PalletRackEntity, *errors.AppError) {
 	args := m.Called(id)
 	if args.Get(0) == nil {
@@ -40,6 +44,7 @@ func (m *mockPalletRackService) FindPalletById(id uint) (*entities.PalletRackEnt
 	}
 	return args.Get(0).(*entities.PalletRackEntity), nil
 }
+
 func (m *mockPalletRackService) DeleteRack(id uint) (bool, *errors.AppError) {
 	args := m.Called(id)
 	return args.Bool(0), args.Get(1).(*errors.AppError)

@@ -1,3 +1,5 @@
+//go:build unit
+
 package services_test
 
 import (
@@ -19,7 +21,7 @@ func TestGenerateToken_Success(t *testing.T) {
 
 	// Actions
 	svc := jwtService.NewJWTService()
-	tokenStr, appErr := svc.GenerateToken(10, "john")
+	tokenStr, appErr := svc.GenerateToken(10, "john", "user")
 
 	// Assertions
 	assert.Nil(t, appErr)
@@ -40,7 +42,7 @@ func TestGenerateRefreshToken_Success(t *testing.T) {
 
 	// Actions
 	svc := jwtService.NewJWTService()
-	tokenStr, appErr := svc.GenerateRefreshToken(20, "mary")
+	tokenStr, appErr := svc.GenerateRefreshToken(20, "mary", "user")
 
 	// Assertions
 	assert.Nil(t, appErr)
@@ -106,6 +108,7 @@ func TestRefreshToken_Success(t *testing.T) {
 	claims := jwt.MapClaims{
 		"userID":    9,
 		"username":  "bob",
+		"role":      "user",
 		"tokenType": "refresh",
 		"exp":       time.Now().Add(time.Hour * 24).Unix(),
 	}

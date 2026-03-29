@@ -2,6 +2,8 @@ package integration
 
 import (
 	"context"
+	"strconv"
+
 	container "go_inventory/Container"
 	auth "go_inventory/SupplyInventory/Application/Controllers/Auth"
 	inventory "go_inventory/SupplyInventory/Application/Controllers/Inventory"
@@ -35,8 +37,6 @@ import (
 	palletizedProductInfra "go_inventory/SupplyInventory/Infrastructure/repositories/PalletizedProduct"
 	productInfra "go_inventory/SupplyInventory/Infrastructure/repositories/Product"
 	userInfra "go_inventory/SupplyInventory/Infrastructure/repositories/User"
-
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/mock"
@@ -175,7 +175,6 @@ func (h *IntegrationTestHelper) SetupRouterForPallet(db *gorm.DB) *gin.Engine {
 	palletRepo := palletInfra.NewPalletRepository(dbadapter.NewGormAdapter(db))
 	palletRackRepo := palletRackInfra.NewPalletRackRepository(dbadapter.NewGormAdapter(db))
 	qrSrv := h.QrCodeService
-	// For tests, use mock storage to avoid creating real files
 	mockStorage := &mocks.MockStorage{}
 	mockStorage.On("Upload", mock.Anything, mock.Anything).Return("http://localhost:3000/reports/Pallets/test.csv", nil)
 	mockStorage.On("GetURL", mock.Anything).Return("http://localhost:3000/reports/Pallets/test.csv", nil)
@@ -184,7 +183,6 @@ func (h *IntegrationTestHelper) SetupRouterForPallet(db *gorm.DB) *gin.Engine {
 	controller := pallet.NewPalletController(palletSrv)
 	r := gin.Default()
 	api := r.Group("/api/v1/pallets")
-	// inventory middleware
 	invRepo := inventoryInfra.NewInventoryRepository(dbadapter.NewGormAdapter(db))
 	invMiddleware := middlewares.NewInventoryMiddleware(invRepo)
 	api.Use(invMiddleware.Handler())

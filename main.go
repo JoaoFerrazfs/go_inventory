@@ -46,8 +46,17 @@ import (
 
 func main() {
 	// Carregar variáveis de ambiente
-	if err := godotenv.Load(); err != nil {
-		log.Println("Nenhum .env encontrado, usando variáveis do sistema")
+	envFile := os.Getenv("ENV_FILE")
+	if envFile != "" {
+		if err := godotenv.Load(envFile); err != nil {
+			log.Printf("Não foi possível carregar %s: %v", envFile, err)
+		} else {
+			log.Printf("Arquivo de env carregado: %s", envFile)
+		}
+	} else {
+		if err := godotenv.Load(); err != nil {
+			log.Println("Nenhum .env encontrado, usando variáveis do sistema")
+		}
 	}
 
 	// Conectar DB
@@ -134,6 +143,7 @@ func registerRoutes(
 	authController *authControllerPkg.AuthController,
 	userController *userControllerPkg.UserController,
 	authMiddleware *middlewares.AuthMiddleware,
+	rbacMiddleware *middlewares.RBACMiddleware,
 	inventoryController *inventoryControllerPkg.InventoryController,
 	inventoryMiddleware *middlewares.InventoryMiddleware,
 ) {
@@ -142,32 +152,37 @@ func registerRoutes(
 	palletsGroup := apiV1.Group("/pallets")
 	palletsGroup.Use(authMiddleware.Handler())
 	palletsGroup.Use(inventoryMiddleware.Handler())
+	palletsGroup.Use(rbacMiddleware.RequireAny())
 	palletController.Register(palletsGroup)
 
 	palletProductsGroup := apiV1.Group("/pallet/products")
 	palletProductsGroup.Use(authMiddleware.Handler())
 	palletProductsGroup.Use(inventoryMiddleware.Handler())
+	palletProductsGroup.Use(rbacMiddleware.RequireAny())
 	palletizedProductController.RegisterProductPallet(palletProductsGroup)
 
 	racksGroup := apiV1.Group("/racks")
 	racksGroup.Use(authMiddleware.Handler())
 	racksGroup.Use(inventoryMiddleware.Handler())
+	racksGroup.Use(rbacMiddleware.RequireAny())
 	palletRackController.RegisterPalletRack(racksGroup)
 
 	adminRacksGroup := apiV1.Group("/admin/racks")
 	adminRacksGroup.Use(authMiddleware.Handler())
+	adminRacksGroup.Use(rbacMiddleware.RequireAdmin())
 	adminPalletRackController.RegisterAdminPalletRack(adminRacksGroup)
 
 	authController.RegisterLogin(apiV1.Group("/auth"))
-
 	userController.RegisterUserRoutes(apiV1.Group("/users"))
 
 	inventoryGroup := apiV1.Group("/inventories")
 	inventoryGroup.Use(authMiddleware.Handler())
+	inventoryGroup.Use(rbacMiddleware.RequireAny())
 	inventoryController.Register(inventoryGroup)
 
 	productGroup := apiV1.Group("/products")
 	productGroup.Use(authMiddleware.Handler())
+	productGroup.Use(rbacMiddleware.RequireAny())
 	productController.Register(productGroup)
 }
 

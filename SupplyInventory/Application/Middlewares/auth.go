@@ -6,6 +6,7 @@ import (
 
 	errors "go_inventory/Helpers/Errors"
 	jwt "go_inventory/SupplyInventory/Application/Services/Jwt"
+	"go_inventory/SupplyInventory/Domain/constants"
 
 	"github.com/gin-gonic/gin"
 	jwtv5 "github.com/golang-jwt/jwt/v5"
@@ -51,9 +52,27 @@ func (m *AuthMiddleware) Handler() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("userID", uint(claims["userID"].(float64)))
-		c.Set("username", claims["username"].(string))
+		userIDFloat, ok := claims["userID"].(float64)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errors.NewAppError("invalid token claims", 401))
+			return
+		}
 
+		username, ok := claims["username"].(string)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errors.NewAppError("invalid token claims", 401))
+			return
+		}
+
+		roleStr, ok := claims["role"].(string)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errors.NewAppError("invalid token claims", 401))
+			return
+		}
+
+		c.Set("userID", uint(userIDFloat))
+		c.Set("username", username)
+		c.Set("role", constants.UserRole(roleStr))
 		c.Next()
 	}
 }
