@@ -120,3 +120,41 @@ jobs:
           path: |
             integration.out
             integration_coverage.html
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    services:
+      db-test:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: inventory_test
+        options: >-
+          --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=5
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      - name: Instalar Docker Compose
+        run: sudo apt-get update && sudo apt-get install -y docker-compose
+      - name: Subir dependências de teste
+        run: docker-compose up -d db-test
+        # O acesso ao banco deve ser feito via host 'db-test' e porta interna 3306
+      - name: Aguardar dependências
+        run: |
+          until docker-compose exec db-test mysqladmin ping -h"db-test" --silent; do sleep 2; done
+          until curl -s http://localhost:9002/minio/health/live; do sleep 2; done
+      - name: Subir MinIO para E2E
+        run: |
+          docker run -d --name minio-test -p 9002:9000 -p 9003:9001 \
+            -e MINIO_ROOT_USER=minioadmin \
+            -e MINIO_ROOT_PASSWORD=minioadmin \
+            minio/minio:latest server /data --console-address :9001
+      - name: Aguardar MinIO
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:9002/minio/health/live; then exit 0; fi
+            sleep 2
+          done
+          echo "MinIO não respondeu a tempo" && exit 1
+      - name: Rodar testes E2E
+        run: make test-e2e
