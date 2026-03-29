@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"os"
 	"time"
-	"golang.org/x/crypto/bcrypt"
+
 	_ "github.com/go-sql-driver/mysql"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // DBConfig holds the database connection configuration for tests
 // You can extend this struct if needed for other setups
-//
 type DBConfig struct {
 	User     string
 	Password string
