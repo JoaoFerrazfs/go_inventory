@@ -52,10 +52,27 @@ func (m *AuthMiddleware) Handler() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("userID", uint(claims["userID"].(float64)))
-		c.Set("username", claims["username"].(string))
-		c.Set("role", constants.UserRole(claims["role"].(string)))
+		userIDFloat, ok := claims["userID"].(float64)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errors.NewAppError("invalid token claims", 401))
+			return
+		}
 
+		username, ok := claims["username"].(string)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errors.NewAppError("invalid token claims", 401))
+			return
+		}
+
+		roleStr, ok := claims["role"].(string)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errors.NewAppError("invalid token claims", 401))
+			return
+		}
+
+		c.Set("userID", uint(userIDFloat))
+		c.Set("username", username)
+		c.Set("role", constants.UserRole(roleStr))
 		c.Next()
 	}
 }

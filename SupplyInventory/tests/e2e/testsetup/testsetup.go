@@ -33,19 +33,23 @@ func GetTestDBConfig() DBConfig {
 
 // ConnectWithRetry tries to connect to the DB with retries
 func ConnectWithRetry(cfg DBConfig, maxRetries int, delay time.Duration) (*sql.DB, error) {
-	var db *sql.DB
-	var err error
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DBName)
+
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open DB connection: %w", err)
+	}
+
 	for i := 0; i < maxRetries; i++ {
-		db, err = sql.Open("mysql", dsn)
+		err = db.Ping()
 		if err == nil {
-			err = db.Ping()
-			if err == nil {
-				return db, nil
-			}
+			return db, nil
 		}
+
 		time.Sleep(delay)
 	}
+
+	_ = db.Close()
 	return nil, fmt.Errorf("could not connect to DB after %d retries: %w", maxRetries, err)
 }
 
